@@ -6,6 +6,7 @@ c   Implement new FM
 c   Come back in lab frame before fragmentation
 c   Implement Quenching 
 c   change p to n target to fit nuclei
+c   Implement some radiative effect
 c
 c------------------------------------------------------------------------------
 
@@ -57,8 +58,6 @@ ccc Randomize Theta Phi and Kf
 ccc Initialize the kinematics
         call InitKin(E0,rFM)
 
-ccc Radiative effects in targets
-
 ccc Going in the nucleon rest frame
         if(iTg .ne. 0) then
           BB1 = PPn/EEn
@@ -92,49 +91,34 @@ ccc Center of mass energy calculation
 
         if (PPe .lt. 2.5) goto 100
 
-ccc Simulation
+ccc Parameters for Pythia
 c        call PythiaConfigBrahim
 c        call PythiaConfigOWN
         call PythiaConfigHayk
         MSTJ(1) =0
-c        MSTP(143) =1
 
+ccc Initialize the simulation
         write(*,*) 'Momentum of the electron: ',PPe
         BeamE = PPe
-        write(*,*) 'Momentum of the electron: ',BeamE
         call pyinit('FIXT','gamma/e-','p+',BeamE)
 c        call pyinit('FIXT','gamma/e-','n0',BeamE)
 
-
+ccc Loop over events of a given kinematic
         do i=1,nevent
+
+ccc Counter
           ievent = ievent + 1
           if (MOD(i+(nevent*(j-1)),nevent*nkin/20) .eq. 0) 
      &          write(*,*) i+(nevent*(j-1)),'events proceded'
 
+ccc Some initialization
           call InitKin2Book
 
-c see MSTP and PARP 171 for variable beam energy
+ccc Event generation
           CALL pyevnt
-ccc New stuff, that can be try
-c          CALL pyevnw
-
-c          CALL PYLIST(1)
-c         do ip=1,N
-c           if(K(ip,1).lt.10.and.K(ip,2).lt.4.and.K(ip,2).gt.-4) then
-c             write (*,*) P(ip,1)
-c             p(ip,1) = .5 * p(ip,1)
-c             p(ip,4) =sqrt(p(ip,1)**2+p(ip,2)**2+p(ip,3)**2+p(ip,5)**2)
-c           endif
-c         enddo
-          MSTJ(1) =1
-c          call PYSHOW
-          call PYEXEC
-          MSTJ(1) =0
 c          CALL PYLIST(1)
 
-ccc Radiative correction
-
-
+ccc Come back in Lab frame
           if(iTg .ne. 0) then
 ccc Rotate around z
             call FinalRotZ(-Phi)
@@ -143,33 +127,34 @@ ccc Rotate around y
 
 ccc Lorentz boost of all the particles
             do ip=1,N 
-c              write(*,*) 'part', ip
-c              write(*,*) p(ip,1),p(ip,2),p(ip,3),p(ip,4)
               Mom1 = p(ip,1)
               Mom2 = p(ip,2)
               Mom3 = p(ip,3)
               Mom4 = p(ip,4)
-            
               call TL(Mom4,PPP,Mom1,Mom2,Mom3,
      &                                 -BB1,-B1x,-B1y,-B1z)
-
-c              call TL(p(ip,4),PPP,p(ip,1),p(ip,2),p(ip,3),
-c     &                                 -BB1,-B1x,-B1y,-B1z)
-
               p(ip,1) = Mom1
               p(ip,2) = Mom2
               p(ip,3) = Mom3
               p(ip,4) = Mom4
-c              write(*,*) p(ip,1),p(ip,2),p(ip,3),p(ip,4)
             enddo
           endif
 
+ccc Energy loss of the partons should take place here
+
+
+ccc Fragmentation
+          MSTJ(1) =1
+          call PYEXEC
+          MSTJ(1) =0
+c          CALL PYLIST(1)
+
+ccc Output to check Lorentz transforamtions
 c          write(*,*) 'Momentum of the electron: ',BeamE
 c          write(*,*) 'Momentum of the electron: ',p(1,4)
-c          write(*,*) -BB1,-B1x,-B1y,-B1z
-          call ComputV
 
-ccc Radiative effects of the scattered particles
+ccc Compute of physical values for the hbook
+          call ComputV
 
 ccc Book the ntuple
           call hfnt(33)

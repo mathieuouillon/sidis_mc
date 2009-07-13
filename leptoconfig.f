@@ -272,9 +272,9 @@ ccccc Include all the common blocks
       CKIN(38) = -1. 
       CKIN(39) = 4. 
       CKIN(40) = -1. 
-      CKIN(65) = 1. 
+      CKIN(65) = .9 
       CKIN(66) = 4. 
-      CKIN(77) = 2.0 
+      CKIN(77) = 1.90 
       CKIN(78) = -1. 
 
 
