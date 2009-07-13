@@ -21,4 +21,4 @@ go: ${OBJ}
 
 #	f77  $(FFLAGS) -o go $(OBJ)  `cernlib`
 clean:
-	rm -f *.o 
+	rm -f *.o $(NAME)

@@ -2,7 +2,11 @@
       implicit none
 c------------------------------------------------------------------------------
 c TO DO LIST:
-c 
+c   Implement new FM 
+c   Come back in lab frame before fragmentation
+c   Implement Quenching 
+c   Change momentum without initialisation
+c   change p to n target to fit nuclei
 c
 c------------------------------------------------------------------------------
 c RD Mar 20 2009: Integration of Pythia 6.4
@@ -40,7 +44,7 @@ ccc Begining of the simulation
       call TIMEX(T1)
       E0 = 5.014
       iTg = 4
-      nkin = 100
+      nkin = 1000
       nevent = 200
       ievent = 0
       bosout = 'test.A00'
@@ -101,8 +105,8 @@ ccc Center of mass energy calculation
 
 ccc Simulation
 c        call PythiaConfigBrahim
-        call PythiaConfigOWN
-c        call PythiaConfigHayk
+c        call PythiaConfigOWN
+        call PythiaConfigHayk
         MSTJ(1) =0
 c        MSTP(143) =1
 
@@ -125,7 +129,7 @@ c see MSTP and PARP 171 for variable beam energy
 ccc New stuff, that can be try
 c          CALL pyevnw
 
-          CALL PYLIST(1)
+c          CALL PYLIST(1)
 c         do ip=1,N
 c           if(K(ip,1).lt.10.and.K(ip,2).lt.4.and.K(ip,2).gt.-4) then
 c             write (*,*) P(ip,1)
@@ -137,7 +141,7 @@ c         enddo
 c          call PYSHOW
           call PYEXEC
           MSTJ(1) =0
-          CALL PYLIST(1)
+c          CALL PYLIST(1)
 
 ccc Radiative correction
 

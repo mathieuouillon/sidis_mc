@@ -173,7 +173,7 @@ ccccc Include all the common blocks
       MSTP(173) = 0 
 
       PARP(1) = 0.25 
-      PARP(2) = 3 
+      PARP(2) = 2 ! Modify because of the FM
       PARP(13) = 1 
       PARP(14) = 0.01 
       PARP(15) = 0.5 
@@ -352,7 +352,7 @@ c
       MSTP(101)  = 1
 
 c ... Allow low c.m. energies
-      PARP(2)   = 3.d0    ! min(Ecm) = 3 GeV, default 10 GeV
+      PARP(2)   = 1.d0    ! min(Ecm) = 3 GeV, default 10 GeV
 c      PARP(2)   = 1.d0    ! min(Ecm) = 3 GeV, default 10 GeV
 c      PARP(18)  = .17d0    ! min(Ecm) = 3 GeV, default 10 GeV
 
