@@ -5,19 +5,8 @@ c TO DO LIST:
 c   Implement new FM 
 c   Come back in lab frame before fragmentation
 c   Implement Quenching 
-c   Change momentum without initialisation
 c   change p to n target to fit nuclei
 c
-c------------------------------------------------------------------------------
-c RD Mar 20 2009: Integration of Pythia 6.4
-c------------------------------------------------------------------------------
-c RD Feb 19 2009: Integration of LEPTO
-c------------------------------------------------------------------------------
-c RD Feb 17 2009: Add the tail of fermi motion distribution
-c------------------------------------------------------------------------------
-c RD Feb 16 2009: hbook booking
-c------------------------------------------------------------------------------
-c RD Feb 12 2009: fermi motion in nuclei interaction
 c------------------------------------------------------------------------------
 
 ccccc Values for the simulation
