@@ -4,10 +4,15 @@ c------------------------------------------------------------------------------
       subroutine  InitFM(iTg,rFM,iFM)
       implicit none
 
+ccccc Include all the common blocks
+      include 'common.f'
       integer iTg ! = 0 no FM, = 1 deut, = 2 C, = 3 Al, = 4 Fe, = 5 Sn, = 6 Pb
+      integer iFM ! flag for the kind of FM
       integer iZ, iA ! target Z and A
       real rFM ! Fermi momentum  in the target (GeV)
+      integer irho !dummy
       
+ccc Fill rFM, iZ and iA in function of the Target
         select case(iTg)
           case (0) 
             rFM = 0
@@ -42,10 +47,12 @@ c------------------------------------------------------------------------------
             iZ = 0
             iA = 0
         end select
-c      if (iFM.eq.2 .and. iTg.gt.1) then 
-        
-     
-c      endif
+
+ccc Produce the table for FM generation (CS)
+      if ( (iFM.eq.2 .or. iFM.eq.3) .and. iTg.gt.1) then 
+        irho = iFM - 1
+        call GenFMtable(iZ,iA,irho)  
+      endif
 
       end
 
@@ -53,12 +60,12 @@ c      endif
 c------------------------------------------------------------------------------
 c Initialize kinematics values with fermi motion
 c------------------------------------------------------------------------------
-      subroutine FMParam(rFM,iFM)
+      subroutine FMParam(rFM,iFM,iTg)
       implicit none
 
       real E0 ! beam energy (GeV)
       real rFM ! Fermi momentum  in the target (GeV)
-      integer iFM ! Flag for the kind of FM
+      integer iFM,iTg ! Flag for the kind of FM
       real pi
       data pi/3.1415926535/
       real a
@@ -68,7 +75,8 @@ c------------------------------------------------------------------------------
       real R
       real ranf ! random number generator from CERNLIB
 ccccc Important variables for simulation
-      real Ps,Thr,C !variables for Kf computation
+      real Ps,Thr,C,Rd !variables for Kf computation
+      integer i
 ccccc Include all the common blocks
       include 'common.f'
 
@@ -81,15 +89,11 @@ ccc Selector for the FM
 ccc Generation of FM in a Fermi sphere
         Kf = rFM*(ranf(0))**(1./3.)
       else if(iFM.eq.1) then
-c        write(*,*) 'Begining'
-c        write(*,*) 'Kf',Kf
 ccc Thresholds
         Thr = 1 - 6*(rFM*a/pi)**2
-c        write(*,*) 'Thr',Thr
         Ps = 5
 ccc Constant calculation
         C = 4./3.*pi*rFM**3.
-c        write(*,*) 'C',C
 
 ccc Remove events with Pf > 4 GeV/c or negative values
         do while (Ps.gt.Plim .or. Ps.lt.0)
@@ -98,15 +102,22 @@ ccc Generation of random number
 ccc Apply the threshold and produce the tail
           if (Kf .le. Thr) then
             Kf = (3.*C*Kf/4./pi/Thr)**(1./3.)
-c        write(*,*) 'Kf',Kf
           else
             R = 1. / (1.-rFM/4.)
             Kf = - rFM / ( (Kf-Thr)*pi*C/8./rFM**5/a**2 -1. )
-c        write(*,*) 'Kf',Kf
           endif
           Ps = Kf
         enddo
-c        write(*,*) 'Kf',Kf
+
+ccc Fermi Momentum from Accardi routines
+      else if ( (iFM.eq.2 .or. iFM.eq.3) .and. iTg.gt.1) then
+        Rd = ranf(0)
+        i = 1
+        do while (table(i).lt.Rd)
+          i= i + 1
+        enddo
+
+        Kf =  (i - rand(0)) * step_size
 
       else
         write(*,*) 'this iFM is not implemented'

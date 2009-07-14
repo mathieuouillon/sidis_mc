@@ -3,11 +3,14 @@ NAME = simulation
 FFLAGS  =  -w -g
 
 SRC=	simulation.f fermimotion.f pythia-6.4.19.f \
-	leptoconfig.f book.f transfo.f
+	leptoconfig.f book.f transfo.f \
+        fermimotion2.f
 #	leptoconfig.f book.f transfo.f BOS.f
         
 OBJ=	simulation.o fermimotion.o pythia-6.4.19.o \
-	leptoconfig.o book.o transfo.o
+	leptoconfig.o book.o transfo.o \
+        fermimotion2.o
+
 #	leptoconfig.o book.o transfo.o BOS.o
 
 .f.o:

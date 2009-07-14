@@ -15,8 +15,8 @@ ccccc Values for the simulation
       integer iFM ! 
 c 0 = hard sphere with values from [1], 
 c 1 = like 0 plus a tail from [2],
-c 2 = Accardi CS or Deuterium from Taya, 
-c 3 = Accardi SVG or Deuterium from Taya
+c 2 = Accardi SVG or Deuterium from Taya
+c 3 = Accardi CS or Deuterium from Taya, 
 c All FM distributions are limited to 1 GeV nucleons
 c [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
@@ -43,10 +43,10 @@ ccc Begining of the simulation
       call TIMEX(T1)
       E0 = 5.014
       iTg = 4
-      iFM = 1
-      iSim = 1
-      nkin = 1 000
-      nevent = 200
+      iFM = 2
+      iSim = 0
+      nkin = 1 000 000
+      nevent = 1
       ievent = 0
       bosout = 'test.A00'
 
@@ -55,7 +55,7 @@ ccc Begining of the simulation
         nkin = 1
       endif
 ccc Initialize
-      call InitFM(iTg,rFM)
+      call InitFM(iTg,rFM,iFM)
       call InitRandom
       call InitHbook
 c      call CLASBOSINIT('MCEVENT')
@@ -64,7 +64,7 @@ c      call CLASBOSINIT('MCEVENT')
 
  100    continue
 ccc Randomize Theta Phi and Kf
-        call FMParam(rFM,iFM)
+        call FMParam(rFM,iFM,iTg)
 
 ccc Initialize the kinematics
         call InitKin(E0,rFM)

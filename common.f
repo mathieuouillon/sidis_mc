@@ -43,4 +43,7 @@ ccccc Recoiled Particles
      &      px_part,py_part,pz_part,E_part,m_part,
      &      z_part,th_part,tt_part,Pts_part
 
-
+ccccc Table for FM distribution
+      real table(1000),step_size
+      integer FMnb
+      common/FMvar/table,step_size,FMnb
