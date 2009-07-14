@@ -12,8 +12,15 @@ c------------------------------------------------------------------------------
 ccccc Values for the simulation
       integer iTg ! = 0 no FM, = 1 deut, = 2 C, = 3 Al, = 4 Fe, = 5 Sn, = 6 Pb
       real rFM ! Fermi momentum  in the target (GeV)
-      integer iFM ! 0 = hard sphere with ?? values, 1 = tailed [Bodek]
-c 2 = Accardi CS or Deuterium from Taya, 3 = Accardi SVG or Deuterium from Taya
+      integer iFM ! 
+c 0 = hard sphere with values from [1], 
+c 1 = like 0 plus a tail from [2],
+c 2 = Accardi CS or Deuterium from Taya, 
+c 3 = Accardi SVG or Deuterium from Taya
+c All FM distributions are limited to 1 GeV nucleons
+c [1] E. J. Moniz et al. PRL 26, 445 (1971)
+c [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
+
       integer iSim ! 0 = Turn off Pythia
       real E0 ! beam energy (GeV)
       integer i,nevent ! number of events
@@ -36,10 +43,10 @@ ccc Begining of the simulation
       call TIMEX(T1)
       E0 = 5.014
       iTg = 4
-      iFM = 0
-      iSim = 0
-      nkin = 1 000 000
-      nevent = 1
+      iFM = 1
+      iSim = 1
+      nkin = 1 000
+      nevent = 200
       ievent = 0
       bosout = 'test.A00'
 
