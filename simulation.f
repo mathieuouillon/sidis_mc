@@ -3,9 +3,8 @@
 c------------------------------------------------------------------------------
 c TO DO LIST:
 c   Implement new FM 
-c   Come back in lab frame before fragmentation
+c   Change p to n target to fit nuclei
 c   Implement Quenching 
-c   change p to n target to fit nuclei
 c   Implement some radiative effect
 c
 c------------------------------------------------------------------------------
@@ -13,6 +12,9 @@ c------------------------------------------------------------------------------
 ccccc Values for the simulation
       integer iTg ! = 0 no FM, = 1 deut, = 2 C, = 3 Al, = 4 Fe, = 5 Sn, = 6 Pb
       real rFM ! Fermi momentum  in the target (GeV)
+      integer iFM ! 0 = hard sphere with ?? values, 1 = tailed [Bodek]
+c 2 = Accardi CS or Deuterium from Taya, 3 = Accardi SVG or Deuterium from Taya
+      integer iSim ! 0 = Turn off Pythia
       real E0 ! beam energy (GeV)
       integer i,nevent ! number of events
       integer j,nkin ! number of kinematics
@@ -34,8 +36,10 @@ ccc Begining of the simulation
       call TIMEX(T1)
       E0 = 5.014
       iTg = 4
-      nkin = 1000
-      nevent = 200
+      iFM = 0
+      iSim = 0
+      nkin = 1 000 000
+      nevent = 1
       ievent = 0
       bosout = 'test.A00'
 
@@ -53,7 +57,7 @@ c      call CLASBOSINIT('MCEVENT')
 
  100    continue
 ccc Randomize Theta Phi and Kf
-        call FMParam(rFM)
+        call FMParam(rFM,iFM)
 
 ccc Initialize the kinematics
         call InitKin(E0,rFM)
@@ -98,9 +102,9 @@ c        call PythiaConfigOWN
         MSTJ(1) =0
 
 ccc Initialize the simulation
-        write(*,*) 'Momentum of the electron: ',PPe
+        if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
         BeamE = PPe
-        call pyinit('FIXT','gamma/e-','p+',BeamE)
+        if(iSim.ne.0) call pyinit('FIXT','gamma/e-','p+',BeamE)
 c        call pyinit('FIXT','gamma/e-','n0',BeamE)
 
 ccc Loop over events of a given kinematic
@@ -115,8 +119,8 @@ ccc Some initialization
           call InitKin2Book
 
 ccc Event generation
-          CALL pyevnt
-c          CALL PYLIST(1)
+          if(iSim.ne.0) CALL pyevnt
+c          if(iSim.ne.0) CALL PYLIST(1)
 
 ccc Come back in Lab frame
           if(iTg .ne. 0) then
@@ -145,7 +149,7 @@ ccc Energy loss of the partons should take place here
 
 ccc Fragmentation
           MSTJ(1) =1
-          call PYEXEC
+          if(iSim.ne.0) call PYEXEC
           MSTJ(1) =0
 c          CALL PYLIST(1)
 
