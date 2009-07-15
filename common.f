@@ -45,5 +45,6 @@ ccccc Recoiled Particles
 
 ccccc Table for FM distribution
       real table(1000),step_size
+      integer iZ, iA ! target Z and A
       integer FMnb
-      common/FMvar/table,step_size,FMnb
+      common/FMvar/table,step_size,FMnb,iA,iZ

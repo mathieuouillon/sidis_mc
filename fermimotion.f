@@ -8,7 +8,6 @@ ccccc Include all the common blocks
       include 'common.f'
       integer iTg ! = 0 no FM, = 1 deut, = 2 C, = 3 Al, = 4 Fe, = 5 Sn, = 6 Pb
       integer iFM ! flag for the kind of FM
-      integer iZ, iA ! target Z and A
       real rFM ! Fermi momentum  in the target (GeV)
       integer irho !dummy
       
@@ -49,9 +48,9 @@ ccc Fill rFM, iZ and iA in function of the Target
         end select
 
 ccc Produce the table for FM generation (CS)
-      if ( (iFM.eq.2 .or. iFM.eq.3) .and. iTg.gt.1) then 
+      if (iFM.eq.2 .or. iFM.eq.3) then 
         irho = iFM - 1
-        call GenFMtable(iZ,iA,irho)  
+        call GenFMtable(irho)  
       endif
 
       end
@@ -110,7 +109,7 @@ ccc Apply the threshold and produce the tail
         enddo
 
 ccc Fermi Momentum from Accardi routines
-      else if ( (iFM.eq.2 .or. iFM.eq.3) .and. iTg.gt.1) then
+      else if (iFM.eq.2 .or. iFM.eq.3) then
         Rd = ranf(0)
         i = 1
         do while (table(i).lt.Rd)
@@ -121,6 +120,7 @@ ccc Fermi Momentum from Accardi routines
 
       else
         write(*,*) 'this iFM is not implemented'
+        stop
       endif
 
       end

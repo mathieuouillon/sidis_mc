@@ -42,11 +42,11 @@ ccccc Miscellaneous
 ccc Begining of the simulation
       call TIMEX(T1)
       E0 = 5.014
-      iTg = 4
-      iFM = 2
-      iSim = 0
-      nkin = 1 000 000
-      nevent = 1
+      iTg = 2
+      iFM = 3
+      iSim = 1
+      nkin = 1 00 
+      nevent = 200
       ievent = 0
       bosout = 'test.A00'
 
@@ -111,8 +111,13 @@ c        call PythiaConfigOWN
 ccc Initialize the simulation
         if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
         BeamE = PPe
-        if(iSim.ne.0) call pyinit('FIXT','gamma/e-','p+',BeamE)
-c        call pyinit('FIXT','gamma/e-','n0',BeamE)
+        if(iSim.ne.0) then
+          if(j.lt.(nkin*iZ/iA)) then
+            call pyinit('FIXT','gamma/e-','p+',BeamE)
+          else
+            call pyinit('FIXT','gamma/e-','n0',BeamE)
+          endif
+        endif
 
 ccc Loop over events of a given kinematic
         do i=1,nevent

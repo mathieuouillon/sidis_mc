@@ -1,7 +1,7 @@
-      subroutine GenFMtable(iZ,iA,irho)
+      subroutine GenFMtable(irho)
       implicit none
 
-      integer i,iZ,iA,irho
+      integer i,irho
       double precision rhofermi,mom,proba,ptot,step
       include 'common.f'
 
@@ -106,7 +106,8 @@
 *     --------
 *
 *     It is a parametrization taken from [2] of theoretical computation 
-*     for a few nuclei (12C 16O 40Ca 56Fe and 208Pb) made by many authors. 
+*     for a few nuclei (2H 3He 4He 12C 16O 40Ca 56Fe and 208Pb) made 
+*     by many authors. 
 *     Parameters for 8Be fitted to results in [3] by A.A. 
 *     It allows use of the above listed nuclei only.
 *
