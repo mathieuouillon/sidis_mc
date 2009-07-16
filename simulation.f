@@ -2,8 +2,7 @@
       implicit none
 c------------------------------------------------------------------------------
 c TO DO LIST:
-c   Implement new FM 
-c   Change p to n target to fit nuclei
+c   Implement position in the nuclei of the interaction (book it in the ntuple)
 c   Implement Quenching 
 c   Implement some radiative effect
 c
