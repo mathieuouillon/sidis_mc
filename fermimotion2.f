@@ -5,21 +5,21 @@
       double precision rhofermi,mom,proba,ptot,step
       include 'common.f'
 
-      step_size = 0.001
+      step_size_FM = 0.001
       FMnb = 1000
       mom = 0.
       proba = 0.
       ptot = 0.
 
       do i=1,FMnb
-       proba = 3.14159265*mom*mom*rhofermi(iZ,iA,mom,irho)*step_size
+       proba = 3.14159265*mom*mom*rhofermi(iZ,iA,mom,irho)*step_size_FM
        ptot = ptot + proba
-       table(i) = ptot
-       mom = mom + step_size
+       FM_table(i) = ptot
+       mom = mom + step_size_FM
       enddo
 
       do i=1,FMnb
-        table(i) = table(i)/ptot
+        FM_table(i) = FM_table(i)/ptot
       enddo
 
       end

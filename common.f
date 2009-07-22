@@ -13,6 +13,7 @@ ccccc Important variables for transformations
       real Beta,ECoM ! For calculation of the CoM energy
       common/TransfoVar/ThFM,PhiFM,BB1,B1x,B1y,B1z,Thi,Phi,Beta,ECoM,Kf
 
+
 C...Stuff for PYTHIA 6.4
       double precision PARP(200),PARI(200)
       integer MSTP(200),MSTI(200)
@@ -26,8 +27,6 @@ C...Stuff for PYTHIA 6.4
       integer MSEL,MSELPD,MSUB(500),KFIN(2,-40:40)
       double precision CKIN(200)
       COMMON/PYSUBS/MSEL,MSELPD,MSUB,KFIN,CKIN
-
-
 
 ccccc Events information
       real Q22,W,Nu,XBj
@@ -44,7 +43,30 @@ ccccc Recoiled Particles
      &      z_part,th_part,tt_part,Pts_part
 
 ccccc Table for FM distribution
-      real table(1000),step_size
+      real FM_table(1000),step_size_FM
       integer iZ, iA ! target Z and A
       integer FMnb
-      common/FMvar/table,step_size,FMnb,iA,iZ
+      common/FMvar/FM_table,step_size_FM,FMnb,iA,iZ
+
+ccccc Table for density distribution
+      real density_table(2000),step_size_dens
+      real quantity_table(2000)
+      common/Density/density_table,step_size_dens,quantity_table
+
+ccccc Interaction position
+      real x_inter,y_inter,z_inter
+      real pos_radius,pos_theta,pos_phi
+      common/InteracPos/x_inter,y_inter,z_inter,
+     &      pos_radius,pos_theta,pos_phi
+
+ccccc Quenching Weight variables
+      real QW_wc,QW_R
+      common/QuenWei/QW_wc,QW_R
+
+ccccc Miscellanous
+c random number generator from CERNLIB
+      real ranf
+
+      real pi
+      data pi/3.1415926535/
+

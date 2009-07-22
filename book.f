@@ -28,6 +28,13 @@ ccccc Include all the common blocks
       call HBNAME(33,'TransVar',Kf   ,'Pf  ')
       call HBNAME(33,'TransVar',ECoM ,'ECoM ')
 
+      call HBNAME(33,'Position',x_inter ,'x_inter ')
+      call HBNAME(33,'Position',y_inter ,'y_inter ')
+      call HBNAME(33,'Position',z_inter ,'z_inter ')
+
+      call HBNAME(33,'QWeight',QW_wc ,'QW_wc')
+      call HBNAME(33,'QWeight',QW_R  ,'QW_R ')
+
       call HBNAME(33,'EvntInfo',Q22  ,'Q2   ')
       call HBNAME(33,'EvntInfo',W    ,'W    ')
       call HBNAME(33,'EvntInfo',Nu   ,'GamNu')

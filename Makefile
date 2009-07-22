@@ -4,12 +4,12 @@ FFLAGS  =  -w -g
 
 SRC=	simulation.f fermimotion.f pythia-6.4.19.f \
 	leptoconfig.f book.f transfo.f \
-        fermimotion2.f
+        fermimotion2.f nucdens.f density.f qweight.f
 #	leptoconfig.f book.f transfo.f BOS.f
         
 OBJ=	simulation.o fermimotion.o pythia-6.4.19.o \
 	leptoconfig.o book.o transfo.o \
-        fermimotion2.o
+        fermimotion2.o nucdens.o density.o qweight.o
 
 #	leptoconfig.o book.o transfo.o BOS.o
 
@@ -24,4 +24,5 @@ go: ${OBJ}
 
 #	f77  $(FFLAGS) -o go $(OBJ)  `cernlib`
 clean:
-	rm -f *.o $(NAME)
+	rm -f $(NAME) simulation.o fermimotion.o leptoconfig.o book.o transfo.o \
+        fermimotion2.o nucdens.o density.o qweight.o

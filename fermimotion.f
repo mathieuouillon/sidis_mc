@@ -65,14 +65,12 @@ c------------------------------------------------------------------------------
       real E0 ! beam energy (GeV)
       real rFM ! Fermi momentum  in the target (GeV)
       integer iFM,iTg ! Flag for the kind of FM
-      real pi
-      data pi/3.1415926535/
       real a
       data a/2./
       real Plim
       data Plim/1./
       real R
-      real ranf ! random number generator from CERNLIB
+
 ccccc Important variables for simulation
       real Ps,Thr,C,Rd !variables for Kf computation
       integer i
@@ -112,11 +110,11 @@ ccc Fermi Momentum from Accardi routines
       else if (iFM.eq.2 .or. iFM.eq.3) then
         Rd = ranf(0)
         i = 1
-        do while (table(i).lt.Rd)
+        do while (FM_table(i).lt.Rd)
           i= i + 1
         enddo
 
-        Kf =  (i - rand(0)) * step_size
+        Kf =  (i - rand(0)) * step_size_FM
 
       else
         write(*,*) 'this iFM is not implemented'

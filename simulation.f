@@ -5,6 +5,8 @@ c TO DO LIST:
 c   Implement position in the nuclei of the interaction (book it in the ntuple)
 c   Implement Quenching 
 c   Implement some radiative effect
+c   Separate FM from nuclei calculcation
+c   Check if there is flag for every options
 c
 c------------------------------------------------------------------------------
 
@@ -19,32 +21,37 @@ c 3 = Accardi CS or Deuterium from Taya,
 c All FM distributions are limited to 1 GeV nucleons
 c [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-
+      integer iDens !0= hard sphere, 1= Wood Saxon param
+      integer iQW ! 0 desactivate Quenching
       integer iSim ! 0 = Turn off Pythia
       real E0 ! beam energy (GeV)
       integer i,nevent ! number of events
       integer j,nkin ! number of kinematics
+      real qhat 
 
 ccccc Include all the common blocks
       include 'common.f'
       include 'names.inc'
 
 ccccc Miscellaneous
-      real ranf ! random number generator from CERNLIB
       integer icycle ! for hbook
       real T1,T2 ! For time of computation
       real PPP ! Dummy value
       real Mom1,Mom2,Mom3,Mom4 ! Dummy value
       double precision BeamE !Input value for pythia
       integer ip ! For do
+      real ipx,ipy,ipz !dummy only for test
 
 ccc Begining of the simulation
       call TIMEX(T1)
       E0 = 5.014
       iTg = 2
       iFM = 3
-      iSim = 1
-      nkin = 1 00 
+      iDens = 1
+      iQW = 1
+      qhat =0.6
+      iSim = 0
+      nkin = 1000
       nevent = 200
       ievent = 0
       bosout = 'test.A00'
@@ -55,6 +62,7 @@ ccc Begining of the simulation
       endif
 ccc Initialize
       call InitFM(iTg,rFM,iFM)
+      call GenNucDens(iDens)
       call InitRandom
       call InitHbook
 c      call CLASBOSINIT('MCEVENT')
@@ -109,7 +117,7 @@ c        call PythiaConfigOWN
 
 ccc Initialize the simulation
         if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
-        BeamE = PPe
+          BeamE = PPe
         if(iSim.ne.0) then
           if(j.lt.(nkin*iZ/iA)) then
             call pyinit('FIXT','gamma/e-','p+',BeamE)
@@ -155,8 +163,21 @@ ccc Lorentz boost of all the particles
             enddo
           endif
 
-ccc Energy loss of the partons should take place here
-
+ccc Energy loss of the partons
+          if (iQW.ne.0) then
+            call InterPos
+            ipx = 0.476
+            ipy = 0.104
+            ipz = 3.505
+            call QWComput(qhat,ipx,ipy,ipz)
+c to pick quarks
+c           do ip =1,N
+c             if(K(ip,1).lt.10 .and. abs(K(ip,2)).lt.7) then
+c               write(*,*) ip
+c               CALL PYLIST(1)
+c             endif
+c           enddo
+          endif
 
 ccc Fragmentation
           MSTJ(1) =1
