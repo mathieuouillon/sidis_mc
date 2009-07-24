@@ -29,18 +29,18 @@ C...Stuff for PYTHIA 6.4
       COMMON/PYSUBS/MSEL,MSELPD,MSUB,KFIN,CKIN
 
 ccccc Events information
-      real Q22,W,Nu,XBj
-      common/nt/Q22,W,Nu,XBj
+      real Q22,W,Nu,XBj,y_ele
+      common/nt/Q22,W,Nu,XBj,y_ele
 
 ccccc Recoiled Particles
       integer TrkGS
       integer Nb_part,id_part(100),id_mother(100)
-      real px_part(100),py_part(100),pz_part(100)
+      real p_part(100),px_part(100),py_part(100),pz_part(100)
       real E_part(100),m_part(100),z_part(100),th_part(100)
-      real tt_part(100),Pts_part(100)
+      real tt_part(100),Pts_part(100),phih_part(100),phi_part(100)
       common/part/Nb_part,id_part,id_mother,
-     &      px_part,py_part,pz_part,E_part,m_part,
-     &      z_part,th_part,tt_part,Pts_part
+     &      px_part,py_part,pz_part,E_part,m_part,p_part,
+     &      z_part,th_part,tt_part,Pts_part,phih_part,phi_part
 
 ccccc Table for FM distribution
       real FM_table(1000),step_size_FM
@@ -62,6 +62,10 @@ ccccc Interaction position
 ccccc Quenching Weight variables
       real QW_wc,QW_R
       common/QuenWei/QW_wc,QW_R
+ccccc AA routine variables
+      double precision alphas
+            integer iqw,scor,ncor,sfthrd,irw
+      common/qw/alphas,iqw,scor,ncor,sfthrd,irw
 
 ccccc Miscellanous
 c random number generator from CERNLIB
