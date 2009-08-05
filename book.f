@@ -108,7 +108,8 @@ c          W = sqrt(W2)
           phi_ele = atan2(p(ip,2),p(ip,1))*57.2958 +210
         endif
 
-        if (k(ip,1).eq.1 .or. k(ip,2).eq.111 .or .k(ip,2).eq.310) then
+        if (k(ip,1).eq.1 .or. k(ip,2).eq.111 .or .k(ip,2).eq.310
+     &       .or. k(ip,2).eq.221) then
           Nb_part           = Nb_part + 1
           id_part(Nb_part)  = k(ip,2)
           id_mother(Nb_part)= k(k(ip,3),2)

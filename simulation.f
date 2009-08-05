@@ -16,13 +16,13 @@ ccccc Values for the simulation
       integer iFM ! 
 c 0 = hard sphere with values from [1], 
 c 1 = like 0 plus a tail from [2],
-c 2 = Accardi SVG or Deuterium from Taya
-c 3 = Accardi CS or Deuterium from Taya, 
+c 2 = Accardi SVG (put list of available nuclei)
+c 3 = Accardi CS (put list of available nuclei)
 c All FM distributions are limited to 1 GeV nucleons
 c [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
       integer iDens !0= hard sphere, 1= Wood Saxon param
-      integer iQW ! 0 desactivate Quenching
+c     integer iQW ! 0 desactivate Quenching
       integer iSim ! 0 = Turn off Pythia
       real E0 ! beam energy (GeV)
       integer i,nevent ! number of events
@@ -45,13 +45,13 @@ ccccc Miscellaneous
 ccc Begining of the simulation
       call TIMEX(T1)
       E0 = 5.014
-      iTg = 2
+      iTg = 4
       iFM = 3
       iDens = 1
       iQW = 1
       qhat =0.6
-      iSim = 0
-      nkin = 1000
+      iSim = 1
+      nkin = 100
       nevent = 200
       ievent = 0
       bosout = 'test.A00'
@@ -113,7 +113,10 @@ ccc Parameters for Pythia
 c        call PythiaConfigBrahim
 c        call PythiaConfigOWN
         call PythiaConfigHayk
-        MSTJ(1) =0
+
+ccc Block fragmentation if QW will be applied
+        if (iQW.ne.0) MSTJ(1) =0
+
 
 ccc Initialize the simulation
         if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
@@ -177,13 +180,13 @@ c               write(*,*) ip
 c               CALL PYLIST(1)
 c             endif
 c           enddo
-          endif
 
 ccc Fragmentation
           MSTJ(1) =1
           if(iSim.ne.0) call PYEXEC
           MSTJ(1) =0
 c          CALL PYLIST(1)
+          endif
 
 ccc Output to check Lorentz transforamtions
 c          write(*,*) 'Momentum of the electron: ',BeamE
