@@ -1,20 +1,28 @@
-      subroutine QWComput(qhat,ipx,ipy,ipz)
+      subroutine QWComput(qhat,ipx,ipy,ipz,E)
       implicit none
 
       include 'common.f'
 
-      real ipx,ipy,ipz
-      real qhat 
-      real radius
-      real x,y,z
-      real pp,px,py,pz
-      real integral_step
+      real ipx,ipy,ipz,E !input energy momentum of the particle
+      real qhat !Transport coefficient (GeV^2.fm^-1)
+      real radius !distance to the center of the nuclei
+      real x,y,z !position of the parton
+      real pp,px,py,pz !integral steps in the space
+      real integral_step !integral step
       parameter(integral_step = 0.1)
-      real d
+      real d !distance already coverd
+      integer ipart !0=gluon - otherwise=quark
+      double precision cont(1000),disc,step_QW !Variables for energy loss proba
+      double precision xx,yy !Variables for energy loss proba
+      integer i
 
       QW_wc = 0.
       QW_R  = 0.
       d = 0
+
+ccc Init for qweight
+      ipart = 1
+      irw = 0
 
 ccc normalize momentum
       pp = sqrt(ipx**2+ipy**2+ipz**2)
@@ -26,6 +34,7 @@ ccc normalize momentum
       y = y_inter
       z = z_inter
       
+ccc integration to calculate wc and R
       radius = sqrt(x**2+y**2+z**2)
       do while (radius.lt.20)
         d = d + integral_step
@@ -42,4 +51,735 @@ ccc normalize momentum
       QW_wc = qhat/density_table(1) * QW_wc
       QW_R = 2 * density_table(1) * QW_wc**2 / QW_R / qhat
 
+ccccc Calculate the energy loss probability
+      if(sfthrd.eq.1) step_QW = 2.5/300
+      if(sfthrd.eq.2) step_QW = 9.8/300
+      yy = E/QW_wc
+c      QW_R = 100
+      do i=1,300
+        xx = step_QW * i
+        call qweight(ipart,dfloat(QW_R),xx,yy,cont(i),disc)
+c        write (*,*) i,cont(i),disc
+      enddo
+
       end
+
+************************************************************************
+*                          QWEIGHT                                     *
+*   Interface to Arleo and Salgado-Wiedemann quenching weights         *
+*   by A. Accardi (2004-2007)                                          *
+*                                                                      *
+*   Includes:                                                          *
+*   - qweight    Quenching weight routine                              *
+*   - reweight   Normalization for reweighting procedure               *
+*                                                                      *
+*     * qweight.a   split off modFF.f and adapted to new SW routines   *
+*       (08 dec 04)                                                    *
+*     * qweight.b   includes reweighting routine                       *
+*       (09 mar 07)                                                    *
+*                                                                      *
+*  Please send me any comments:  aaccardi@nt3.phys.columbia.edu        * 
+*                                                                      *
+************************************************************************
+
+**************************************************************************
+*     Quenching weights interface to Arleo and Salgado-Wiedemann routines
+      subroutine qweight(ipart,rrrr,xx,yy,cont,disc)
+*     Programmer: A.Accardi
+*     Date: Jul 04  (v1)
+*           Dec 04  (v2)
+*     Revision: 8 Dec 04
+*               9 Mar 07 - cleaned some unused variables
+*
+*  A. Commentary
+*
+*     Returns the continuous and discrete part of the quenching weight
+*     in various approximations depending on the flags "iqw", "scor" 
+*     and "ncor" (i.e, "Quenching weight routine", "size" and "energy" 
+*     corrections) in the common block "qw":
+*
+*      iqw  = 1 --> Salgado-Wiedemann [3]
+*             2 --> Arleo [2]
+*      scor = 0,1 --> no,yes 
+*      ncor = 0,1 --> no,yes 
+*
+*     Size and energy corrections are available according to the 
+*     following table:  
+*
+*              scor  ncor | decscription      | alphas     | Ref.
+*      -------------------+-------------------+------------+-----
+*       Arleo   0     0   | asymptotic        |  any       | [2]   
+*               0     1   | 1/nu corrections  |            |
+*                         |   (no finite size)|            |
+*       SW      0     0   | asymptotic size   | 1/3 or 1/2 | [3]
+*                         |   (R->infty limit)|            |
+*               1     0   | finite size       |            |
+*      -------------------+-------------------+------------+-----
+*
+*     The Salgado-Wiedemann quenching weights come in 2 approximations
+*     according to "sfthrd" (unused for Arleo's parametrization):
+*   
+*      sfthrd = 1 --> multiple soft collisions approximation
+*               2 --> single hard scattering (N=1 in opacity expansion)
+*      
+*     Finally, the value of the size parameter R is stored in "rrrr".
+*     If no size correction is desired (scor=0) then R=10d7 is used 
+*     instead  of the user supplied value:
+*
+*       rrrr = value of R  
+*
+*     NOTES:
+*
+*     Arleo's quenching weight parametrization was obtained with 
+*     alpha_s=1/2. However, for compatibility with Salgado-Wiedemann's 
+*     work, who use alpha_s=1/3, we rescale Arleo's weight as follows [1].
+*                                                                      
+*     Since the mean energy loss (hence the first moment of the 
+*     distribution) is directly proportional to alpha_s and these 
+*     distributions have to be normalized (zeroth moment), we can rescale 
+*     the quenching weights to any alpha_s. We have:  
+*
+*        D(epsilon, alpha_s_2)                                            
+*              = alpha_s_1 / alpha_s_2 * D(alpha_s_1*epsilon/alpha_s_2)
+*                                                                      
+*     The parametrization in [2] is for alpha=1/2. Then for a generic alpha
+*     we have
+*                                                                      
+*        D(epsilon,alpha) = 0.5/alpha D_Arleo(0.5/alpha*epsilon)
+*
+*     The same scaling is NOT valid for the SW quenching weights. 
+*     Two values of alpha_s = 0.3 and 0.5 are available. For input 
+*     values different from these two the routines issues an error and stops. 
+*                                                              
+*     INPUT VARIABLES
+*
+*     ipart = (i)  radiating parton (0=gluon - otherwise=quark)
+*     rrrr  = (dp) medium finite size parameter R defined in [3]
+*                  (inactive when scor=0)
+*     xx    = (dp) w/wc, where w  = radiated energy
+*                                 wc = 0.5*qhat*L**2 
+*                                      coherence gluon energy 
+*                                      (see MEDIUM PROPOERTIES)
+*     yy    = (dp) nu/wc = parent parton energy normalized to wc
+*     cont  = (dp) continous part of the quenching weight
+*     disc  = (dp) discrete part of the q.w. (delta function)
+*
+*     INPUT IN COMMON BLOCK /qw/
+*
+*     alphas   = (dp) strong coupling at soft scales
+*     iqw      = (i)  choice of SW or Arleo's quenching weights
+*     scor     = (i)  finite size corrections flag (0=no 1=yes)
+*     ncor     = (i)  finite energy corrections flag (0=no 1=yes)
+*     sfthard  = (i)  1=soft scatterings  2=hard scatterings
+*
+*     NOTES ON USAGE:
+*
+*     1) xx & yy are adimensional
+*     2) The quenching weight is normalized as follows:
+*        Integral[continous,{x,0,Infinity}] + discrete = 1
+*     3) the Salgado-Wiedemann routine works in the range
+* 
+*          0 < xxxx < 2.59   (soft scatt.)
+*          0 < xxxx < 9.87  (hard scatt.)    
+*
+*          1 < rrrr < 40000  
+*
+*         For R outside the range an extrapolation is provided.
+*         For xxxx outside the range no extrapolation is provided
+*         and a segmentation fault ensues.
+*
+*         - For xxxx > 2.59 (9.87) this interface returns cont=0d0
+*           with no explicit warning.
+*
+*     REFERENCES:
+
+*     [1] F.Arleo, private communication                         
+*     [2] F.Arleo, JHEP 0211:044,2002                                
+*     [3] C.Salgado and U.Wiedeman, Phys.Rev.Lett.89:092303,2002     
+*         C.Salgado and U.Wiedeman, Phys.Rev.D68:014008,2003         
+*
+*  B. DECLARATIONS 
+*
+      implicit none
+
+      integer ipart
+      double precision rrrr,xx,yy,cont,disc
+
+      double precision rrin,frac,kk
+
+*     FUNCTIONS
+
+      double precision dbarg, dbarq
+
+*     COMMON BLOCKS
+
+*     Quenching weight choice
+*     ... iqw             = (i)  1=SW  2=Arleo
+*     ... scor            = (i)  finite size corrections flag (0=no 1=yes)
+*     ... ncor            = (i)  finite energy corrections flag (0=no 1=yes)
+*     ... sfthrd          = (i)  1=soft scatterings  2=hard scatterings
+*     ... irw             = (i)  0= no reweighting  1= reweighting
+      double precision alphas
+            integer iqw,scor,ncor,sfthrd,irw
+      common/qw/alphas,iqw,scor,ncor,sfthrd,irw
+
+*     INITIAL PARAMETRS AND DATA
+      
+*    ... min and max rrrr for S.W. routine
+      double precision xxmultmax,xxlinmax
+      parameter (xxmultmax=2.59d0,xxlinmax=9.87d0)
+
+*    ... S.W. initialization flag
+      logical firstmult,firstlin
+      save firstmult,firstlin
+      data firstmult,firstlin/.true.,.true./
+
+*
+*  C. ACTION
+*
+c     write(*,*) 'test'
+c     write(*,*) ipart,rrrr,xx,yy,cont,disc
+c     write(*,*) alphas,iqw,scor,ncor,sfthrd,irw
+
+ 
+      if ((scor.eq.1).and.(ncor.eq.1)) then
+         print*, 'ERROR (qweight): finite size & finite nrg'
+     &        //' corrections not yet implemented'
+         stop
+      end if
+
+*    *** ARLEO's asymptotic medium size
+      if (iqw.eq.2) then
+*       ... discrete part is identically zero
+         disc = 0d0
+*       ... with rescaling factor kk for alphas=/=1/2
+         if (alphas.le.0d0) then 
+            print*, 'ERROR (qweight): alphas < 0'
+            stop
+         else
+            kk = 1d0/(2d0*alphas) 
+         end if
+*       ... continuous part 
+         if (ipart.eq.0) then
+            cont =  kk * dbarg(kk*xx,yy)
+         else
+            cont = kk * dbarq(kk*xx,yy)
+         end if
+
+*    *** Salgado-Wiedemann's quenching weights
+      else if (iqw.eq.1) then
+*       ... initialization
+         if ((sfthrd.eq.1).and.(firstmult)) then
+            call initmult(alphas)
+            firstmult = .false.
+         end if
+         if ((sfthrd.eq.2).and.(firstlin)) then
+            call initlin(alphas)
+            firstlin = .false.
+         end if
+*       ... if no size corrections, sets rrin very large
+         if (scor.eq.0) then
+            rrin = 1d8
+         else
+            rrin = rrrr
+         end if
+*       ... calls Salgado-Wiedemann routine
+         if (sfthrd.eq.1) then
+            if (xx.le.xxmultmax) then
+               call swqmult(ipart,rrin,xx,cont,disc)
+            else
+*             ...puts cont=0 if xx exceeds the max value
+               call swqmult(ipart,rrin,xxmultmax,cont,disc)
+               cont = 0d0
+            end if
+         else 
+            if (xx.le.xxlinmax) then
+               call swqlin(ipart,rrin,xx,cont,disc)
+            else 
+*             ...puts cont=0 if xx exceeds the max value
+               call swqlin(ipart,rrin,xxlinmax,cont,disc)
+               cont = 0d0
+            end if
+         end if
+
+      end if
+
+ 100  return
+      end
+***************************************************************************
+*     ARLEO's quenching weights                                           *
+***************************************************************************
+
+c ---------------------------------------------------------------------
+      function dbarg(wl,e)
+
+      implicit none 
+
+      double precision dbarg,wl,e,dbarq
+
+      dbarg=4.D0/9.D0*dbarq(4.D0/9.D0*wl,e)
+
+      return
+      end
+
+c ---------------------------------------------------------------------
+      function dbarq(wl,e)
+
+      implicit none
+
+      double precision dbarq,wl,e,xmu,xsigma
+
+      double precision pi
+      parameter(pi=3.1415926D0)
+
+      if (wl.eq.0.D0) then
+         dbarq=0.D0
+      else
+         dbarq=dexp(-(dlog(wl)-xmu(e))**2.D0/(2.D0*xsigma(e)**2.D0))
+     +                           /(dsqrt(2.D0*pi)*xsigma(e)*wl)
+      endif
+
+      return
+      end
+
+c ---------------------------------------------------------------------
+      function xmu(e)
+
+      implicit none 
+
+      double precision xmu, e
+
+*     Quenching weight choice
+      double precision alphas
+            integer iqw,scor,ncor,sfthrd,irw
+      common/qw/alphas,iqw,scor,ncor,sfthrd,irw
+      
+      if (ncor.eq.0) then
+*       ... no 1/e corrections  
+         xmu=-1.5D0
+      else
+*       ... with 1/e corrections  
+         xmu=-1.5D0+0.81D0*(dexp(-0.2D0/e)-1.D0)
+      end if
+
+      return
+      end
+
+c ---------------------------------------------------------------------
+      function xsigma(e)
+
+      implicit none
+
+      double precision xsigma, e
+
+*     Quenching weight choice
+      double precision alphas
+            integer iqw,scor,ncor,sfthrd,irw
+      common/qw/alphas,iqw,scor,ncor,sfthrd,irw
+
+      if (ncor.eq.0) then
+*       ... no 1/e corrections  
+         xsigma=0.72D0
+      else
+*       ... with 1/e corrections  
+        xsigma=0.72D0+0.33D0*(dexp(-0.2D0/e)-1.D0)
+      end if
+
+      return
+      end
+
+
+***************************************************************************
+*     SALGADO-WIEDEMANN quenching weights                                 *
+***************************************************************************
+
+C***************************************************************************
+C	Quenching Weights for Multiple Soft Scattering
+C		February 10, 2003
+C
+C	Refs:
+C
+C  Carlos A. Salgado and Urs A. Wiedemann, hep-ph/0302184.                 
+C
+C  Carlos A. Salgado and Urs A. Wiedemann Phys.Rev.Lett.89:092303,2002.
+C 
+*   NOTE: modified by A.Accardi, Dec 2004, to have 
+*            gluon --> ipart=0
+*            quark --> ipart<>0
+*         and to initialize alphas=1/3 or 1/5 at the user's choice
+C
+C   This package contains quenching weights for gluon radiation in the
+C   multiple soft scattering approximation.
+C   swqmult returns the quenching weight for a quark (ipart<>0) or 
+C   a gluon (ipart=0) traversing a medium with transport coeficient q and
+C   length L. The input values are rrrr=0.5*q*L^3 and xxxx=w/wc, where
+C   wc=0.5*q*L^2 and w is the energy radiated. The output values are
+C   the continuous and discrete (prefactor of the delta function) parts
+C   of the quenching weights.
+C	
+C   In order to use this routine, the files cont.all and disc.all need to be
+C   in the working directory. 
+C
+C   An initialization of the tables is needed by doing call initmult before
+C   using swqmult.
+C
+C   Please, send us any comment:
+C
+C	urs.wiedemann@cern.ch
+C	carlos.salgado@cern.ch
+C
+C
+C-------------------------------------------------------------------
+
+      SUBROUTINE swqmult(ipart,rrrr,xxxx,continuous,discrete)
+*
+      REAL*8           xx(400), daq(34), caq(34,261), rrr(34)
+      COMMON /dataqua/    xx, daq, caq, rrr
+*
+      REAL*8           xxg(400), dag(34), cag(34,261), rrrg(34)
+      COMMON /dataglu/    xxg, dag, cag, rrrg
+
+      REAL*8           rrrr,xxxx, continuous, discrete
+      REAL*8           rrin, xxin
+      INTEGER          nrlow, nrhigh, nxlow, nxhigh
+      REAL*8           rrhigh, rrlow, rfraclow, rfrachigh
+      REAL*8           xfraclow, xfrachigh
+      REAL*8           clow, chigh
+*
+
+      continuous=0.d0
+      discrete=0.d0
+
+      rrin = rrrr
+      xxin = xxxx
+*
+      do 666, nr=1,34
+         if (rrin.lt.rrr(nr)) then
+            rrhigh = rrr(nr)
+         else
+            rrhigh = rrr(nr-1)
+            rrlow = rrr(nr)
+            nrlow = nr
+            nrhigh = nr-1
+            goto 665
+         endif
+ 666     enddo
+ 665     continue
+*
+      rfraclow = (rrhigh-rrin)/(rrhigh-rrlow)
+      rfrachigh = (rrin-rrlow)/(rrhigh-rrlow)
+      if (rrin.gt.10000d0) then
+         rfraclow = dlog(rrhigh/rrin)/dlog(rrhigh/rrlow)
+         rfrachigh = dlog(rrin/rrlow)/dlog(rrhigh/rrlow)
+      endif
+*
+      if (ipart.ne.0.and.rrin.ge.rrr(1)) then
+         nrlow=1
+         nrhigh=1
+         rfraclow=1
+         rfrachigh=0
+      endif
+
+      if (ipart.eq.0.and.rrin.ge.rrrg(1)) then
+         nrlow=1
+         nrhigh=1
+         rfraclow=1
+         rfrachigh=0
+      endif
+
+      if (xxxx.ge.xx(260)) stop
+      if (xxxx.ge.xx(260)) go to 245
+
+      nxlow = int(xxin/0.01) + 1
+      nxhigh = nxlow + 1
+      xfraclow = (xx(nxhigh)-xxin)/0.01
+      xfrachigh = (xxin - xx(nxlow))/0.01
+*
+      if(ipart.ne.0) then
+         clow = xfraclow*caq(nrlow,nxlow)+xfrachigh*caq(nrlow,nxhigh)
+         chigh = xfraclow*caq(nrhigh,nxlow)+xfrachigh*caq(nrhigh,nxhigh)
+      else
+         clow = xfraclow*cag(nrlow,nxlow)+xfrachigh*cag(nrlow,nxhigh)
+         chigh = xfraclow*cag(nrhigh,nxlow)+xfrachigh*cag(nrhigh,nxhigh)
+      endif
+
+      continuous = rfraclow*clow + rfrachigh*chigh
+
+
+245   continue
+
+      if(ipart.ne.0) then
+         discrete = rfraclow*daq(nrlow) + rfrachigh*daq(nrhigh)
+      else
+         discrete = rfraclow*dag(nrlow) + rfrachigh*dag(nrhigh)
+      endif
+*
+      END
+
+      subroutine initmult(alphas)
+
+      double precision alphas
+
+      REAL*8           xxq(400), daq(34), caq(34,261), rrr(34)
+      COMMON /dataqua/    xxq, daq, caq, rrr
+*
+      REAL*8           xxg(400), dag(34), cag(34,261), rrrg(34)
+      COMMON /dataglu/    xxg, dag, cag, rrrg
+*
+
+      if (nint(alphas*3d0).eq.1) then
+         OPEN(UNIT=20,FILE='cont03.all',STATUS='OLD',ERR=90)
+      else if (nint(alphas*2d0).eq.1) then
+         OPEN(UNIT=20,FILE='cont05.all',STATUS='OLD',ERR=90)
+      else
+         print*, 'Error (initmult): alphas =/= 1/3 or 1/2'
+         stop
+      end if
+      do 110 nn=1,261
+      read (20,*) xxq(nn), caq(1,nn), caq(2,nn), caq(3,nn),
+     +     caq(4,nn), caq(5,nn), caq(6,nn), caq(7,nn), caq(8,nn),
+     +     caq(9,nn), caq(10,nn), caq(11,nn), caq(12,nn), 
+     +     caq(13,nn),
+     +     caq(14,nn), caq(15,nn), caq(16,nn), caq(17,nn), 
+     +     caq(18,nn),
+     +     caq(19,nn), caq(20,nn), caq(21,nn), caq(22,nn), 
+     +     caq(23,nn),
+     +     caq(24,nn), caq(25,nn), caq(26,nn), caq(27,nn), 
+     +     caq(28,nn),
+     +     caq(29,nn), caq(30,nn), caq(31,nn), caq(32,nn), 
+     +     caq(33,nn), caq(34,nn)
+ 110     continue
+      do 111 nn=1,261
+      read (20,*) xxg(nn), cag(1,nn), cag(2,nn), cag(3,nn),
+     +     cag(4,nn), cag(5,nn), cag(6,nn), cag(7,nn), cag(8,nn),
+     +     cag(9,nn), cag(10,nn), cag(11,nn), cag(12,nn), 
+     +     cag(13,nn),
+     +     cag(14,nn), cag(15,nn), cag(16,nn), cag(17,nn), 
+     +     cag(18,nn),
+     +     cag(19,nn), cag(20,nn), cag(21,nn), cag(22,nn), 
+     +     cag(23,nn),
+     +     cag(24,nn), cag(25,nn), cag(26,nn), cag(27,nn), 
+     +     cag(28,nn),
+     +     cag(29,nn), cag(30,nn), cag(31,nn), cag(32,nn), 
+     +     cag(33,nn), cag(34,nn)
+ 111     continue
+      close(20)
+*
+      if (nint(alphas*3d0).eq.1) then
+         OPEN(UNIT=21,FILE='disc03.all',STATUS='OLD',ERR=90)
+      else if (nint(alphas*2d0).eq.1) then
+         OPEN(UNIT=21,FILE='disc05.all',STATUS='OLD',ERR=90)
+      else
+         print*, 'Error (initmult): alphas =/= 1/3 or 1/2'
+         stop
+      end if
+      do 112 nn=1,34
+      read (21,*) rrr(nn), daq(nn)
+ 112     continue
+      do 113 nn=1,34
+      read (21,*) rrrg(nn), dag(nn)
+ 113     continue
+      close(21)
+*
+      goto 888
+ 90   PRINT*, 'input - output error' 
+ 91   PRINT*, 'input - output error #2' 
+ 888  continue
+
+      end
+
+
+C***************************************************************************
+C       Quenching Weights for Single Hard Scattering
+C               February 20, 2003
+C
+C       Refs:
+C
+C  Carlos A. Salgado and Urs A. Wiedemann, hep-ph/0302184.
+C
+C  Carlos A. Salgado and Urs A. Wiedemann Phys.Rev.Lett.89:092303,2002.
+C
+C
+C   This package contains quenching weights for gluon radiation in the
+C   single hard scattering approximation.
+C
+C   swqlin returns the quenching weight for a quark (ipart=1) or
+C   a gluon (ipart=2) traversing a medium with Debye screening mass mu and
+C   length L. The input values are rrrr=0.5*mu^2*L^2 and xxxx=w/wc, where
+C   wc=0.5*mu^2*L and w is the energy radiated. The output values are
+C   the continuous and discrete (prefactor of the delta function) parts
+C   of the quenching weights.
+C
+C   In order to use this routine, the files contlinnew.all and disclinnew.all
+C   need to be in the working directory.
+C
+C   An initialization of the tables is needed by doing call initlin before
+C   using swqlin.
+C
+C   Please, send us any comment:
+C
+C       urs.wiedemann@cern.ch
+C       carlos.salgado@cern.ch
+C
+C
+C-------------------------------------------------------------------
+
+      SUBROUTINE swqlin(ipart,rrrr,xxxx,continuous,discrete)
+*
+      REAL*8           xx(400), daq(34), caq(34,261), rrr(34)
+      COMMON /dataqualin/    xx, daq, caq, rrr
+*
+      REAL*8           xxg(400), dag(34), cag(34,261), rrrg(34)
+      COMMON /dataglulin/    xxg, dag, cag, rrrg
+
+      REAL*8           rrrr,xxxx, continuous, discrete
+      REAL*8           rrin, xxin
+      INTEGER          nrlow, nrhigh, nxlow, nxhigh
+      REAL*8           rrhigh, rrlow, rfraclow, rfrachigh
+      REAL*8           xfraclow, xfrachigh
+      REAL*8           clow, chigh
+*
+
+      continuous=0.d0
+      discrete=0.d0
+
+      rrin = rrrr
+      xxin = xxxx
+*
+      do 666, nr=1,34
+         if (rrin.lt.rrr(nr)) then
+            rrhigh = rrr(nr)
+         else
+            rrhigh = rrr(nr-1)
+            rrlow = rrr(nr)
+            nrlow = nr
+            nrhigh = nr-1
+            goto 665
+         endif
+ 666     enddo
+ 665     continue
+*
+      rfraclow = (rrhigh-rrin)/(rrhigh-rrlow)
+      rfrachigh = (rrin-rrlow)/(rrhigh-rrlow)
+      if (rrin.gt.10000d0) then
+         rfraclow = dlog(rrhigh/rrin)/dlog(rrhigh/rrlow)
+         rfrachigh = dlog(rrin/rrlow)/dlog(rrhigh/rrlow)
+      endif
+*
+      if (ipart.eq.1.and.rrin.ge.rrr(1)) then
+         nrlow=1
+         nrhigh=1
+         rfraclow=1
+         rfrachigh=0
+      endif
+
+      if (ipart.ne.1.and.rrin.ge.rrrg(1)) then
+         nrlow=1
+         nrhigh=1
+         rfraclow=1
+         rfrachigh=0
+      endif
+
+      if (xxxx.ge.xx(260)) go to 245
+
+      nxlow = int(xxin/0.038) + 1
+      nxhigh = nxlow + 1
+      xfraclow = (xx(nxhigh)-xxin)/0.038
+      xfrachigh = (xxin - xx(nxlow))/0.038
+*
+      if(ipart.eq.1) then
+      clow = xfraclow*caq(nrlow,nxlow)+xfrachigh*caq(nrlow,nxhigh)
+      chigh = xfraclow*caq(nrhigh,nxlow)+xfrachigh*caq(nrhigh,nxhigh)
+      else
+      clow = xfraclow*cag(nrlow,nxlow)+xfrachigh*cag(nrlow,nxhigh)
+      chigh = xfraclow*cag(nrhigh,nxlow)+xfrachigh*cag(nrhigh,nxhigh)
+      endif
+
+      continuous = rfraclow*clow + rfrachigh*chigh
+
+245   continue
+
+      if(ipart.eq.1) then
+      discrete = rfraclow*daq(nrlow) + rfrachigh*daq(nrhigh)
+      else
+      discrete = rfraclow*dag(nrlow) + rfrachigh*dag(nrhigh)
+      endif
+*
+      END
+
+      subroutine initlin(alphas)
+
+      double precision alphas
+
+      REAL*8           xxq(400), daq(34), caq(34,261), rrr(34)
+      COMMON /dataqualin/    xxq, daq, caq, rrr
+*
+      REAL*8           xxg(400), dag(34), cag(34,261), rrrg(34)
+      COMMON /dataglulin/    xxg, dag, cag, rrrg
+*
+      if (nint(alphas*3d0).eq.1) then
+         OPEN(UNIT=20,FILE='contlin03.all',STATUS='OLD',ERR=90)
+      else if (nint(alphas*2d0).eq.1) then
+*         OPEN(UNIT=20,FILE='contlin05.all',STATUS='OLD',ERR=90)
+         print*, 'Error (initlin): alphas=0.5 not yet implemented'
+         stop
+      else
+         print*, 'Error (initlin): alphas =/= 1/3 or 1/2'
+         stop
+      end if
+      do 110 nn=1,261
+      read (20,*) xxq(nn), caq(1,nn), caq(2,nn), caq(3,nn),
+     +     caq(4,nn), caq(5,nn), caq(6,nn), caq(7,nn), caq(8,nn),
+     +     caq(9,nn), caq(10,nn), caq(11,nn), caq(12,nn), 
+     +     caq(13,nn),
+     +     caq(14,nn), caq(15,nn), caq(16,nn), caq(17,nn), 
+     +     caq(18,nn),
+     +     caq(19,nn), caq(20,nn), caq(21,nn), caq(22,nn), 
+     +     caq(23,nn),
+     +     caq(24,nn), caq(25,nn), caq(26,nn), caq(27,nn), 
+     +     caq(28,nn),
+     +     caq(29,nn), caq(30,nn), caq(31,nn), caq(32,nn), 
+     +     caq(33,nn), caq(34,nn)
+ 110     continue
+      do 111 nn=1,261
+      read (20,*) xxg(nn), cag(1,nn), cag(2,nn), cag(3,nn),
+     +     cag(4,nn), cag(5,nn), cag(6,nn), cag(7,nn), cag(8,nn),
+     +     cag(9,nn), cag(10,nn), cag(11,nn), cag(12,nn), 
+     +     cag(13,nn),
+     +     cag(14,nn), cag(15,nn), cag(16,nn), cag(17,nn), 
+     +     cag(18,nn),
+     +     cag(19,nn), cag(20,nn), cag(21,nn), cag(22,nn), 
+     +     cag(23,nn),
+     +     cag(24,nn), cag(25,nn), cag(26,nn), cag(27,nn), 
+     +     cag(28,nn),
+     +     cag(29,nn), cag(30,nn), cag(31,nn), cag(32,nn), 
+     +     cag(33,nn), cag(34,nn)
+ 111     continue
+      close(20)
+*
+      if (nint(alphas*3d0).eq.1) then
+         OPEN(UNIT=21,FILE='disclin03.all',STATUS='OLD',ERR=91)
+      else if (nint(alphas*2d0).eq.1) then
+*         OPEN(UNIT=21,FILE='disclin05.all',STATUS='OLD',ERR=91)
+         print*, 'Error (initlin): alphas=0.5 not yet implemented'
+         stop
+      else
+         print*, 'Error (initlin): alphas =/= 1/3 or 1/2'
+         stop
+      end if
+      do 112 nn=1,34
+      read (21,*) rrr(nn), daq(nn)
+ 112     continue
+      do 113 nn=1,34
+      read (21,*) rrrg(nn), dag(nn)
+ 113     continue
+      close(21)
+*
+      goto 888
+ 90   PRINT*, 'input - output error' 
+ 91   PRINT*, 'input - output error #2' 
+ 888  continue
+
+      end
+
+

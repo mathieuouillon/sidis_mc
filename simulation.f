@@ -7,6 +7,9 @@ c   Implement Quenching
 c   Implement some radiative effect
 c   Separate FM from nuclei calculcation
 c   Check if there is flag for every options
+c   Gluon or quark in QW to add
+c   Smearing of the form Delta E = 3/8 alphas Delta Pts L 
+c                              L = R/omega
 c
 c------------------------------------------------------------------------------
 
@@ -22,12 +25,13 @@ c All FM distributions are limited to 1 GeV nucleons
 c [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
       integer iDens !0= hard sphere, 1= Wood Saxon param
-      integer iQW ! 0 desactivate Quenching
+      integer iQuenching ! 0 desactivate Quenching
+c     integer iqw 1 SW, 2 Arleo
       integer iSim ! 0 = Turn off Pythia
       real E0 ! beam energy (GeV)
       integer i,nevent ! number of events
       integer j,nkin ! number of kinematics
-      real qhat 
+      real qhat !Transport coefficient (GeV^2.fm^-1)
 
 ccccc Include all the common blocks
       include 'common.f'
@@ -40,7 +44,7 @@ ccccc Miscellaneous
       real Mom1,Mom2,Mom3,Mom4 ! Dummy value
       double precision BeamE !Input value for pythia
       integer ip ! For do
-      real ipx,ipy,ipz !dummy only for test
+      real ipx,ipy,ipz,E !dummy only for test
 
 ccc Begining of the simulation
       call TIMEX(T1)
@@ -48,13 +52,20 @@ ccc Begining of the simulation
       iTg = 2
       iFM = 3
       iDens = 1
-      iQW = 1
-      qhat =0.6
-      iSim = 0
+      iSim = 1
       nkin = 1000
       nevent = 200
       ievent = 0
       bosout = 'test.A00'
+
+ccc Init for the quenching weights
+      iQuenching = 0
+      iqw = 1
+      alphas = 1d0/3d0
+      scor = 1
+      ncor = 0
+      sfthrd = 2
+      qhat =0.6
 
       if (iTg .eq. 0) then
         nevent = nkin*nevent
@@ -164,12 +175,13 @@ ccc Lorentz boost of all the particles
           endif
 
 ccc Energy loss of the partons
-          if (iQW.ne.0) then
+          if (iQuenching.ne.0) then
             call InterPos
             ipx = 0.476
             ipy = 0.104
             ipz = 3.505
-            call QWComput(qhat,ipx,ipy,ipz)
+            E = 3.539
+            call QWComput(qhat,ipx,ipy,ipz,E)
 c to pick quarks
 c           do ip =1,N
 c             if(K(ip,1).lt.10 .and. abs(K(ip,2)).lt.7) then
