@@ -1,5 +1,5 @@
 C***********************************************************************
-      SUBROUTINE CLASBOSFILL()
+      SUBROUTINE CLASBOSFILL(iTg)
 C***********************************************************************
       include "bcs.inc"
       include "names.inc"
@@ -11,6 +11,13 @@ c
       INTEGER ind,indx,mctk,mcvx,mbank,part,boswrite
       INTEGER j,jj
       real charge
+      integer iTg
+
+c Interaction position
+
+      if (iTg .le. 1) vxz = 29 + ranf(0)*2
+      if (iTg .gt. 1) vxz = 25 + (ranf(0)*2 - 1)*.01
+
 C ********************************************************
 C       Write to the output event file
 C ********************************************************
@@ -43,8 +50,7 @@ ccc        mctk=nbank('MCTK',0,11,4)
 
        jj=0
          do 998 j=1,N       
-       if(k(j,1).gt.10.and..not.(k(j,2).eq.111)) goto 998
-       if(k(j,2).eq.22.and.  k(k(j,3),2).eq.111) goto 998
+       if(k(j,1).gt.10) goto 998
        jj=jj+1
  998   continue
        ind=mbank(iw,'MCTK',0,11,jj) 
@@ -53,10 +59,9 @@ ccc        mctk=nbank('MCTK',0,11,4)
         jj=0
        if(ind.ne.0)then
          do 999 j=1,N
-       if(k(j,1).gt.10.and..not.(k(j,2).eq.111)) goto 999
-       if(k(j,2).eq.22.and.  k(k(j,3),2).eq.111) goto 999
-       charge = 0
-       select case (k(j,2))
+       if(k(j,1).gt.10) goto 999
+         charge = 0
+         select case (k(j,2))
 C ... Electron, Gamma, positon
            case (11)
              charge = -1.
@@ -126,7 +131,7 @@ C ... neutrino e bar
              rw(indx+4)=pmom                     !plu(j,8)
             endif 
            rw(indx+4)=pmom                     !plu(j,8)
-c           rw(indx+5)=p(j,5)                ! mass of the particle
+           rw(indx+5)=p(j,5)                ! mass of the particle
 c           rw(indx+6)=plu(j,6)              ! charge
            rw(indx+6)= charge              ! charge
            iw(indx+7)=k(j,2)    ! PID LUND code 
@@ -139,17 +144,17 @@ c           rw(indx+6)=plu(j,6)              ! charge
            endif
            iw(indx+11)=k(k(j,3),2)   ! LUND code for parent track
        if(part.ne.0) then
-         iw(part+1)     = lund2geantid(k(j,2))                          ! particle ID (GEANT)
-         rw(part+2)     = v(j,1)                                        ! x vertex position
-         rw(part+3)     = v(j,2)                                        ! y vertex position
-         rw(part+4)     = v(j,3)-25                                    ! z vertex position
-         rw(part+5)     = sqrt(p(j,5)*p(j,5)+pmom*pmom)                 ! energy 
-         rw(part+6)     = p(j,1)                                        ! px
-         rw(part+7)     = p(j,2)                                        ! py
-         rw(part+8)     = p(j,3)                                        ! pz
-c         rw(part+9)     = plu(j,6)                                      ! charge
-         rw(part+9)     = charge                                      ! charge
-         iw(part+10)    = j                                             ! Track pointer
+         iw(part+1)     = lund2geantid(k(j,2))   ! particle ID (GEANT)
+         rw(part+2)     = v(j,1)             ! x vertex position
+         rw(part+3)     = v(j,2)             ! y vertex position
+         rw(part+4)     = v(j,3)-vxz         ! z vertex position
+         rw(part+5)     = sqrt(p(j,5)*p(j,5)+pmom*pmom)   ! energy 
+         rw(part+6)     = p(j,1)                            ! px
+         rw(part+7)     = p(j,2)                            ! py
+         rw(part+8)     = p(j,3)                            ! pz
+c         rw(part+9)     = plu(j,6)                     ! charge
+         rw(part+9)     = charge                        ! charge
+         iw(part+10)    = j                           ! Track pointer
          rw(part+11)    = 0.
          rw(part+12)    = 0.
          iw(part+13)    = k(k(j,3),2)
@@ -159,7 +164,7 @@ c         rw(part+9)     = plu(j,6)                                      ! charg
        if(mcvx.ne.0)then
            rw(mcvx+1)=v(j,1) 
            rw(mcvx+2)=v(j,2) 
-           rw(mcvx+3)=v(j,3)-25
+           rw(mcvx+3)=v(j,3)-vxz
 c           rw(mcvx+3)=v(j,3)-25+(2.*ranf(0)-1)*.001
            rw(mcvx+4)=0.
            iw(mcvx+5)=0

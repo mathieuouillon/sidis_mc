@@ -1,6 +1,37 @@
 c------------------------------------------------------------------------------
 c Initialize the config values of LEPTO
 c------------------------------------------------------------------------------
+      subroutine PythiaConfigCLAS
+      implicit none
+
+ccccc Include all the common blocks
+      include 'common.f'
+
+c Kind of possible multiple interaction (needed to avoid bugs) D = 4 H =1
+      MSTP(82) = 1 
+
+c Lowest CM energy D = 10 H = 3
+      PARP(2) = 2 ! Modify because of the FM
+
+c remaining energy below witch the fragmentation is stopped D = 0.8
+      PARJ(33) = 0.3 ! This parameter have huge effect on z distribution
+
+c Lower limit for sqrt(s)
+      CKIN(1) = 1. 
+
+c Q2 Limits
+      CKIN(65) = .9 
+      CKIN(66) = 4. 
+c W limit
+      CKIN(77) = 1.90 
+      CKIN(78) = -1. 
+
+
+      end
+
+c------------------------------------------------------------------------------
+c Initialize the config values of LEPTO
+c------------------------------------------------------------------------------
       subroutine PythiaConfigOWN
       implicit none
 
@@ -93,59 +124,41 @@ c------------------------------------------------------------------------------
 ccccc Include all the common blocks
       include 'common.f'
 
+c Maximum number of generations D = 3 / H = 2
       MSTP(1) = 2 
-      MSTP(2) = 1 
-      MSTP(3) = 2 
-      MSTP(4) = 0 
-      MSTP(5) = 0 
-      MSTP(7) = 0 
-      MSTP(8) = 0 
-      MSTP(9) = 0 
-      MSTP(11) = 1 
-      MSTP(12) = 0 
+c Calculation of alpha s D = H = 1
+c Comments in thesis let think he want to put 0...
+c      MSTP(2) = 1 
+c Not in Pythia manual ...
+       MSTP(5) = 0 
+c Fix the range over wich electron emit photons D = 1 H = 2
+c text in manual seem to push for 1 
       MSTP(13) = 2 
-      MSTP(14) = 30 
-      MSTP(15) = 0 
-      MSTP(16) = 1 
+c structure of incoming photon beam D = H = 30
+c      MSTP(14) = 30 
+c Choice of definition of the fractional part taken by photon D = H = 1
+c lets try 0
+c      MSTP(16) = 1 
+c Possibility of a extra factor for processes involving resolved virtual photons
+c D = 4 H = 6   6 is not in the manual !
       MSTP(17) = 6 
-      MSTP(18) = 3 
-      MSTP(19) = 4 
+c suppression of resolved (VMD or GVMD) cross sections D = 3 H = 0
       MSTP(20) = 0 
-      MSTP(21) = 1 
-      MSTP(22) = 0 
-      MSTP(23) = 1 
-      MSTP(31) = 1 
-      MSTP(32) = 8 
-      MSTP(33) = 0 
-      MSTP(34) = 1 
-      MSTP(35) = 0 
-      MSTP(36) = 2 
-      MSTP(37) = 1 
+c Keep the final electron giving the right x and q2 D = H = 1
+c      MSTP(23) = 1 
+c Handling of quark loops, number of allowed quarks D = 5 H = 4
       MSTP(38) = 4 
-      MSTP(39) = 2 
-      MSTP(40) = 0 
+c master switch for decay  D = 2 H = 1
       MSTP(41) = 1 
-      MSTP(42) = 1 
-      MSTP(43) = 3 
-      MSTP(44) = 7 
-      MSTP(45) = 3 
-      MSTP(46) = 1 
-      MSTP(47) = 1 
-      MSTP(48) = 0 
-      MSTP(49) = 1 
-      MSTP(50) = 0 
-      MSTP(51) = 7 
-      MSTP(52) = 1 
-      MSTP(53) = 3 
-      MSTP(54) = 1 
-      MSTP(55) = 5 
-      MSTP(56) = 1 
-      MSTP(57) = 1 
+c Choice of the PDF D = H = 7
+c      MSTP(51) = 7 
+c Max number of quarks in pdf D = 5 H = 4
       MSTP(58) = 4 
-      MSTP(59) = 1 
-      MSTP(60) = 7 
+
+c General switch for initial state radiations D = 2 H = 0
+c try to turn on 1 or 2
       MSTP(61) = 0 
-      MSTP(61) = 0 
+c normaly no effect from 6x processes
       MSTP(62) = 3 
       MSTP(63) = 2 
       MSTP(64) = 2 
@@ -154,96 +167,104 @@ ccccc Include all the common blocks
       MSTP(67) = 2 
       MSTP(68) = 1 
       MSTP(69) = 0 
+c Master switch for final state radiations D = 1 H = 0
       MSTP(71) = 0 
+c Master switch for multiple interactions D = 1 H = 0
       MSTP(81) = 0 
+c normaly no effect from 8x processes
       MSTP(82) = 1 
       MSTP(83) = 100 
       MSTP(86) = 2 
-      MSTP(91) = 1 
+c 
+c Change the energy partitionning between remnant D = 3 H = 4
       MSTP(92) = 4 
-      MSTP(93) = 1 
-      MSTP(94) = 3 
+c Structure of diffractive system D = 3 H = 1
       MSTP(101) = 1 
-      MSTP(102) = 1 
-      MSTP(111) = 1 
+c Calculation of kinematic coefficients D = 0 H = 1
       MSTP(121) = 1 
-      MSTP(131) = 0 
-      MSTP(171) = 0 
-      MSTP(172) = 2 
-      MSTP(173) = 0 
 
-      PARP(1) = 0.25 
+
+c Lowest CM energy D = 10 H = 3
       PARP(2) = 2 ! Modify because of the FM
-      PARP(13) = 1 
-      PARP(14) = 0.01 
-      PARP(15) = 0.5 
-      PARP(16) = 1 
-      PARP(17) = 1 
+c Scale for GVMD process D = 0.4 H = 0.17
       PARP(18) = 0.17 
-      PARP(61) = 0.25 
+c effective Q or transverse k cut off for parton shower D = 1 H = 0.5
       PARP(62) = 0.5 
-      PARP(63) = 0.25 
-      PARP(64) = 1 
+c cut off for energy (cm) D = 2 H = 0.5 
       PARP(65) = 0.5 
-      PARP(66) = 0.001 
+c modify Q2 scale D = 4 H = 1
       PARP(67) = 1. 
-      PARP(68) = 0.001 
-      PARP(71) = 4. 
-      PARP(72) = 0.25 
+c width of primordial gaussian inside hadron D = 2 H = 0.44
       PARP(91) = 0.44 
+c upper cut off for kt inside hadron D = 5 H = 2
       PARP(93) = 2. 
-      PARP(94) = 1. 
-      PARP(95) = 0. 
-      PARP(96) = 3. 
-      PARP(97) = 1. 
-      PARP(98) = 0.75 
+c With of primordial kt in photon D = 1 H = .44
       PARP(99) = 0.44 
+c upper cut off for kt inside photon D = 5 H = 2
       PARP(100) = 2 
+c Mass spectrum of diffractive state D = 0.28 H = 0.5
       PARP(102) = 0.5 
+c Mass cut for isotropic decay of diffractive state D = 1 H = 0.5
       PARP(103) = 0.5 
+c Energy cut off for hadron hadron D = 0.8 H = 0.3
+c manual say it cannot go below .8
       PARP(104) = 0.3 
+c Minimum invariant mass of remnant D = 2 H = 0
       PARP(111) = 0. 
-      PARP(161) = 2.69 
-      PARP(162) = 24.6 
-      PARP(163) = 18.8 
-      PARP(164) = 11.5 
+c Some coupling constants for vector mesons
+      PARP(161) = 2.69  ! D = 2.20
+      PARP(162) = 24.6  ! D = 23.6
+      PARP(163) = 18.8  ! D = 18.4
+      PARP(164) = 11.5  ! D = 11.5
+c simple factor to supress some transverse resolved photons D = 0.5 H = 0.33
       PARP(165) = 0.33 
-      PARJ(1) = 0.025 
-      PARJ(2) = 0.120 
-      PARJ(3) = 0.25 
-      PARJ(4) = 0.05 
-      PARJ(5) = 0.5 
-      PARJ(6) = 0.5 
-      PARJ(7) = 0.5 
-      PARJ(11) = 0.25 
-      PARJ(12) = 0.3 
+
+
+
+c Suppression factor for some quark processes
+      PARJ(1) = 0.025 ! D = 0.1
+      PARJ(2) = 0.120 ! D = 0.3
+      PARJ(3) = 0.25  ! D = 0.4
+c Factors to determine spin of mesons
+c Probability for spin 1 for light mesons
+      PARJ(11) = 0.25 ! D =0.5
+c Probability for spin 1 for strange mesons
+      PARJ(12) = 0.3  !D = 0.6
+c Width of gaussian for transverse momentum of primary hadrons D = 0.36 H = 0.63
       PARJ(21) = 0.63 
+c Make a non gaussian tail to the transverse momentum (HUGE MODIF)
+c D = 0.01 H = 0.3
       PARJ(23) = 0.3 
+c D = 2 H = 5
       PARJ(24) = 5. 
-      PARJ(32) = 1.0 
+
+c remaining energy below witch the fragmentation is stopped D = 0.8
       PARJ(33) = 0.6 
-      PARJ(41) = 1.13 
-      PARJ(42) = 0.37 
+c Parameters for Lund fragmentation
+      PARJ(41) = 1.13 ! D = 0.3
+      PARJ(42) = 0.37 ! D = 0.58
+
+c Parameter for lund fragmentation D = 0.5
       PARJ(45) = 0.8 
 
-      MSTJ(1) = 1 
-      MSTJ(2) = 3 
-      MSTJ(3) = 0 
-      MSTJ(12) = 1 !Here I made most important change 1->2
-      MSTJ(40) = 0 
+c Choice of fragmentation scheme D = 1 H = 1 
+c      MSTJ(1) = 1 
+c Choice of gluon fragmentation scheme D = 3 H = 3 
+c      MSTJ(2) = 3 
+c Choice of Baryon production model D = 2 H = 1
+      MSTJ(12) = 1 !Here I made most important change 1->2 ??
+c Maximum flavour produce by gluon fragmentation D = 5 H = 4
       MSTJ(45) = 4 
-      MSTU(112) = 4 
-      MSTU(113) = 4 
-      MSTU(114) = 4 
+c Number min or max of flavor for different process
+      MSTU(112) = 4 !D = 5
+      MSTU(113) = 4 !D = 5 
+      MSTU(114) = 4 !D = 5 
 
+c Lower limit for sqrt(s)
       CKIN(1) = 1. 
-      CKIN(2) = -1. 
-      CKIN(3) = 0. 
+c Max Pt for hard process
       CKIN(4) = 2. 
-      CKIN(5) = 1.00 
-      CKIN(6) = 1.00 
-      CKIN(7) = -10. 
-      CKIN(8) = 10. 
+c Bunch of range of pseudo rapidity
       CKIN(9) = -10. 
       CKIN(10) = 10. 
       CKIN(11) = -10. 
@@ -252,28 +273,12 @@ ccccc Include all the common blocks
       CKIN(14) = 10. 
       CKIN(15) = -10. 
       CKIN(16) = 10. 
-      CKIN(17) = -1. 
-      CKIN(18) = 1. 
-      CKIN(19) = -1. 
-      CKIN(20) = 1. 
-      CKIN(21) = 0. 
-      CKIN(22) = 1. 
-      CKIN(23) = 0. 
-      CKIN(24) = 1. 
-      CKIN(25) = -1. 
-      CKIN(26) = 1. 
-      CKIN(27) = -1. 
-      CKIN(28) = 1. 
-      CKIN(31) = 2. 
-      CKIN(32) = -1. 
-      CKIN(35) = 0. 
-      CKIN(36) = -1 
-      CKIN(37) = 0. 
-      CKIN(38) = -1. 
-      CKIN(39) = 4. 
-      CKIN(40) = -1. 
+
+
+c Q2 Limits
       CKIN(65) = .9 
       CKIN(66) = 4. 
+c W limit
       CKIN(77) = 1.90 
       CKIN(78) = -1. 
 

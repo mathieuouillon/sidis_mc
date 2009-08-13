@@ -48,11 +48,11 @@ ccc Begining of the simulation
       iTg = 4
       iFM = 3
       iDens = 1
-      iQW = 1
+      iQW = 0
       qhat =0.6
       iSim = 1
-      nkin = 100
-      nevent = 200
+      nkin = 200
+      nevent = 100
       ievent = 0
       bosout = 'test.A00'
 
@@ -112,7 +112,8 @@ ccc Center of mass energy calculation
 ccc Parameters for Pythia
 c        call PythiaConfigBrahim
 c        call PythiaConfigOWN
-        call PythiaConfigHayk
+c        call PythiaConfigHayk
+        call PythiaConfigCLAS
 
 ccc Block fragmentation if QW will be applied
         if (iQW.ne.0) MSTJ(1) =0
@@ -182,10 +183,10 @@ c             endif
 c           enddo
 
 ccc Fragmentation
-          MSTJ(1) =1
-          if(iSim.ne.0) call PYEXEC
-          MSTJ(1) =0
-c          CALL PYLIST(1)
+            MSTJ(1) =1
+            if(iSim.ne.0) call PYEXEC
+            MSTJ(1) =0
+c            CALL PYLIST(1)
           endif
 
 ccc Output to check Lorentz transforamtions
@@ -197,7 +198,7 @@ ccc Compute of physical values for the hbook
 
 ccc Book the ntuple
           call hfnt(33)
-c          call CLASBOSFILL()
+c          call CLASBOSFILL(iTg)
         enddo
       enddo
 

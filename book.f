@@ -32,8 +32,10 @@ ccccc Include all the common blocks
       call HBNAME(33,'Position',y_inter ,'y_inter ')
       call HBNAME(33,'Position',z_inter ,'z_inter ')
 
-      call HBNAME(33,'QWeight',QW_wc ,'QW_wc')
-      call HBNAME(33,'QWeight',QW_R  ,'QW_R ')
+      if (iQW .ne. 0) then
+        call HBNAME(33,'QWeight',QW_wc ,'QW_wc')
+        call HBNAME(33,'QWeight',QW_R  ,'QW_R ')
+      endif
 
       call HBNAME(33,'EvntInfo',Q22  ,'Q2   ')
       call HBNAME(33,'EvntInfo',W    ,'W    ')
@@ -109,7 +111,8 @@ c          W = sqrt(W2)
         endif
 
         if (k(ip,1).eq.1 .or. k(ip,2).eq.111 .or .k(ip,2).eq.310
-     &       .or. k(ip,2).eq.221) then
+     &       .or. k(ip,2).eq.221 .or .k(ip,2).eq.333 .or.
+     &        k(ip,2).eq.2114 .or .k(ip,2).eq.3122 ) then
           Nb_part           = Nb_part + 1
           id_part(Nb_part)  = k(ip,2)
           id_mother(Nb_part)= k(k(ip,3),2)

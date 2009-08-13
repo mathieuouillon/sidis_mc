@@ -2,27 +2,20 @@ NAME = simulation
 
 FFLAGS  =  -w -g
 
-SRC=	simulation.f fermimotion.f pythia-6.4.19.f \
-	leptoconfig.f book.f transfo.f \
+# add BOS.f for BOS file output
+SRC=    simulation.f fermimotion.f pythia-6.4.19.f \
+        leptoconfig.f book.f transfo.f \
         fermimotion2.f nucdens.f density.f qweight.f
-#	leptoconfig.f book.f transfo.f BOS.f
-        
-OBJ=	simulation.o fermimotion.o pythia-6.4.19.o \
-	leptoconfig.o book.o transfo.o \
-        fermimotion2.o nucdens.o density.o qweight.o
 
-#	leptoconfig.o book.o transfo.o BOS.o
+OBJ=    simulation.o fermimotion.o pythia-6.4.19.o \
+        leptoconfig.o book.o transfo.o \
+        fermimotion2.o nucdens.o density.o qweight.o
 
 .f.o:
 	gfortran -c $(FFLAGS) -o $@ $*.f
 
-go: ${OBJ}  
+go: ${OBJ}
 	gfortran  $(FFLAGS) -o $(NAME) $(OBJ)  -L/cern/pro/lib -lpawlib -lpacklib -lkernlib -lmathlib
 #	gfortran  $(FFLAGS) -o $(NAME) $(OBJ)  -L$(CERN_ROOT)/lib -lpawlib -lpacklib -lkernlib -lmathlib \
                                                -L$(CLAS_LIB) -lbosio -lbos -lfpack -lc_bos_io -lrecutl
-#	gfortran  $(FFLAGS) -o $(NAME) $(OBJ)  -L/usr/lib/cernlib/2006/lib -lpawlib -lpacklib -lkernlib -lmathlib
 
-#	f77  $(FFLAGS) -o go $(OBJ)  `cernlib`
-clean:
-	rm -f $(NAME) simulation.o fermimotion.o leptoconfig.o book.o transfo.o \
-        fermimotion2.o nucdens.o density.o qweight.o
