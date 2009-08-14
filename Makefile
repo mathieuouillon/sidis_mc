@@ -19,3 +19,6 @@ go: ${OBJ}
 #	gfortran  $(FFLAGS) -o $(NAME) $(OBJ)  -L$(CERN_ROOT)/lib -lpawlib -lpacklib -lkernlib -lmathlib \
                                                -L$(CLAS_LIB) -lbosio -lbos -lfpack -lc_bos_io -lrecutl
 
+clean:
+	rm -f $(NAME) simulation.o fermimotion.o leptoconfig.o book.o transfo.o \
+        fermimotion2.o nucdens.o density.o qweight.o

@@ -16,7 +16,7 @@ ccccc Include all the common blocks
 
       call hlimit(nwpawc)
 
-      call hropen(10,'out','ntupl.hbook','N',LREC,ISTAT)
+      call hropen(10,'out',hbookout,'N',LREC,ISTAT)
       call HBNT(33,'out',' ')
     
       call HBNAME(33,'kinemati',ievent,'ievent')

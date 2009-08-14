@@ -51,10 +51,11 @@ ccc Begining of the simulation
       iQW = 0
       qhat =0.6
       iSim = 1
-      nkin = 200
+      nkin = 500
       nevent = 100
       ievent = 0
       bosout = 'test.A00'
+      hbookout = 'iron.hbook'
 
       if (iTg .eq. 0) then
         nevent = nkin*nevent

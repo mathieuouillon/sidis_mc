@@ -15,8 +15,8 @@ ccc Fill rFM, iZ and iA in function of the Target
         select case(iTg)
           case (0) 
             rFM = 0
-            iZ = 0
-            iA = 0
+            iZ = 1
+            iA = 2
           case (1) 
             rFM = 0.07
             iZ = 1

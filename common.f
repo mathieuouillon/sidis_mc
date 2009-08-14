@@ -13,6 +13,9 @@ ccccc Important variables for transformations
       real Beta,ECoM ! For calculation of the CoM energy
       common/TransfoVar/ThFM,PhiFM,BB1,B1x,B1y,B1z,Thi,Phi,Beta,ECoM,Kf
 
+ccccc Files names
+      character*60 bosout,hbookout
+      common /OUT_NAMES/ bosout,hbookout
 
 C...Stuff for PYTHIA 6.4
       double precision PARP(200),PARI(200)
