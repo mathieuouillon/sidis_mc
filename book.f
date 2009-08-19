@@ -5,9 +5,10 @@ c------------------------------------------------------------------------------
       implicit none
 
 ccccc Paw variables
-      integer nwpawc
-      parameter (nwpawc=900000)
+      integer nwpawc,hdoof
+      parameter (nwpawc=20000000)
       integer LREC,ISTAT
+      common/pawc/hdoof(30000000)
 ccccc Include all the common blocks
       include 'common.f'
 
