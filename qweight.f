@@ -1,9 +1,10 @@
-      subroutine QWComput(qhat,ipx,ipy,ipz,E)
+      subroutine QWComput(qhat,ipx,ipy,ipz,E,id)
       implicit none
 
       include 'common.f'
 
       real ipx,ipy,ipz,E !input energy momentum of the particle
+      real partmass !mass of the particle (for conservation purpose)
       real qhat !Transport coefficient (GeV^2.fm^-1)
       real radius !distance to the center of the nuclei
       real x,y,z !position of the parton
@@ -14,15 +15,27 @@
       integer ipart !0=gluon - otherwise=quark
       double precision cont(1000),disc,step_QW !Variables for energy loss proba
       double precision xx,yy !Variables for energy loss proba
-      integer i
+      integer i,nb_step !nb of step for QW calculation
+      double precision total !Total of QW for normalization purpose
+      real randnum !random number to pick the QW
+      integer id !id of the parton
 
+      QW_w = 0.
+      QW_L = 0.
       QW_wc = 0.
       QW_R  = 0.
-      d = 0
+      d = 0.
 
 ccc Init for qweight
-      ipart = 1
+      if (id.eq.21) then
+        ipart = 0
+      else if(abs(id).lt.7) then
+        ipart = 1
+      else
+        write(*,*) 'Unknown parton with id =',id
+      endif
       irw = 0
+      nb_step = 200
 
 ccc normalize momentum
       pp = sqrt(ipx**2+ipy**2+ipz**2)
@@ -37,30 +50,59 @@ ccc normalize momentum
 ccc integration to calculate wc and R
       radius = sqrt(x**2+y**2+z**2)
       do while (radius.lt.20)
+        QW_wc = QW_wc + integral_step * d *
+     &          density_table(INT(radius/step_size_dens))
+        QW_R = QW_R + integral_step *
+     &          density_table(INT(radius/step_size_dens))
         d = d + integral_step
         x = x + px
         y = y + py
         z = z + pz
         radius = sqrt(x**2+y**2+z**2)
-        QW_wc = QW_wc + integral_step * d *
-     &          density_table(INT(radius/step_size_dens))
-        QW_R = QW_R + integral_step *
-     &          density_table(INT(radius/step_size_dens))
       enddo
 
+      QW_L = QW_wc / QW_R
       QW_wc = qhat/density_table(1) * QW_wc
       QW_R = 2 * density_table(1) * QW_wc**2 / QW_R / qhat
 
+ccccc Convert the units fm -> GeV-1
+      QW_L = QW_L/.1973269
+ccccc Convert the units GeV2.fm -> GeV
+      QW_wc = QW_wc/.1973269
+ccccc Convert the units GeV2.fm2 -> no unit
+      QW_R = QW_R / .1973269**2
+
 ccccc Calculate the energy loss probability
-      if(sfthrd.eq.1) step_QW = 2.5/300
-      if(sfthrd.eq.2) step_QW = 9.8/300
+      if(sfthrd.eq.1) step_QW = 2.5/nb_step
+      if(sfthrd.eq.2) step_QW = 9.8/nb_step
       yy = E/QW_wc
-c      QW_R = 100
-      do i=1,300
+
+      total = 0.
+      do i=1,nb_step
         xx = step_QW * i
         call qweight(ipart,dfloat(QW_R),xx,yy,cont(i),disc)
 c        write (*,*) i,cont(i),disc
+        total = total + cont(i)*step_QW
       enddo
+      total = total + disc
+      disc = disc/total
+      do i=1,nb_step
+        cont(i) = cont(i) / total
+      enddo
+
+ccccc Pick randomely a quenching in the table
+      if(disc .lt. 1.) then
+        randnum = ranf(0)
+        if(randnum.gt.disc) then
+          total = disc
+          i = 1
+          do while (randnum.gt.total)
+            total = total + cont(i)*step_QW
+            i = i + 1
+          enddo
+          QW_w = i * step_QW * QW_wc 
+        endif
+      endif
 
       end
 

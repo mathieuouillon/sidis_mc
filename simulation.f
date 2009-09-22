@@ -10,6 +10,7 @@ c   Check if there is flag for every options
 c   Gluon or quark in QW to add
 c   Smearing of the form Delta E = 3/8 alphas Delta Pts L 
 c                              L = R/omega
+c   Check if Pt of quarks are coherant
 c
 c------------------------------------------------------------------------------
 
@@ -45,6 +46,9 @@ ccccc Miscellaneous
       double precision BeamE !Input value for pythia
       integer ip ! For do
       real ipx,ipy,ipz,E !dummy only for test
+      real ipl,ipt
+      integer flag
+ 
 
 ccc Begining of the simulation
       call TIMEX(T1)
@@ -59,12 +63,12 @@ ccc Begining of the simulation
       bosout = 'test.A00'
 
 ccc Init for the quenching weights
-      iQuenching = 0
+      iQuenching = 1
       iqw = 1
       alphas = 1d0/3d0
       scor = 1
       ncor = 0
-      sfthrd = 2
+      sfthrd = 1
       qhat =0.6
 
       if (iTg .eq. 0) then
@@ -177,25 +181,55 @@ ccc Lorentz boost of all the particles
 ccc Energy loss of the partons
           if (iQuenching.ne.0) then
             call InterPos
-            ipx = 0.476
-            ipy = 0.104
-            ipz = 3.505
-            E = 3.539
-            call QWComput(qhat,ipx,ipy,ipz,E)
+c           ipx = 0.476
+c           ipy = 0.104
+c           ipz = 3.505
+c           E = 3.539
+c           call QWComput(qhat,ipx,ipy,ipz,E)
 c to pick quarks
-c           do ip =1,N
-c             if(K(ip,1).lt.10 .and. abs(K(ip,2)).lt.7) then
-c               write(*,*) ip
-c               CALL PYLIST(1)
-c             endif
-c           enddo
+            flag = 0
+            do ip =1,N
+              if(K(ip,1).eq.2) then
+                write(*,*) 'Beginning'
+                call QWComput(qhat,
+     &                       P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
+c BUG SPOTTED
+c               if (QW_w .ne. 0.) then
+c                 ipt = 8*QW_w/3/alphas/QW_L
+c                 P(ip,4) = P(ip,4) - QW_w
+c                 if (P(ip,4) .lt. P(ip,5))then
+c                   write(*,*) 'Absorb'
+c                   P(ip,1) = 0.
+c                   P(ip,2) = 0.
+c                   P(ip,3) = 0.
+c                   P(ip,4) = P(ip,5)
+c                 else 
+c                   write(*,*) 'Pt calc'
+c                   ipl = P(ip,4)**2 -P(ip,5)**2
+c                   if(ipl.le.ipt) then
+c                     write(*,*) 'full Pt'
+c                     ipt = ipl
+c                     ipl = 0
+c                   else
+c                     ipl = sqrt(ipl**2-ipt**2)
+c                   endif
+ccc transfo ipt en cartesien
+c                     
+c                     
+c                     ipl = P(ip,1)**2+P(ip,2)**2+P(ip,3)**2
+                      CALL PYLIST(1)
+                      flag = 1
+c                 endif
+c               endif
+              endif
+            enddo
           endif
 
 ccc Fragmentation
           MSTJ(1) =1
           if(iSim.ne.0) call PYEXEC
           MSTJ(1) =0
-c          CALL PYLIST(1)
+          if (flag .eq. 1) CALL PYLIST(1)
 
 ccc Output to check Lorentz transforamtions
 c          write(*,*) 'Momentum of the electron: ',BeamE
