@@ -48,6 +48,8 @@ ccccc Miscellaneous
       real ipx,ipy,ipz,E !dummy only for test
       real ipl,ipt
       integer flag
+      real iplx,iply,iplz
+      real iptx,ipty,iptz
  
 
 ccc Begining of the simulation
@@ -181,46 +183,53 @@ ccc Lorentz boost of all the particles
 ccc Energy loss of the partons
           if (iQuenching.ne.0) then
             call InterPos
-c           ipx = 0.476
-c           ipy = 0.104
-c           ipz = 3.505
-c           E = 3.539
-c           call QWComput(qhat,ipx,ipy,ipz,E)
-c to pick quarks
             flag = 0
             do ip =1,N
               if(K(ip,1).eq.2) then
-                write(*,*) 'Beginning'
                 call QWComput(qhat,
      &                       P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
-c BUG SPOTTED
-c               if (QW_w .ne. 0.) then
-c                 ipt = 8*QW_w/3/alphas/QW_L
-c                 P(ip,4) = P(ip,4) - QW_w
-c                 if (P(ip,4) .lt. P(ip,5))then
-c                   write(*,*) 'Absorb'
+                if (QW_w .gt. 0.) then
+                  if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)) then
+                    ipt = sqrt(8*QW_w/3/alphas/QW_L)
+                    ipl = dsqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
+                    iplx = P(ip,1)/ipl
+                    iply = P(ip,2)/ipl
+                    iplz = P(ip,3)/ipl
+                    iptz = 0.
+                    if (iply .ne. 0) then
+                      ipty = sqrt(iplx**2/(iply**2*((iplx/iply)**2+1)))
+                      iptx = sqrt(1-ipty**2)
+                      if (iplx*iply.gt.0) ipty = -ipty
+                    else
+                      ipty = 1.
+                      iptx = 0.
+                    endif
+c                   write(*,*) 'Pl:',ipl,iplx,iply,iplz
+c                   write(*,*) 'Pt:',ipt,iptx,ipty,iptz
+c                   write(*,*) 'QW:',QW_w
+
+                    ipl = ipl - QW_w
+                    if (ipt.ge.ipl) then
+                      ipx = ipl*iptx
+                      ipy = ipl*ipty
+                    else
+                      ipl = sqrt(ipl**2 - ipt**2)
+                      ipx = ipt*iptx+ipl*iplx
+                      ipy = ipt*ipty+ipl*iply
+                      ipz = ipt*iptz+ipl*iplz
+                    endif
+
+                    P(ip,1) = ipx
+                    P(ip,2) = ipy
+                    P(ip,3) = ipz
+                    P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
+c                 else
 c                   P(ip,1) = 0.
 c                   P(ip,2) = 0.
 c                   P(ip,3) = 0.
 c                   P(ip,4) = P(ip,5)
-c                 else 
-c                   write(*,*) 'Pt calc'
-c                   ipl = P(ip,4)**2 -P(ip,5)**2
-c                   if(ipl.le.ipt) then
-c                     write(*,*) 'full Pt'
-c                     ipt = ipl
-c                     ipl = 0
-c                   else
-c                     ipl = sqrt(ipl**2-ipt**2)
-c                   endif
-ccc transfo ipt en cartesien
-c                     
-c                     
-c                     ipl = P(ip,1)**2+P(ip,2)**2+P(ip,3)**2
-                      CALL PYLIST(1)
-                      flag = 1
-c                 endif
-c               endif
+                  endif
+                endif
               endif
             enddo
           endif
@@ -229,7 +238,7 @@ ccc Fragmentation
           MSTJ(1) =1
           if(iSim.ne.0) call PYEXEC
           MSTJ(1) =0
-          if (flag .eq. 1) CALL PYLIST(1)
+c          CALL PYLIST(1)
 
 ccc Output to check Lorentz transforamtions
 c          write(*,*) 'Momentum of the electron: ',BeamE
