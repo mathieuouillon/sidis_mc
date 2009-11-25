@@ -41,6 +41,10 @@ ccc Fill rFM, iZ and iA in function of the Target
             rFM = 0.265
             iZ = 82
             iA = 208
+          case (7) 
+            rFM = 0.120 !no source for this, i extrapolate between 6Li and 2H
+            iZ = 2
+            iA = 4
           case default 
             rFM = 0
             iZ = 0

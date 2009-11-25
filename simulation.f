@@ -12,6 +12,7 @@ c------------------------------------------------------------------------------
 
 ccccc Values for the simulation
       integer iTg ! = 0 no FM, = 1 deut, = 2 C, = 3 Al, = 4 Fe, = 5 Sn, = 6 Pb
+                  ! = 7 4 He
       real rFM ! Fermi momentum  in the target (GeV)
       integer iFM ! 
 c 0 = hard sphere with values from [1], 
@@ -24,10 +25,14 @@ c [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
       integer iDens !0= hard sphere, 1= Wood Saxon param
 c     integer iQW ! 0 desactivate Quenching
       integer iSim ! 0 = Turn off Pythia
+      integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
+                  ! this option is only for 2H and 4He
       real E0 ! beam energy (GeV)
       integer i,nevent ! number of events
       integer j,nkin ! number of kinematics
       real qhat 
+      integer nucleon ! 0 = neutron , 1 = proton
+      integer specId ! spectator Id
 
 ccccc Include all the common blocks
       include 'common.f'
@@ -45,13 +50,14 @@ ccccc Miscellaneous
 ccc Begining of the simulation
       call TIMEX(T1)
       E0 = 5.014
-      iTg = 4
+      iTg = 7
       iFM = 3
       iDens = 1
       iQW = 0
       qhat =0.6
       iSim = 1
-      nkin = 500
+      iNS = 1
+      nkin = 5000
       nevent = 100
       ievent = 0
       bosout = 'test.A00'
@@ -126,8 +132,10 @@ ccc Initialize the simulation
         if(iSim.ne.0) then
           if(j.lt.(nkin*iZ/iA)) then
             call pyinit('FIXT','gamma/e-','p+',BeamE)
+            nucleon = 1
           else
             call pyinit('FIXT','gamma/e-','n0',BeamE)
+            nucleon = 0
           endif
         endif
 
@@ -193,6 +201,42 @@ c            CALL PYLIST(1)
 ccc Output to check Lorentz transforamtions
 c          write(*,*) 'Momentum of the electron: ',BeamE
 c          write(*,*) 'Momentum of the electron: ',p(1,4)
+c           write(*,*) PPn,Pnx,Pny,Pnz
+c           write(*,*) nuc_mom,nuc_the,nuc_phi 
+
+          if (iNS .eq. 1 .and. (iTg .eq. 1 .or. iTg .eq. 7)) then
+            N = N+1
+            if (iTg .eq. 1 .and. nucleon .eq. 0) then
+              specId = 2212
+            else if (iTg .eq. 1 .and. nucleon .eq. 1) then
+              specId = 2112
+            else if (iTg .eq. 7 .and. nucleon .eq. 0) then
+              specId = 10203
+            else if (iTg .eq. 7 .and. nucleon .eq. 1) then
+              specId = 10103
+            endif
+ 
+            k(N,1) = 1
+            k(N,2) = specId
+            k(N,3) = 2
+
+            p(N,1) = -sin(nuc_the)*cos(nuc_phi)*nuc_mom
+            p(N,2) = -sin(nuc_the)*sin(nuc_phi)*nuc_mom
+            p(N,3) = -cos(nuc_the)*nuc_mom
+            if (k(N,2) .eq. 2212) then
+              p(N,5) = 938.272
+            else if (k(N,2) .eq. 2112) then
+              p(N,5) = 939.566
+            else if (k(N,2) .eq. 10203) then
+              p(N,5) = 2809.356
+            else if (k(N,2) .eq. 10103) then
+              p(N,5) = 2809.356
+            endif
+            P(N,4) = sqrt(P(N,1)**2+P(N,2)**2+P(N,3)**2+P(N,5)**2)
+
+c            write(*,*) K(N,1),K(N,2),K(N,3)
+c            write(*,*) P(N,1),P(N,2),P(N,3),P(N,4),P(N,5)
+          endif
 
 ccc Compute of physical values for the hbook
           call ComputV
