@@ -127,7 +127,7 @@ c          W = sqrt(W2)
      &         abs(k(ip,2)).eq.321.or.abs(k(ip,2)).eq.2212.or.
      &         k(ip,2).eq.2112.or.k(ip,2).eq.22) then
                acc_part(Nb_part) = 
-     &               clas12_accept(k(ip,2),p(ip,1),p(ip,1),p(ip,1))
+     &               clas12_accept(k(ip,2),p(ip,1),p(ip,2),p(ip,3))
             else if( k(ip,2).eq.10203 .or. k(ip,2).eq.10103 ) then
                Ekin = (p(ip,4) - p(ip,5))*1000
                theta = acos(p(ip,3)/

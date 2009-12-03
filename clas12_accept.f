@@ -7,7 +7,7 @@ c  Modified to fit in PyQM
 c=================================================
 
 
-         integer function clas12_accept(nat2,kin1,kin2,kin3)
+         integer function clas12_accept(nat2,k1,k2,k3)
          implicit none
          
          
@@ -19,13 +19,18 @@ c=================================================
          real newphi11,PolarTheta,Azimuthalphi
          real thetad, phis, hp, wt, dphi
          real torcur, thetad_b, phis_b
-         real kin1, kin2, kin3
+         double precision k1, k2, k3
+         real kin1,kin2,kin3
 
          parameter (torcur = 2250.)
          data r2d,d2r/57.2957795,0.017453293/
          real pi
          
          pi = acos(-1.0)
+
+         kin1 = real(k1)
+         kin2 = real(k2)
+         kin3 = real(k3)
 
          cl_conf = 'conf0.dat'
          
@@ -39,7 +44,6 @@ c=================================================
 
          thetad_b = thetad
          phis_b = phis
-
 
          if(abs(nat2).eq.11.or.abs(nat2).eq.211.or.
      &         abs(nat2).eq.321.or.abs(nat2).eq.2212.or.
