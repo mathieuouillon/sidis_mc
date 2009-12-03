@@ -47,6 +47,7 @@ ccccc Include all the common blocks
       call HBNAME(33,'PartInfo',Nb_part  ,'Nb_part[0,30]      ')
       call HBNAME(33,'PartInfo',id_part  ,'Npart_id(Nb_part)  ')
       call HBNAME(33,'PartInfo',id_mother,'Nmother_id(Nb_part)')
+      call HBNAME(33,'PartInfo',acc_part ,'Naccept(Nb_part)   ')
       call HBNAME(33,'PartInfo',p_part   ,'part_P(Nb_part)    ')
       call HBNAME(33,'PartInfo',px_part  ,'part_Px(Nb_part)   ')
       call HBNAME(33,'PartInfo',py_part  ,'part_Py(Nb_part)   ')
@@ -92,6 +93,10 @@ ccccc for calculation of Phih
       real A1,A2,A3,AA
       real B1,B2,B3,BB
       real phi_ele
+ccccc function
+      integer clas12_accept,RTPC_accept
+ccccc dummy
+      real Ekin,Theta
 
 C.. Booking the hbook
       do ip=1,N
@@ -114,7 +119,24 @@ c          W = sqrt(W2)
         if (k(ip,1).eq.1 .or. k(ip,2).eq.111 .or .k(ip,2).eq.310
      &       .or. k(ip,2).eq.221 .or .k(ip,2).eq.333 .or.
      &        k(ip,2).eq.2114 .or .k(ip,2).eq.3122 ) then
+
           Nb_part           = Nb_part + 1
+          acc_part(Nb_part) = 0
+          if(iAccept.eq.1) then
+            if(abs(k(ip,2)).eq.11.or.abs(k(ip,2)).eq.211.or.
+     &         abs(k(ip,2)).eq.321.or.abs(k(ip,2)).eq.2212.or.
+     &         k(ip,2).eq.2112.or.k(ip,2).eq.22) then
+               acc_part(Nb_part) = 
+     &               clas12_accept(k(ip,2),p(ip,1),p(ip,1),p(ip,1))
+            else if( k(ip,2).eq.10203 .or. k(ip,2).eq.10103 ) then
+               Ekin = (p(ip,4) - p(ip,5))*1000
+               theta = acos(p(ip,3)/
+     &                sqrt(p(ip,1)**2+p(ip,2)**2+p(ip,3)**2))
+c               write(*,*) p(ip,4),p(ip,5),Ekin,theta
+               acc_part(Nb_part) = RTPC_accept(k(ip,2),Ekin,theta)
+            endif
+          endif
+
           id_part(Nb_part)  = k(ip,2)
           id_mother(Nb_part)= k(k(ip,3),2)
           px_part(Nb_part)  = p(ip,1)

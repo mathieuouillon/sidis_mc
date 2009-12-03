@@ -26,7 +26,8 @@ c [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
 c     integer iQW ! 0 desactivate Quenching
       integer iSim ! 0 = Turn off Pythia
       integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
-                  ! this option is only for 2H and 4He
+                  ! this option is only for 2H and 4He targets
+c     integer iAccept ! 1 = activate clas 12 acceptance
       real E0 ! beam energy (GeV)
       integer i,nevent ! number of events
       integer j,nkin ! number of kinematics
@@ -49,7 +50,7 @@ ccccc Miscellaneous
 
 ccc Begining of the simulation
       call TIMEX(T1)
-      E0 = 5.014
+      E0 = 11.
       iTg = 7
       iFM = 3
       iDens = 1
@@ -57,11 +58,12 @@ ccc Begining of the simulation
       qhat =0.6
       iSim = 1
       iNS = 1
-      nkin = 5000
+      iAccept = 1
+      nkin = 1000
       nevent = 100
       ievent = 0
       bosout = 'test.A00'
-      hbookout = 'iron.hbook'
+      hbookout = 'helium.hbook'
 
       if (iTg .eq. 0) then
         nevent = nkin*nevent
@@ -72,6 +74,7 @@ ccc Initialize
       call GenNucDens(iDens)
       call InitRandom
       call InitHbook
+      if (iAccept.eq.1) call readtables
 c      call CLASBOSINIT('MCEVENT')
 
       do j=1,nkin
@@ -144,8 +147,8 @@ ccc Loop over events of a given kinematic
 
 ccc Counter
           ievent = ievent + 1
-          if (MOD(i+(nevent*(j-1)),nevent*nkin/20) .eq. 0) 
-     &          write(*,*) i+(nevent*(j-1)),'events proceded'
+c         if (MOD(i+(nevent*(j-1)),nevent*nkin/20) .eq. 0) 
+c    &          write(*,*) i+(nevent*(j-1)),'events proceded'
 
 ccc Some initialization
           call InitKin2Book
@@ -224,13 +227,13 @@ c           write(*,*) nuc_mom,nuc_the,nuc_phi
             p(N,2) = -sin(nuc_the)*sin(nuc_phi)*nuc_mom
             p(N,3) = -cos(nuc_the)*nuc_mom
             if (k(N,2) .eq. 2212) then
-              p(N,5) = 938.272
+              p(N,5) = .938272
             else if (k(N,2) .eq. 2112) then
-              p(N,5) = 939.566
+              p(N,5) = .939566
             else if (k(N,2) .eq. 10203) then
-              p(N,5) = 2809.356
+              p(N,5) = 2.809356
             else if (k(N,2) .eq. 10103) then
-              p(N,5) = 2809.356
+              p(N,5) = 2.809356
             endif
             P(N,4) = sqrt(P(N,1)**2+P(N,2)**2+P(N,3)**2+P(N,5)**2)
 

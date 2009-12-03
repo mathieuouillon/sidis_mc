@@ -1,0 +1,122 @@
+           May 28, 2005     FASTMC Data Parameters 
+                          ==========================
+  +ALL RESOLUTION PARAMETERS in RADIANS,GEVs,METERs+
+
+K.Mikhailov (some default values, but very old). It seems 
+we don't use this file.
+
+Key:A10
+REA4:18X,E10.4,A50
+INT4:18X,I8,A50
+TYPE:12X,A4
+KEY------|  TYPE  |VALUE-I-R----------------C30|----------------C50|---COMMENTS|
+Cnfg_num    INT4  0          Mac's fastmc
+|--------|--|--|--|------I-R-|-------------------------------------------------|
+Tmax        REA4  3375.      Torus Current
+Thf_lim     REA4  40.        Theta forward limit
+|--------|--|--|--|------I-R-|-------------------------------------------------|
+Thacc1      REA4  5.         First  theta acceptance parameter 
+Thacc2      REA4  17.        Second theta acceptance parameter 
+Thacc3      REA4  35.        Third  theta acceptance parameter 
+Thacc4      REA4  0.25       Fourth theta acceptance parameter 
+Thacc5      REA4  0.2        Fifth  theta acceptance parameter 
+Thacc6      REA4  1.1        Sixth  theta acceptance parameter 
+|--------|--|--|--|------I-R-|-------------------------------------------------|
+Thacc01     REA4  5.         First  theta acceptance parameter(Theta_acc01) 
+Thmom1      REA4  0.6        First  theta-momentum acc. parameter
+Thmom2      REA4  4.         Second theta-momentum acc. parameter
+Thmom3      REA4  45.        Third  theta-momentum acc. parameter
+Thmom4      REA4  6.         Fourth theta-momentum acc. parameter
+Phimom1     REA4  25.        First  Phi-momentum acc. parameter        
+Phimom2     REA4  5.         Second Phi-momentum acc. parameter        
+Phimom3     REA4  0.15       Third  Phi-momentum acc. parameter        
+Phimom4     REA4  0.089      Fourth Phi-momentum acc. parameter        
+Phimom5     REA4  .0416667   Fifth  Phi-momentum acc. parameter (=1/24)        
+|--------|--|--|--|------I-R-|-------------------------------------------------|
+    FORWARD:
+
+    Delta_P=I0/I*rnorml[1]
+	Neutral: P=P+rnorml[1]*sqrt(P)
+    Theta=Theta+Delta_Theta
+    Delta_Theta=sqrt(s1^2+(s2/p/betta)^2)
+    Phi=Phi+Delta_Phi
+    Delta_Ph=sqrt(s1^2+(s2/p/betta)^2)
+
+  theta dependence Sigma1=FoMT1S1+FoMT1S2*theta+FoMT1S3*theta**2
+|--------|--|--|--|------I-R-|-------------------------------------------------|
+FoMT1S1     REA4  .20678E-3    0.20678E-03  Forward 1-st param for sigma_1       
+FoMT1S2     REA4  -.57466E-5   -0.57466E-05 Forward 2-d param for sigma_1
+FoMT1S3     REA4  .38913E-6    0.38913E-06  Forward 3-d param for sigma_1 
+FoMT2S1     REA4  .26652E-2    0.26652E-02  Forward 1-st param for sigma_1       
+FoMT2S2     REA4  -.80631E-4   -0.80631E-04 Forward 2-d param for sigma_1
+FoMT2S3     REA4  .87599E-5    0.87599E-05  Forward 3-d param for sigma_1 
+FoInThS1    REA4  3.684E-05    3.684E-05    Forward inbending(outbending)  Theta sigma_1
+FoInThS2    REA4  .00162613    0.00162613   Forward inbending(outbending)  Theta sigma_2
+
+
+FoInMoS1    REA4  .005       Forward inbending mometum sigma_1
+FoInMoS2    REA4  .0         Forward inbending mometum sigma_2
+FoOuMoS1    REA4  .007       Forward outbending mometum sigma_1
+FoOuMoS2    REA4  .0         Forward outbending mometum sigma_2
+FoNeMoS1    REA4  .050       Forward neutral mometum sigma_1
+FoNeMoS2    REA4  .0         Forward neutral mometum sigma_2
+
+FoOuThS1    REA4  .0286      Forward outbending Theta sigma_1
+FoOuThS2    REA4  .00        Forward outbending Theta sigma_2
+FoNeThS1    REA4  .0286      Forward neutral    Theta sigma_1
+FoNeThS2    REA4  .00        Forward neutral    Theta sigma_2
+
+  c      May 28 2005. K.Mikhailov: add new parameters to conf-files
+  FoIOFiS1    REA4  .683E-4    Forward in(out)bending  phi sigma_1
+  May 31, new parametrization from Gail:
+FoA0FiS1    REA4  .3125E-2   Forward in(out)bending  A0 phi sigma_1
+FoA1FiS1    REA4  .262E-4    Forward in(out)bending  A1 phi sigma_1
+FoA2FiS1    REA4  -.350E-6   Forward in(out)bending  A2 phi sigma_1
+
+FoA0FiS2    REA4  .542E-3    Forward in(out)bending  A0 phi sigma_2
+FoA1FiS2    REA4  -.531E-5   Forward in(out)bending  A1 phi sigma_2
+FoA2FiS2    REA4  .886E-7    Forward in(out)bending  A2 phi sigma_2
+FoNeFiS1    REA4  .0573      Forward neutral    phi sigma_1
+FoNeFiS2    REA4  .0         Forward neutral    phi sigma_2
+
+|--------|--|--|--|------I-R-|-------------------------------------------------|
+    CENTRAL:
+
+    Delta_P=rnorml[1]*sqrt((s1*P)^2+(s2/betta)^2)
+	Neutral: P=P+rnorml[1]*sqrt(P)
+    Theta=Theta+Delta_Theta
+    Delta_Theta=sqrt(s1^2+(s2/p/betta)^2)
+    Phi=Phi+Delta_Phi
+    Delta_Ph=sqrt(s1^2+(s2/p/betta)^2)
+
+CeInMoS1    REA4  .065       Central inbending mometum sigma_1
+CeInMoS2    REA4  .0138      Central inbending mometum sigma_2
+CeOuMoS1    REA4  .065       Central outbending mometum sigma_1
+CeOuMoS2    REA4  .0138      Central outbending mometum sigma_2
+CeNeMoS1    REA4  .050       Central neutral mometum sigma_1
+CeNeMoS2    REA4  .0         Central neutral mometum sigma_2
+
+   May 31, 2005: sigma_2 = a0 + a1*theta + a2*theta^2, add new params.
+CeA0ThS2    REA4  .4236E-3   Central in(out)bending  A0  Theta sigma_2
+CeA1ThS2    REA4  -.4451E-5  Central in(out)bending  A1  Theta sigma_2
+CeA2ThS2    REA4  .247E-7    Central in(out)bending  A2  Theta sigma_2
+
+CeInThS1    REA4  .8776E-2   Central in(out)bending  Theta sigma_1
+
+CeInThS2    REA4  .00000     Central inbending  Theta sigma_2
+CeOuThS1    REA4  .0286      Central outbending Theta sigma_1
+CeOuThS2    REA4  .00000     Central outbending Theta sigma_2
+CeNeThS1    REA4  .0286      Central neutral    Theta sigma_1
+CeNeThS2    REA4  .00000     Central neutral    Theta sigma_2
+
+CeInFiS1    REA4  .0069      Central inbending  phi sigma_1
+CeInFiS2    REA4  .0074      Central inbending  phi sigma_2
+CeOuFiS1    REA4  .0069      Central outbending phi sigma_1
+CeOuFiS2    REA4  .0074      Central outbending phi sigma_2
+CeNeFiS1    REA4  .0573      Central neutral    phi sigma_1
+CeNeFiS2    REA4  .00000     Central neutral    phi sigma_2
+
+                 
+         1         2         3         4         5         6         7         8
+---------|---------|---------|---------|---------|---------|---------|----------
+

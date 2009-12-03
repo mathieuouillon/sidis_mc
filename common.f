@@ -37,7 +37,7 @@ ccccc Events information
 
 ccccc Recoiled Particles
       integer TrkGS
-      integer Nb_part,id_part(100),id_mother(100)
+      integer Nb_part,id_part(100),id_mother(100),acc_part(100)
       real p_part(100),px_part(100),py_part(100),pz_part(100)
       real E_part(100),m_part(100),z_part(100),th_part(100)
       real tt_part(100),Pts_part(100),phih_part(100),phi_part(100)
@@ -45,7 +45,7 @@ ccccc Recoiled Particles
       common/part/Nb_part,id_part,id_mother,
      &      px_part,py_part,pz_part,E_part,m_part,p_part,
      &      z_part,th_part,tt_part,Pts_part,phih_part,phi_part,
-     &      vx_part
+     &      vx_part,acc_part
 
 ccccc Table for FM distribution
       real FM_table(1000),step_size_FM
@@ -82,4 +82,14 @@ c Position of the interaction in CLAS for GSIM
 
       real pi
       data pi/3.1415926535/
+
+c Acceptance
+      integer iAccept
+      common/accep/iAccept
+
+c Tables
+      real AlphaHe(4,121)
+      real AlphaKa(4,121)
+      real AlphaNe(4,121)
+      common/tables/AlphaHe,AlphaKa,AlphaNe
 
