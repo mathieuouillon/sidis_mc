@@ -20,6 +20,7 @@ c Parameters
       real CurrDen,CurrPos
 c 1 He / 2 Kapton / 3 Neon
       integer CurrMat
+      integer tab
 
       real CurrSP,eloss
       real scoef
@@ -48,10 +49,19 @@ c  Values are in cm and g
 
       if (id.eq.10204) then
        scoef = 1.
+       tab = 2
       else if (id.eq.10203) then
        scoef = 9./16.
+       tab = 2
       else if (id.eq.10103) then
        scoef = 9./64.
+       tab = 2
+      else if (id.eq.2212) then
+       scoef = 1
+       tab = 1
+      else if (id.eq.10102) then
+       scoef = 4
+       tab = 1
       else 
        scoef = 0
        write(*,*) 'ID ERROR'
@@ -63,11 +73,21 @@ c  Values are in cm and g
       do dist=0,6000
         CurrPos = real(dist)/1000
         i = 1
-        do while (HeE.gt.AlphaHe(1,i)) 
-          i = i+1
-        enddo
-        if(abs(HeE-AlphaHe(1,i)).gt.abs(HeE-AlphaHe(1,i-1))) i = i-1
-c        write(*,*) HeE,AlphaHe(1,i)
+        if (tab.eq.1) then
+          do while (HeE.gt.ProtonHe(1,i)) 
+            i = i+1
+          enddo
+          if(abs(HeE-ProtonHe(1,i)).gt.abs(HeE-ProtonHe(1,i-1))) i = i-1
+        else if (tab.eq.2) then
+          do while (HeE.gt.AlphaHe(1,i)) 
+            i = i+1
+          enddo
+          if(abs(HeE-AlphaHe(1,i)).gt.abs(HeE-AlphaHe(1,i-1))) i = i-1
+c          write(*,*) HeE,AlphaHe(1,i)
+        else
+          write(*,*) 'ERROR'
+          stop
+        endif
 
         if(CurrPos.lt.TarGasL) then
           CurrDen = TarGasD
@@ -97,11 +117,14 @@ c        write(*,*) HeE,AlphaHe(1,i)
           CurrDen = 0
         endif
         if (CurrMat .eq.1) then
-          CurrSP = AlphaHe(2,i)
+          if (tab.eq.1) CurrSP = ProtonHe(2,i)
+          if (tab.eq.2) CurrSP = AlphaHe(2,i)
         else if (CurrMat .eq.2) then
-          CurrSP = AlphaKa(2,i)
+          if (tab.eq.1) CurrSP = ProtonKa(2,i)
+          if (tab.eq.2) CurrSP = AlphaKa(2,i)
         else if (CurrMat .eq.3) then
-          CurrSP = AlphaNe(2,i)
+          if (tab.eq.1) CurrSP = ProtonNe(2,i)
+          if (tab.eq.2) CurrSP = AlphaNe(2,i)
         else
           CurrSP = 0
         endif
@@ -165,6 +188,42 @@ c Read tables
       do i=1,121
       read(8,"(ES9.3E3,A1,ES9.3E3,A1,ES9.3E3,A1,F6.4)") 
      &      AlphaNe(1,i),a1,AlphaNe(2,i),a2,AlphaNe(3,i),a3,AlphaNe(4,i)
+      enddo
+
+      close(8)
+
+      open(8,file='ProtonInHe',status='old')
+      do i=1,8 
+         read(8,*)
+      enddo
+
+      do i=1,121
+      read(8,"(ES9.3E3,A1,ES9.3E3,A1,ES9.3E3,A1,F6.4)") 
+     &  ProtonHe(1,i),a1,ProtonHe(2,i),a2,ProtonHe(3,i),a3,ProtonHe(4,i)
+      enddo
+
+      close(8)
+
+      open(8,file='ProtonInKapton',status='old')
+      do i=1,8 
+         read(8,*)
+      enddo
+
+      do i=1,121
+      read(8,"(ES9.3E3,A1,ES9.3E3,A1,ES9.3E3,A1,F6.4)") 
+     &  ProtonKa(1,i),a1,ProtonKa(2,i),a2,ProtonKa(3,i),a3,ProtonKa(4,i)
+      enddo
+
+      close(8)
+
+      open(8,file='ProtonInNeon',status='old')
+      do i=1,8 
+         read(8,*)
+      enddo
+
+      do i=1,121
+      read(8,"(ES9.3E3,A1,ES9.3E3,A1,ES9.3E3,A1,F6.4)") 
+     &  ProtonNe(1,i),a1,ProtonNe(2,i),a2,ProtonNe(3,i),a3,ProtonNe(4,i)
       enddo
 
       close(8)

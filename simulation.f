@@ -60,7 +60,7 @@ ccc Begining of the simulation
       iNS = 1
       iAccept = 1
       nkin = 1000
-      nevent = 100
+      nevent = 500
       ievent = 0
       bosout = 'test.A00'
       hbookout = 'helium.hbook'

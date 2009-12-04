@@ -88,8 +88,12 @@ c Acceptance
       common/accep/iAccept
 
 c Tables
+      real ProtonHe(4,121)
+      real ProtonKa(4,121)
+      real ProtonNe(4,121)
       real AlphaHe(4,121)
       real AlphaKa(4,121)
       real AlphaNe(4,121)
-      common/tables/AlphaHe,AlphaKa,AlphaNe
+      common/tables/AlphaHe,AlphaKa,AlphaNe,
+     &           ProtonHe,ProtonKa,ProtonNe
 

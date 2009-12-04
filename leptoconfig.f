@@ -21,7 +21,7 @@ c Lower limit for sqrt(s)
 
 c Q2 Limits
       CKIN(65) = .9 
-      CKIN(66) = 4. 
+      CKIN(66) = 15. 
 c W limit
       CKIN(77) = 1.90 
       CKIN(78) = -1. 
