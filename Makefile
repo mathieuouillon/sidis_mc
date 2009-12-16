@@ -27,4 +27,5 @@ clean:
 	rm -f $(NAME) simulation.o fermimotion.o leptoconfig.o book.o \
         fermimotion2.o nucdens.o density.o qweight.o transfo.o \
         accep_fun.o clas_at12g.o clas12_accept.o read_par_clas12g.o \
-        smear_fun.o eloss.o
+        smear_fun.o eloss.o fort.9 last.kumac last.kumacold paw.metafile
+
