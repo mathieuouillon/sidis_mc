@@ -40,7 +40,7 @@ ccccc Generate the table of density in function of r
 
       irho = 1
       step_size_dens = 0.01
-      r = 0.
+      r = 0.005
 
       do i=1,2000
         density_table(i) = nucdens(r,iZ,iA,idist,irho)
@@ -49,6 +49,7 @@ ccccc calculate the quantity of mater in function of the radius
         integral = integral + density_table(i)*r**3
         quantity_table(i) = integral
       enddo
+
 
       end
 

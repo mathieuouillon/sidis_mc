@@ -55,7 +55,7 @@ ccccc Miscellaneous
 ccc Begining of the simulation
       call TIMEX(T1)
       E0 = 5.014
-      iTg = 2
+      iTg = 1
       iFM = 3
       iDens = 1
       iSim = 1
@@ -181,11 +181,12 @@ ccc Lorentz boost of all the particles
           endif
 
 ccc Energy loss of the partons
-          if (iQuenching.ne.0) then
+          if (iQuenching.ne.0.and.iTg.gt.1) then
             call InterPos
             flag = 0
             do ip =1,N
               if(K(ip,1).eq.2) then
+ 101            continue
                 call QWComput(qhat,
      &                       P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
                 if (QW_w .gt. 0.) then
@@ -223,11 +224,8 @@ c                   write(*,*) 'QW:',QW_w
                     P(ip,2) = ipy
                     P(ip,3) = ipz
                     P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
-c                 else
-c                   P(ip,1) = 0.
-c                   P(ip,2) = 0.
-c                   P(ip,3) = 0.
-c                   P(ip,4) = P(ip,5)
+                  else
+                    goto 101
                   endif
                 endif
               endif
