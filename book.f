@@ -36,6 +36,8 @@ ccccc Include all the common blocks
       if (iQW .ne. 0) then
         call HBNAME(33,'QWeight',QW_wc ,'QW_wc')
         call HBNAME(33,'QWeight',QW_R  ,'QW_R ')
+        call HBNAME(33,'QWeight',QW_L  ,'QW_L ')
+        call HBNAME(33,'QWeight',QW_w  ,'QW_w ')
       endif
 
       call HBNAME(33,'EvntInfo',Q22  ,'Q2   ')

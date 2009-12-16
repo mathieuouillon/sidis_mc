@@ -2,10 +2,11 @@
       implicit none
 c------------------------------------------------------------------------------
 c TO DO LIST:
-c   Implement position in the nuclei of the interaction (book it in the ntuple)
-c   Implement Quenching 
+c   Implement collider option
 c   Implement some radiative effect
 c   Separate FM from nuclei calculcation
+c   Gluon or quark in QW to add (test)
+c   Change the feature for "absorbed" quarks
 c   Check if there is flag for every options
 c
 c------------------------------------------------------------------------------
@@ -23,7 +24,8 @@ c All FM distributions are limited to 1 GeV nucleons
 c [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
       integer iDens !0= hard sphere, 1= Wood Saxon param
-c     integer iQW ! 0 desactivate Quenching
+      integer iQuenching ! 0 desactivate Quenching
+c     integer iqw 1 SW, 2 Arleo
       integer iSim ! 0 = Turn off Pythia
       integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
                   ! this option is only for 2H and 4He targets
@@ -31,9 +33,9 @@ c     integer iAccept ! 1 = activate clas 12 acceptance
       real E0 ! beam energy (GeV)
       integer i,nevent ! number of events
       integer j,nkin ! number of kinematics
-      real qhat 
       integer nucleon ! 0 = neutron , 1 = proton
       integer specId ! spectator Id
+      real qhat !Transport coefficient (GeV^2.fm^-1)
 
 ccccc Include all the common blocks
       include 'common.f'
@@ -46,30 +48,43 @@ ccccc Miscellaneous
       real Mom1,Mom2,Mom3,Mom4 ! Dummy value
       double precision BeamE !Input value for pythia
       integer ip ! For do
-      real ipx,ipy,ipz !dummy only for test
+      real ipx,ipy,ipz,E !dummy only for test
+      real ipl,ipt
+      integer flag
+      real iplx,iply,iplz
+      real iptx,ipty,iptz
+ 
 
-ccc Begining of the simulation
       call TIMEX(T1)
-      E0 = 11.
-      iTg = 7
+ccc Begining of the simulation
+      E0 = 5.014
+      iTg = 4
       iFM = 3
       iDens = 1
-      iQW = 0
-      qhat =0.6
       iSim = 1
-      iNS = 1
-      iAccept = 1
+      iNS = 0
+      iAccept = 0
       nkin = 1000
       nevent = 500
-      ievent = 0
       bosout = 'test.A00'
       hbookout = 'helium.hbook'
 
+ccc Init for the quenching weights
+      iQuenching = 1
+      iqw = 1
+      alphas = 1d0/3d0
+      scor = 1
+      ncor = 0
+      sfthrd = 1
+      qhat =0.6
+
+ccc To save time with useless initialize of Pythia
       if (iTg .eq. 0) then
         nevent = nkin*nevent
         nkin = 1
       endif
 ccc Initialize
+      ievent = 0
       call InitFM(iTg,rFM,iFM)
       call GenNucDens(iDens)
       call InitRandom
@@ -126,7 +141,7 @@ c        call PythiaConfigHayk
         call PythiaConfigCLAS
 
 ccc Block fragmentation if QW will be applied
-        if (iQW.ne.0) MSTJ(1) =0
+        if (iQuenching.ne.0) MSTJ(1) =0
 
 
 ccc Initialize the simulation
@@ -147,8 +162,7 @@ ccc Loop over events of a given kinematic
 
 ccc Counter
           ievent = ievent + 1
-c         if (MOD(i+(nevent*(j-1)),nevent*nkin/20) .eq. 0) 
-c    &          write(*,*) i+(nevent*(j-1)),'events proceded'
+          if (MOD(i,10000) .eq. 0) write(*,*) ievent,'events proceded'
 
 ccc Some initialization
           call InitKin2Book
@@ -180,19 +194,56 @@ ccc Lorentz boost of all the particles
           endif
 
 ccc Energy loss of the partons
-          if (iQW.ne.0) then
+          if (iQuenching.ne.0.and.iTg.gt.1) then
             call InterPos
-            ipx = 0.476
-            ipy = 0.104
-            ipz = 3.505
-            call QWComput(qhat,ipx,ipy,ipz)
-c to pick quarks
-c           do ip =1,N
-c             if(K(ip,1).lt.10 .and. abs(K(ip,2)).lt.7) then
-c               write(*,*) ip
-c               CALL PYLIST(1)
-c             endif
-c           enddo
+            flag = 0
+            do ip =1,N
+c              if((abs(K(ip,2)).lt.6.or.K(ip,2).eq.21).and.K(ip,1).lt.9) then
+              if(abs(K(ip,2)).lt.6.and.K(ip,1).lt.9) then
+ 101            continue
+                call QWComput(qhat,
+     &                       P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
+                if (QW_w .gt. 0.) then
+                  if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)) then
+                    ipt = sqrt(8*QW_w/3/alphas/QW_L)
+                    ipl = dsqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
+                    iplx = P(ip,1)/ipl
+                    iply = P(ip,2)/ipl
+                    iplz = P(ip,3)/ipl
+                    iptz = 0.
+                    if (iply .ne. 0) then
+                      ipty = sqrt(iplx**2/(iply**2*((iplx/iply)**2+1)))
+                      iptx = sqrt(1-ipty**2)
+                      if (iplx*iply.gt.0) ipty = -ipty
+                    else
+                      ipty = 1.
+                      iptx = 0.
+                    endif
+c                   write(*,*) 'Pl:',ipl,iplx,iply,iplz
+c                   write(*,*) 'Pt:',ipt,iptx,ipty,iptz
+c                   write(*,*) 'QW:',QW_w
+
+                    ipl = ipl - QW_w
+                    if (ipt.ge.ipl) then
+                      ipx = ipl*iptx
+                      ipy = ipl*ipty
+                    else
+                      ipl = sqrt(ipl**2 - ipt**2)
+                      ipx = ipt*iptx+ipl*iplx
+                      ipy = ipt*ipty+ipl*iply
+                      ipz = ipt*iptz+ipl*iplz
+                    endif
+
+                    P(ip,1) = ipx
+                    P(ip,2) = ipy
+                    P(ip,3) = ipz
+                    P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
+                  else
+                    goto 101
+                  endif
+                endif
+              endif
+            enddo
 
 ccc Fragmentation
             MSTJ(1) =1
