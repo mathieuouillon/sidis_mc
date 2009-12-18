@@ -29,7 +29,7 @@ cccc Calculate position on cartesian axis
       end
 
 ccccc Generate the table of density in function of r
-      subroutine GenNucDens(idist)
+      subroutine GenNucDens
       implicit none
 
       include 'common.f'
@@ -38,6 +38,7 @@ ccccc Generate the table of density in function of r
       double precision nucdens,r
       real integral
 
+      idist = iDens
       irho = 1
       step_size_dens = 0.01
       r = 0.005

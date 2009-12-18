@@ -83,9 +83,13 @@ c Position of the interaction in CLAS for GSIM
       real pi
       data pi/3.1415926535/
 
-c Acceptance
-      integer iAccept
-      common/accep/iAccept
+c Flags and config values
+      integer iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent 
+      integer nkin,nucleon,specId 
+      real rFM,E0,qhat 
+      common/flags/iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent,
+     &             nkin,nucleon,specId,rFM,E0,qhat
+
 
 c Tables
       real ProtonHe(4,121)

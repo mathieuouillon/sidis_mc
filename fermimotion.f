@@ -1,14 +1,11 @@
 c------------------------------------------------------------------------------
 c Initialize fermi momentum
 c------------------------------------------------------------------------------
-      subroutine  InitFM(iTg,rFM,iFM)
+      subroutine  InitFM
       implicit none
 
 ccccc Include all the common blocks
       include 'common.f'
-      integer iTg ! = 0 no FM, = 1 deut, = 2 C, = 3 Al, = 4 Fe, = 5 Sn, = 6 Pb
-      integer iFM ! flag for the kind of FM
-      real rFM ! Fermi momentum  in the target (GeV)
       integer irho !dummy
       
 ccc Fill rFM, iZ and iA in function of the Target
@@ -63,12 +60,9 @@ ccc Produce the table for FM generation (CS)
 c------------------------------------------------------------------------------
 c Initialize kinematics values with fermi motion
 c------------------------------------------------------------------------------
-      subroutine FMParam(rFM,iFM,iTg)
+      subroutine FMParam
       implicit none
 
-      real E0 ! beam energy (GeV)
-      real rFM ! Fermi momentum  in the target (GeV)
-      integer iFM,iTg ! Flag for the kind of FM
       real a
       data a/2./
       real Plim

@@ -12,10 +12,10 @@ c
 c------------------------------------------------------------------------------
 
 ccccc Values for the simulation
-      integer iTg ! = 0 no FM, = 1 deut, = 2 C, = 3 Al, = 4 Fe, = 5 Sn, = 6 Pb
-                  ! = 7 4 He
-      real rFM ! Fermi momentum  in the target (GeV)
-      integer iFM ! 
+c     integer iTg ! = 0 no FM, = 1 deut, = 2 C, = 3 Al, = 4 Fe, = 5 Sn, = 6 Pb
+c                 ! = 7 4 He
+c     real rFM ! Fermi momentum  in the target (GeV)
+c     integer iFM ! 
 c 0 = hard sphere with values from [1], 
 c 1 = like 0 plus a tail from [2],
 c 2 = Accardi SVG (put list of available nuclei)
@@ -23,19 +23,19 @@ c 3 = Accardi CS (put list of available nuclei)
 c All FM distributions are limited to 1 GeV nucleons
 c [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      integer iDens !0= hard sphere, 1= Wood Saxon param
-      integer iQuenching ! 0 desactivate Quenching
+c     integer iDens !0= hard sphere, 1= Wood Saxon param
+c     integer iQuenching ! 0 desactivate Quenching
 c     integer iqw 1 SW, 2 Arleo
-      integer iSim ! 0 = Turn off Pythia
-      integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
-                  ! this option is only for 2H and 4He targets
+c     integer iSim ! 0 = Turn off Pythia
+c     integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
+c                 ! this option is only for 2H and 4He targets
 c     integer iAccept ! 1 = activate clas 12 acceptance
-      real E0 ! beam energy (GeV)
-      integer i,nevent ! number of events
-      integer j,nkin ! number of kinematics
-      integer nucleon ! 0 = neutron , 1 = proton
-      integer specId ! spectator Id
-      real qhat !Transport coefficient (GeV^2.fm^-1)
+c     real E0 ! beam energy (GeV)
+c     integer i,nevent ! number of events
+c     integer j,nkin ! number of kinematics
+c     integer nucleon ! 0 = neutron , 1 = proton
+c     integer specId ! spectator Id
+c     real qhat !Transport coefficient (GeV^2.fm^-1)
 
 ccccc Include all the common blocks
       include 'common.f'
@@ -53,6 +53,7 @@ ccccc Miscellaneous
       integer flag
       real iplx,iply,iplz
       real iptx,ipty,iptz
+      integer i,j
  
 
       call TIMEX(T1)
@@ -85,8 +86,8 @@ ccc To save time with useless initialize of Pythia
       endif
 ccc Initialize
       ievent = 0
-      call InitFM(iTg,rFM,iFM)
-      call GenNucDens(iDens)
+      call InitFM
+      call GenNucDens
       call InitRandom
       call InitHbook
       if (iAccept.eq.1) call readtables
@@ -96,10 +97,10 @@ c      call CLASBOSINIT('MCEVENT')
 
  100    continue
 ccc Randomize Theta Phi and Kf
-        call FMParam(rFM,iFM,iTg)
+        call FMParam
 
 ccc Initialize the kinematics
-        call InitKin(E0,rFM)
+        call InitKin
 
 ccc Going in the nucleon rest frame
         if(iTg .ne. 0) then
@@ -201,8 +202,7 @@ ccc Energy loss of the partons
 c              if((abs(K(ip,2)).lt.6.or.K(ip,2).eq.21).and.K(ip,1).lt.9) then
               if(abs(K(ip,2)).lt.6.and.K(ip,1).lt.9) then
  101            continue
-                call QWComput(qhat,
-     &                       P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
+                call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
                 if (QW_w .gt. 0.) then
                   if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)) then
                     ipt = sqrt(8*QW_w/3/alphas/QW_L)
@@ -349,11 +349,9 @@ c------------------------------------------------------------------------------
 c------------------------------------------------------------------------------
 c Initialize kinematics values
 c------------------------------------------------------------------------------
-      subroutine InitKin(E0,rFM)
+      subroutine InitKin
       implicit none
 
-      real E0 ! beam energy (GeV)
-      real rFM ! Fermi momentum  in the target (GeV)
       real me
       data me/0.000511/
       real mn

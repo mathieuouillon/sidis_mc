@@ -1,11 +1,10 @@
-      subroutine QWComput(qhat,ipx,ipy,ipz,E,id)
+      subroutine QWComput(ipx,ipy,ipz,E,id)
       implicit none
 
       include 'common.f'
 
       real ipx,ipy,ipz,E !input energy momentum of the particle
       real partmass !mass of the particle (for conservation purpose)
-      real qhat !Transport coefficient (GeV^2.fm^-1)
       real radius !distance to the center of the nuclei
       real x,y,z !position of the parton
       real pp,px,py,pz !integral steps in the space
