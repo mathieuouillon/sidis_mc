@@ -46,7 +46,7 @@ ccccc Include all the common blocks
       call HBNAME(33,'EvntInfo',XBj  ,'XBj  ')
       call HBNAME(33,'EvntInfo',y_ele,'y    ')
     
-      call HBNAME(33,'PartInfo',Nb_part  ,'Nb_part[0,30]      ')
+      call HBNAME(33,'PartInfo',Nb_part  ,'Nb_part[0,50]      ')
       call HBNAME(33,'PartInfo',id_part  ,'Npart_id(Nb_part)  ')
       call HBNAME(33,'PartInfo',id_mother,'Nmother_id(Nb_part)')
       call HBNAME(33,'PartInfo',acc_part ,'Naccept(Nb_part)   ')

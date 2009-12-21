@@ -2,10 +2,9 @@
       implicit none
 c------------------------------------------------------------------------------
 c TO DO LIST:
-c   Implement collider option
 c   Implement some radiative effect
 c   Separate FM from nuclei calculcation
-c   Gluon or quark in QW to add (test)
+c   Gluon or quark in QW to verify (test)
 c   Change the feature for "absorbed" quarks
 c   Check if there is flag for every options
 c
@@ -36,6 +35,8 @@ c     integer j,nkin ! number of kinematics
 c     integer nucleon ! 0 = neutron , 1 = proton
 c     integer specId ! spectator Id
 c     real qhat !Transport coefficient (GeV^2.fm^-1)
+c     integer iColl !1 = activate collider kinematic
+c     real EColl ! energy of the nuclei (GeV/nucleon)
 
 ccccc Include all the common blocks
       include 'common.f'
@@ -59,12 +60,14 @@ ccccc Miscellaneous
       call TIMEX(T1)
 ccc Begining of the simulation
       E0 = 5.014
+      EColl = 5.0
       iTg = 4
       iFM = 3
       iDens = 1
       iSim = 1
       iNS = 0
       iAccept = 0
+      iColl = 1
       nkin = 1000
       nevent = 500
       bosout = 'test.A00'
@@ -369,6 +372,12 @@ ccccc Include all the common blocks
       Pnx = sin(ThFM)*cos(PhiFM)*PPn
       Pny = sin(ThFM)*sin(PhiFM)*PPn
       Pnz = cos(ThFM)*PPn
+
+      if (iColl.eq.1) then
+        Pnz = Pnz - EColl
+        PPn = sqrt(Pnx**2 + Pny**2 + Pnz**2)
+        EEn = sqrt(PPn**2+mn**2)
+      endif
 
       ele_ene = EEe
       ele_the = 0
