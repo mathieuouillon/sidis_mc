@@ -46,7 +46,7 @@ ccccc Include all the common blocks
       call HBNAME(33,'EvntInfo',XBj  ,'XBj  ')
       call HBNAME(33,'EvntInfo',y_ele,'y    ')
     
-      call HBNAME(33,'PartInfo',Nb_part  ,'Nb_part[0,50]      ')
+      call HBNAME(33,'PartInfo',Nb_part  ,'Nb_part[0,99]      ')
       call HBNAME(33,'PartInfo',id_part  ,'Npart_id(Nb_part)  ')
       call HBNAME(33,'PartInfo',id_mother,'Nmother_id(Nb_part)')
       call HBNAME(33,'PartInfo',acc_part ,'Naccept(Nb_part)   ')
@@ -99,6 +99,16 @@ ccccc function
       integer clas12_accept,RTPC_accept
 ccccc dummy
       real Ekin,Theta
+ccccc Nucleon Momentum
+      real pp
+ccccc gamma beta
+      real ga,be
+
+      if(iColl.eq.1) then
+        pp = sqrt(EColl**2 - .939**2)
+        be = pp / EColl
+        ga = 1 / sqrt(1-be**2)
+      endif
 
 C.. Booking the hbook
       do ip=1,N
@@ -106,14 +116,14 @@ C.. Booking the hbook
 
         if (k(ip,2).eq.22 .and. k(ip,3).eq.1) then
           Nu = p(ip,4)
-c          write(*,*) 'Nu =', Nu, p(ip,4)
+          if(iColl.eq.1) Nu = ga*(Nu + be*sqrt(Nu**2+Q22))
           Q22 = P(ip,5)**2
           if (Nu .ne. 0) XBj = Q22 /2 /0.938 /Nu
           if (Nu .ne. 0) y_ele = Nu / p(1,4)
+          if(iColl.eq.1) y_ele = Nu / ga / (1+be) / p(1,4)
           W = 0.
           W = dsqrt((p(2,4)+p(ip,4))**2-(p(2,3)+p(ip,3))**2
      &                                 -p(ip,2)**2-p(ip,1)**2)
-c          W = sqrt(W2)
           TrkGS = ip
           phi_ele = atan2(p(ip,2),p(ip,1))*57.2958 +210
         endif
