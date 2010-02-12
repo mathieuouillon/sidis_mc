@@ -1,14 +1,17 @@
 NAME = simulation
 
 FFLAGS  =  -w -g
-CFLAGS  =  -g -O2
+CPPFLAGS  =  -g -O2
+
+ROOTLIBS = $(shell root-config --libs)
+CPPFLAGS += $(shell root-config --cflags)
 
 # add BOS.f for BOS file output
 SRC=    simulation.f fermimotion.f pythia-6.4.19.f \
         leptoconfig.f book.f transfo.f \
         fermimotion2.f nucdens.f density.f qweight.f \
         accep_fun.f clas_at12g.f clas12_accept.f read_par_clas12g.f \
-        smear_fun.f eloss.f main.c
+        smear_fun.f eloss.f main.cc
 
 OBJ=    simulation.o fermimotion.o pythia-6.4.19.o \
         leptoconfig.o book.o transfo.o \
@@ -19,10 +22,10 @@ OBJ=    simulation.o fermimotion.o pythia-6.4.19.o \
 .f.o:
 	gfortran -c $(FFLAGS) -o $@ $*.f
 .c.o:
-	gcc $(CFLAGS) -c $*.c
+	g++ $(CPPFLAGS) -c $*.cc
 
 go: ${OBJ}
-	gfortran  $(FFLAGS) -o $(NAME) $(OBJ)  -lc -L/cern/pro/lib -lpawlib -lpacklib
+	g++ $(CPPFLAGS) -o $(NAME) $(OBJ)  -lgfortran -L/cern/pro/lib -lpawlib -lpacklib $(ROOTLIBS)
 #	gfortran  $(FFLAGS) -o $(NAME) $(OBJ)  -L$(CERN_ROOT)/lib -lpawlib -lpacklib \
                                                -L$(CLAS_LIB) -lbosio -lbos -lfpack -lc_bos_io -lrecutl
 
