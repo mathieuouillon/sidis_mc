@@ -79,7 +79,7 @@ ccccc Calculate the energy loss probability
       total = 0.
       do i=1,nb_step
         xx = step_QW * i
-        call qweight(ipart,dfloat(QW_R),xx,yy,cont(i),disc)
+        call qweight(ipart,dble(QW_R),xx,yy,cont(i),disc)
 c        write (*,*) i,cont(i),disc
         total = total + cont(i)*step_QW
       enddo
