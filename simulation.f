@@ -309,7 +309,6 @@ ccc Close the hbook file
 c      call hrout(33,icycle,' ')
 c      call hrend('out')
 c      call CLASBOSEND('MCEVENT')
-      call closeroot()
 
       call TIMEX(T2)
 
