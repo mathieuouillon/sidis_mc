@@ -1,4 +1,4 @@
-      program simulation
+      integer function simulation()
       implicit none
 c------------------------------------------------------------------------------
 c TO DO LIST:
@@ -67,14 +67,14 @@ ccc Begining of the simulation
       iSim = 1
       iNS = 0
       iAccept = 0
-      iColl = 1
-      nkin = 1000
-      nevent = 500
+      iColl = 0
+      nkin = 1
+      nevent = 50
       bosout = 'test.A00'
       hbookout = 'helium.hbook'
 
 ccc Init for the quenching weights
-      iQuenching = 1
+      iQuenching = 0
       iqw = 1
       alphas = 1d0/3d0
       scor = 1
@@ -92,7 +92,7 @@ ccc Initialize
       call InitFM
       call GenNucDens
       call InitRandom
-      call InitHbook
+c      call InitHbook
       if (iAccept.eq.1) call readtables
 c      call CLASBOSINIT('MCEVENT')
 
@@ -106,7 +106,7 @@ ccc Initialize the kinematics
         call InitKin
 
 ccc Going in the nucleon rest frame
-        if(iTg .ne. 0) then
+        if(iTg .ne. 0 .or. iColl.ne.0) then
           BB1 = PPn/EEn
           B1x = Pnx/EEn
           B1y = Pny/EEn
@@ -140,9 +140,9 @@ ccc Center of mass energy calculation
 
 ccc Parameters for Pythia
 c        call PythiaConfigBrahim
-c        call PythiaConfigOWN
+        call PythiaConfigOWN
 c        call PythiaConfigHayk
-        call PythiaConfigCLAS
+c        call PythiaConfigCLAS
 
 ccc Block fragmentation if QW will be applied
         if (iQuenching.ne.0) MSTJ(1) =0
@@ -176,7 +176,7 @@ ccc Event generation
 c          if(iSim.ne.0) CALL PYLIST(1)
 
 ccc Come back in Lab frame
-          if(iTg .ne. 0) then
+          if(iTg .ne. 0 .or. iColl.ne.0) then
 ccc Rotate around z
             call FinalRotZ(-Phi)
 ccc Rotate around y
@@ -299,14 +299,15 @@ ccc Compute of physical values for the hbook
           call ComputV
 
 ccc Book the ntuple
-          call hfnt(33)
+          call fillroot()
+c          call hfnt(33)
 c          call CLASBOSFILL(iTg)
         enddo
       enddo
 
 ccc Close the hbook file
-      call hrout(33,icycle,' ')
-      call hrend('out')
+c      call hrout(33,icycle,' ')
+c      call hrend('out')
 c      call CLASBOSEND('MCEVENT')
 
       call TIMEX(T2)
