@@ -68,7 +68,7 @@ ccc Begining of the simulation
       iNS = 0
       iAccept = 0
       iColl = 0
-      nkin = 1000
+      nkin = 1
       nevent = 50
       bosout = 'test.A00'
       hbookout = 'helium.hbook'
@@ -299,15 +299,17 @@ ccc Compute of physical values for the hbook
           call ComputV
 
 ccc Book the ntuple
+          call fillroot()
 c          call hfnt(33)
 c          call CLASBOSFILL(iTg)
         enddo
       enddo
 
 ccc Close the hbook file
-      call hrout(33,icycle,' ')
-      call hrend('out')
+c      call hrout(33,icycle,' ')
+c      call hrend('out')
 c      call CLASBOSEND('MCEVENT')
+      call closeroot()
 
       call TIMEX(T2)
 
