@@ -3,7 +3,7 @@
 
       include 'common.f'
 
-      real ipx,ipy,ipz,E !input energy momentum of the particle
+      double precision ipx,ipy,ipz,E !input energy momentum of the particle
       real partmass !mass of the particle (for conservation purpose)
       real radius !distance to the center of the nuclei
       real x,y,z !position of the parton

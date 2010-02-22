@@ -1,19 +1,18 @@
 c------------------------------------------------------------------------------
 c Initialize fermi momentum
 c------------------------------------------------------------------------------
-      subroutine  InitFM
+      subroutine  InitNucl
       implicit none
 
 ccccc Include all the common blocks
       include 'common.f'
-      integer irho !dummy
       
 ccc Fill rFM, iZ and iA in function of the Target
         select case(iTg)
           case (0) 
             rFM = 0
             iZ = 1
-            iA = 2
+            iA = 1
           case (1) 
             rFM = 0.07
             iZ = 1
@@ -39,14 +38,24 @@ ccc Fill rFM, iZ and iA in function of the Target
             iZ = 82
             iA = 208
           case (7) 
-            rFM = 0.120 !no source for this, i extrapolate between 6Li and 2H
+            rFM = 0.120 !no source for this, I(RD) extrapolate between 6Li and 2H
             iZ = 2
             iA = 4
           case default 
             rFM = 0
-            iZ = 0
-            iA = 0
+            iZ = 1
+            iA = 1
         end select
+
+      end
+
+      subroutine  InitFM
+      implicit none
+
+ccccc Include all the common blocks
+      include 'common.f'
+      integer irho !dummy
+      
 
 ccc Produce the table for FM generation (CS)
       if (iFM.eq.2 .or. iFM.eq.3) then 

@@ -3,40 +3,12 @@
 c------------------------------------------------------------------------------
 c TO DO LIST:
 c   Implement some radiative effect
-c   Separate FM from nuclei calculcation
 c   Gluon or quark in QW to verify (test)
+c   Add random to calculate the transverse momentum of quarks (actually phi distribution is WRONG if energy loss is activated)
 c   Change the feature for "absorbed" quarks
 c   Check if there is flag for every options
-c
+c   CoM energy broken
 c------------------------------------------------------------------------------
-
-ccccc Values for the simulation
-c     integer iTg ! = 0 no FM, = 1 deut, = 2 C, = 3 Al, = 4 Fe, = 5 Sn, = 6 Pb
-c                 ! = 7 4 He
-c     real rFM ! Fermi momentum  in the target (GeV)
-c     integer iFM ! 
-c 0 = hard sphere with values from [1], 
-c 1 = like 0 plus a tail from [2],
-c 2 = Accardi SVG (put list of available nuclei)
-c 3 = Accardi CS (put list of available nuclei)
-c All FM distributions are limited to 1 GeV nucleons
-c [1] E. J. Moniz et al. PRL 26, 445 (1971)
-c [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-c     integer iDens !0= hard sphere, 1= Wood Saxon param
-c     integer iQuenching ! 0 desactivate Quenching
-c     integer iqw 1 SW, 2 Arleo
-c     integer iSim ! 0 = Turn off Pythia
-c     integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
-c                 ! this option is only for 2H and 4He targets
-c     integer iAccept ! 1 = activate clas 12 acceptance
-c     real E0 ! beam energy (GeV)
-c     integer i,nevent ! number of events
-c     integer j,nkin ! number of kinematics
-c     integer nucleon ! 0 = neutron , 1 = proton
-c     integer specId ! spectator Id
-c     real qhat !Transport coefficient (GeV^2.fm^-1)
-c     integer iColl !1 = activate collider kinematic
-c     real EColl ! energy of the nuclei (GeV/nucleon)
 
 ccccc Include all the common blocks
       include 'common.f'
@@ -58,39 +30,72 @@ ccccc Miscellaneous
  
 
       call TIMEX(T1)
-ccc Begining of the simulation
+CCCCCC Begining of the simulation
+ccc Integer j,nkin ! number of kinematics
+      nkin = 2000
+ccc Number of events per kinematics
+      nevent = 500
+ccc Electron energy (GeV)
       E0 = 5.014
-      EColl = 5.0
+ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
       iTg = 4
-      iFM = 3
-      iDens = 1
-      iSim = 1
-      iNS = 0
-      iAccept = 0
+
+ccc Collider options
+c     integer iColl !1 = activate collider kinematic
       iColl = 0
-      nkin = 1
-      nevent = 50
+c     real EColl ! energy of the nuclei (GeV/nucleon)
+      EColl = 5.0
+
+ccc Fermimotion flag 
+c     0 = hard sphere with values from [1], 
+c     1 = like 0 plus a tail from [2],
+c     2 = Accardi SVG (put list of available nuclei)
+c     3 = Accardi CS (put list of available nuclei)
+c     All FM distributions are limited to 1 GeV nucleons
+c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
+c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
+      iFM = 3
+
+ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
+c                 ! this option is only for 2H and 4He targets
+      iNS = 0
+
+ccc CLAS12 Acceptance put 1 
+      iAccept = 0
+
+ccc dummy
       bosout = 'test.A00'
       hbookout = 'helium.hbook'
 
 ccc Init for the quenching weights
-      iQuenching = 0
+c     integer iQuenching ! 0 desactivate Quenching
+      iQuenching = 1
+c     integer iqw 1 SW, 2 Arleo
       iqw = 1
       alphas = 1d0/3d0
       scor = 1
       ncor = 0
       sfthrd = 1
+c     real qhat !Transport coefficient (GeV^2.fm^-1)
       qhat =0.6
+c     integer iDens !0= hard sphere, 1= Wood Saxon param
+      iDens = 1
 
-ccc To save time with useless initialize of Pythia
+c     integer iSim ! 0 = Turn off Pythia for tests
+      iSim = 1
+
+ccc To save time with useless Pythia initialization
       if (iTg .eq. 0) then
         nevent = nkin*nevent
         nkin = 1
       endif
 ccc Initialize
       ievent = 0
-      call InitFM
-      call GenNucDens
+      call InitNucl
+      if(rFM.ne.0) then
+        call InitFM
+        call GenNucDens
+      endif
       call InitRandom
 c      call InitHbook
       if (iAccept.eq.1) call readtables
@@ -100,7 +105,7 @@ c      call CLASBOSINIT('MCEVENT')
 
  100    continue
 ccc Randomize Theta Phi and Kf
-        call FMParam
+      if(rFM.ne.0) call FMParam
 
 ccc Initialize the kinematics
         call InitKin
@@ -140,9 +145,9 @@ ccc Center of mass energy calculation
 
 ccc Parameters for Pythia
 c        call PythiaConfigBrahim
-        call PythiaConfigOWN
+c        call PythiaConfigOWN
 c        call PythiaConfigHayk
-c        call PythiaConfigCLAS
+        call PythiaConfigCLAS
 
 ccc Block fragmentation if QW will be applied
         if (iQuenching.ne.0) MSTJ(1) =0
