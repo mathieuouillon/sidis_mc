@@ -38,7 +38,7 @@ ccc Number of events per kinematics
 ccc Electron energy (GeV)
       E0 = 5.014
 ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
-      iTg = 4
+      iTg = 1
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -252,14 +252,15 @@ c                   write(*,*) 'QW:',QW_w
                 endif
               endif
             enddo
+          endif
 
 ccc Fragmentation
+          if (iQuenching.ne.0) then
             MSTJ(1) =1
             if(iSim.ne.0) call PYEXEC
             MSTJ(1) =0
 c            CALL PYLIST(1)
           endif
-
 ccc Output to check Lorentz transforamtions
 c          write(*,*) 'Momentum of the electron: ',BeamE
 c          write(*,*) 'Momentum of the electron: ',p(1,4)
