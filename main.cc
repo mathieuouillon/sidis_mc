@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 #include "TROOT.h"
 #include "TFile.h"
 #include "TTree.h"
 
 #include "main.h"
+
+using namespace std;
 
 TFile *f;
 TTree *t2;
@@ -13,10 +16,10 @@ void branching();
 int main(int argc, char * argv[])
 {
         int i;
-        f= new TFile("tree2.root","recreate");
-        t2= new TTree("t2","a Tree with data from a fake Geant3");
+        if (argc > 1) f= new TFile(argv[1],"recreate");
+        else f= new TFile("default.root","recreate");
+        t2= new TTree("t2","Tree with simulated events");
         branching();
-        printf("Hello from %s!\n", argv[0]);
         i = simulation_();
         t2->Write();
         return 0;
