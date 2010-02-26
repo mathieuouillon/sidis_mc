@@ -3,11 +3,8 @@
 c------------------------------------------------------------------------------
 c TO DO LIST:
 c   Implement some radiative effect
-c   Gluon or quark in QW to verify (test)
-c   Add random to calculate the transverse momentum of quarks (actually phi distribution is WRONG if energy loss is activated)
-c   Change the feature for "absorbed" quarks
 c   Check if there is flag for every options
-c   CoM energy broken
+c   CoM output energy broken
 c------------------------------------------------------------------------------
 
 ccccc Include all the common blocks
@@ -26,6 +23,8 @@ ccccc Miscellaneous
       integer flag
       real iplx,iply,iplz
       real iptx,ipty,iptz
+      real ipix,ipiy,ipiz
+      real th,ph
       integer i,j
  
 
@@ -38,7 +37,7 @@ ccc Number of events per kinematics
 ccc Electron energy (GeV)
       E0 = 5.014
 ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
-      iTg = 1
+      iTg = 4
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -212,7 +211,7 @@ c              if((abs(K(ip,2)).lt.6.or.K(ip,2).eq.21).and.K(ip,1).lt.9) then
  101            continue
                 call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
                 if (QW_w .gt. 0.) then
-                  if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)) then
+                  if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)-.25) then
                     ipt = sqrt(8*QW_w/3/alphas/QW_L)
                     ipl = dsqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
                     iplx = P(ip,1)/ipl
@@ -220,9 +219,18 @@ c              if((abs(K(ip,2)).lt.6.or.K(ip,2).eq.21).and.K(ip,1).lt.9) then
                     iplz = P(ip,3)/ipl
                     iptz = 0.
                     if (iply .ne. 0) then
-                      ipty = sqrt(iplx**2/(iply**2*((iplx/iply)**2+1)))
-                      iptx = sqrt(1-ipty**2)
-                      if (iplx*iply.gt.0) ipty = -ipty
+c                      ipty = sqrt(iplx**2/(iply**2*((iplx/iply)**2+1)))
+c                      iptx = sqrt(1-ipty**2)
+c                      if (iplx*iply.gt.0) ipty = -ipty
+                       ipiz = ranf(0)*4*asin(1.)
+                       ipix = cos(iptz)
+                       ipiy = sin(iptz)
+                       ipiz = 0
+                       iptx = -ipix*iplx*iplz/sqrt(1-iplz**2)
+     &                        -ipiy*iply/sqrt(1-iplz**2)
+                       ipty = -ipix*iply*iplz/sqrt(1-iplz**2)
+     &                        -ipiy*iplx/sqrt(1-iplz**2)
+                       iptz = ipix*sqrt(1-iplz**2)
                     else
                       ipty = 1.
                       iptx = 0.
@@ -230,11 +238,13 @@ c              if((abs(K(ip,2)).lt.6.or.K(ip,2).eq.21).and.K(ip,1).lt.9) then
 c                   write(*,*) 'Pl:',ipl,iplx,iply,iplz
 c                   write(*,*) 'Pt:',ipt,iptx,ipty,iptz
 c                   write(*,*) 'QW:',QW_w
+c                   write(*,*) 'test',iplx*iptx+iply*ipty+iplz*iptz
 
                     ipl = ipl - QW_w
                     if (ipt.ge.ipl) then
                       ipx = ipl*iptx
                       ipy = ipl*ipty
+                      ipz = ipl*iptz
                     else
                       ipl = sqrt(ipl**2 - ipt**2)
                       ipx = ipt*iptx+ipl*iplx
@@ -247,7 +257,12 @@ c                   write(*,*) 'QW:',QW_w
                     P(ip,3) = ipz
                     P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
                   else
-                    goto 101
+                    th = acos(2*ranf(0)-1)
+                    ph = 2*pi*ranf(0)
+                    P(ip,1) = sin(th)*cos(ph)*.25
+                    P(ip,2) = sin(th)*sin(ph)*.25
+                    P(ip,3) = cos(th)*.25
+                    P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
                   endif
                 endif
               endif
