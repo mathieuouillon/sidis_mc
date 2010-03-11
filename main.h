@@ -17,6 +17,7 @@ extern "C" {
   extern struct {
       float ThFM,PhiFM,Kf;
       float BB1,B1x,B1y,B1z;
+      float BB2,B2x,B2y,B2z;
       float Thi,Phi;
       float Beta,ECoM;
   }transfovar_;

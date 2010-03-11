@@ -14,7 +14,6 @@
       do ip =1,N
 c        if((abs(K(ip,2)).lt.6.or.K(ip,2).eq.21).and.K(ip,1).lt.9) then
         if(abs(K(ip,2)).lt.6.and.K(ip,1).lt.9) then
-
           call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
           if (QW_w .gt. 0.) then
             if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)-.25) then
@@ -40,11 +39,8 @@ c                if (iplx*iply.gt.0) ipty = -ipty
               else
                 ipty = 1.
                 iptx = 0.
+                iptz = 0.
               endif
-c             write(*,*) 'Pl:',ipl,iplx,iply,iplz
-c             write(*,*) 'Pt:',ipt,iptx,ipty,iptz
-c             write(*,*) 'QW:',QW_w
-c             write(*,*) 'test',iplx*iptx+iply*ipty+iplz*iptz
 
               ipl = ipl - QW_w
               if (ipt.ge.ipl) then
@@ -68,7 +64,7 @@ c             write(*,*) 'test',iplx*iptx+iply*ipty+iplz*iptz
               P(ip,1) = sin(th)*cos(ph)*.25
               P(ip,2) = sin(th)*sin(ph)*.25
               P(ip,3) = cos(th)*.25
-              P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
+              P(ip,4) =sqrt(P(ip,5)**2+P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
             endif
           endif
         endif

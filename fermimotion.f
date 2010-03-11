@@ -89,7 +89,7 @@ ccc Generate Theta and Phi of the particle's fermi momentum
       PhiFM = 2*pi*ranf(0)
 
 ccc Selector for the FM
-      if(iFM.eq.0) then
+      if(iFM.eq.4) then
 ccc Generation of FM in a Fermi sphere
         Kf = rFM*(ranf(0))**(1./3.)
       else if(iFM.eq.1) then

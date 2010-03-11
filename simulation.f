@@ -14,8 +14,6 @@ ccccc Include all the common blocks
 ccccc Miscellaneous
       integer icycle ! for hbook
       real T1,T2 ! For time of computation
-      real PPP ! Dummy value
-      real Mom1,Mom2,Mom3,Mom4 ! Dummy value
       double precision BeamE !Input value for pythia
       integer ip ! For do
       integer i,j
@@ -24,13 +22,13 @@ ccccc Miscellaneous
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics
-      nkin = 2000
+      nkin = 200
 ccc Number of events per kinematics
-      nevent = 500
+      nevent = 200
 ccc Electron energy (GeV)
       E0 = 5.014
 ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
-      iTg = 4
+      iTg = 1
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -39,10 +37,11 @@ c     real EColl ! energy of the nuclei (GeV/nucleon)
       EColl = 5.0
 
 ccc Fermimotion flag 
-c     0 = hard sphere with values from [1], 
+c     0 = no FM
 c     1 = like 0 plus a tail from [2],
 c     2 = Accardi SVG (put list of available nuclei)
 c     3 = Accardi CS (put list of available nuclei)
+c     4 = hard sphere with values from [1], 
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
@@ -69,7 +68,7 @@ c     integer iqw 1 SW, 2 Arleo
       ncor = 0
       sfthrd = 1
 c     real qhat !Transport coefficient (GeV^2.fm^-1)
-      qhat =0.6
+      qhat =0.8
 c     integer iDens !0= hard sphere, 1= Wood Saxon param
       iDens = 1
 
@@ -77,7 +76,7 @@ c     integer iSim ! 0 = Turn off Pythia for tests
       iSim = 1
 
 ccc To save time with useless Pythia initialization
-      if (iTg .eq. 0) then
+      if (iTg .eq. 0 .or. iFM.eq.0) then
         nevent = nkin*nevent
         nkin = 1
       endif
@@ -97,49 +96,22 @@ c      call CLASBOSINIT('MCEVENT')
 
  100    continue
 ccc Randomize Theta Phi and Kf
-      if(rFM.ne.0) call FMParam
+      if(rFM.ne.0.and.iFM.ne.0) call FMParam
 
 ccc Initialize the kinematics
         call InitKin
 
 ccc Going in the nucleon rest frame
-        if(iTg .ne. 0 .or. iColl.ne.0) then
-          BB1 = PPn/EEn
-          B1x = Pnx/EEn
-          B1y = Pny/EEn
-          B1z = Pnz/EEn
-          call TL(EEe,PPe,Pex,Pey,Pez,BB1,B1x,B1y,B1z)
-          call TL(EEn,PPn,Pnx,Pny,Pnz,BB1,B1x,B1y,B1z)
-      
-ccc Rotate around y
-          Thi = -atan2(Pex,Pez)
-          call InitRotY(Thi)
-ccc Rotate around z
-          Phi = -atan2(Pey,Pez)
-          call InitRotZ(Phi)
-
-ccc Center of mass energy calculation
-          Beta = (EEe - 0.939) / PPe
-          ECoM = 2*EEe*(1-Beta)/sqrt(1-Beta**2)
-
-        else
-          BB1 = 0
-          B1x = 0
-          B1y = 0
-          B1z = 0
-          Thi = 0 
-          Phi = 0 
-          Beta = (EEe - 0.939) / PPe 
-          ECoM = 2*EEe*(1-Beta)/sqrt(1-Beta**2)
-        endif
+        if(iColl.ne.0) call LorentzFM(2)
+        if(iFM.ne.0) call LorentzFM(1)
 
         if (PPe .lt. 2.5) goto 100
 
 ccc Parameters for Pythia
 c        call PythiaConfigBrahim
-c        call PythiaConfigOWN
+        call PythiaConfigOWN
 c        call PythiaConfigHayk
-        call PythiaConfigCLAS
+c        call PythiaConfigCLAS
 
 ccc Block fragmentation if QW will be applied
         if (iQuenching.ne.0) MSTJ(1) =0
@@ -170,29 +142,12 @@ ccc Some initialization
 
 ccc Event generation
           if(iSim.ne.0) CALL pyevnt
-c          if(iSim.ne.0) CALL PYLIST(1)
 
-ccc Come back in Lab frame
-          if(iTg .ne. 0 .or. iColl.ne.0) then
-ccc Rotate around z
-            call FinalRotZ(-Phi)
-ccc Rotate around y
-            call FinalRotY(-Thi)
+ccc Come back in target frame
+          if(iFM.ne.0) call LorentzFMBack(1)
 
-ccc Lorentz boost of all the particles
-            do ip=1,N 
-              Mom1 = p(ip,1)
-              Mom2 = p(ip,2)
-              Mom3 = p(ip,3)
-              Mom4 = p(ip,4)
-              call TL(Mom4,PPP,Mom1,Mom2,Mom3,
-     &                                 -BB1,-B1x,-B1y,-B1z)
-              p(ip,1) = Mom1
-              p(ip,2) = Mom2
-              p(ip,3) = Mom3
-              p(ip,4) = Mom4
-            enddo
-          endif
+          if (iNS .eq. 1 .and. (iTg .eq. 1 .or. iTg .eq. 7)) 
+     &       call CreateSpec
 
 ccc Energy loss of the partons
           if (iQuenching.ne.0.and.iTg.gt.1) then
@@ -205,16 +160,10 @@ ccc Fragmentation
             MSTJ(1) =1
             if(iSim.ne.0) call PYEXEC
             MSTJ(1) =0
-c            CALL PYLIST(1)
           endif
-ccc Output to check Lorentz transforamtions
-c          write(*,*) 'Momentum of the electron: ',BeamE
-c          write(*,*) 'Momentum of the electron: ',p(1,4)
-c           write(*,*) PPn,Pnx,Pny,Pnz
-c           write(*,*) nuc_mom,nuc_the,nuc_phi 
 
-          if (iNS .eq. 1 .and. (iTg .eq. 1 .or. iTg .eq. 7)) 
-     &       call CreateSpec
+ccc Go back in lab frame
+          if(iColl.ne.0) call LorentzFMBack(2)
 
 ccc Compute of physical values for the hbook
           call ComputV
@@ -295,11 +244,11 @@ ccccc Include all the common blocks
       Pny = sin(ThFM)*sin(PhiFM)*PPn
       Pnz = cos(ThFM)*PPn
 
-      if (iColl.eq.1) then
-        Pnz = Pnz - EColl
-        PPn = sqrt(Pnx**2 + Pny**2 + Pnz**2)
-        EEn = sqrt(PPn**2+mn**2)
-      endif
+c     if (iColl.eq.1) then
+c       Pnz = Pnz - EColl
+c       PPn = sqrt(Pnx**2 + Pny**2 + Pnz**2)
+c       EEn = sqrt(PPn**2+mn**2)
+c     endif
 
       ele_ene = EEe
       ele_the = 0
@@ -349,5 +298,68 @@ c------------------------------------------------------------------------------
 
 c      write(*,*) K(N,1),K(N,2),K(N,3)
 c      write(*,*) P(N,1),P(N,2),P(N,3),P(N,4),P(N,5)
+
+      end
+
+      subroutine LorentzFM(i)
+      implicit none
+
+      include 'common.f'
+      integer i
+
+      if(i.eq.1) then
+        BB1 = PPn/EEn
+        B1x = Pnx/EEn
+        B1y = Pny/EEn
+        B1z = Pnz/EEn
+
+        call TL(EEe,PPe,Pex,Pey,Pez,BB1,B1x,B1y,B1z)
+        call TL(EEn,PPn,Pnx,Pny,Pnz,BB1,B1x,B1y,B1z)
+      
+ccc Rotate around y
+        Thi = -atan2(Pex,Pez)
+        call InitRotY(Thi)
+ccc Rotate around z
+        Phi = -atan2(Pey,Pez)
+        call InitRotZ(Phi)
+      else if(i.eq.2) then
+        BB2 = -sqrt(EColl**2-.939**2)/EColl
+        B2x = 0
+        B2y = 0
+        B2z = BB2
+
+        call TL(EEe,PPe,Pex,Pey,Pez,BB2,B2x,B2y,B2z)
+      endif
+
+      end
+
+      subroutine LorentzFMBack(i)
+      implicit none
+
+      include 'common.f'
+      real Mom1,Mom2,Mom3,Mom4 
+      real PPP 
+      integer ip,i
+
+ccc Rotate around z
+      if (i.eq.1) call FinalRotZ(-Phi)
+ccc Rotate around y
+      if (i.eq.1) call FinalRotY(-Thi)
+
+ccc Lorentz boost of all the particles
+      do ip=1,N 
+        Mom1 = p(ip,1)
+        Mom2 = p(ip,2)
+        Mom3 = p(ip,3)
+        Mom4 = p(ip,4)
+        if (i.eq.1) call TL(Mom4,PPP,Mom1,Mom2,Mom3,
+     &                           -BB1,-B1x,-B1y,-B1z)
+        if (i.eq.2) call TL(Mom4,PPP,Mom1,Mom2,Mom3,
+     &                           -BB2,-B2x,-B2y,-B2z)
+        p(ip,1) = Mom1
+        p(ip,2) = Mom2
+        p(ip,3) = Mom3
+        p(ip,4) = Mom4
+      enddo
 
       end

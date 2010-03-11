@@ -9,9 +9,11 @@ ccccc Initial Kinematic Block
 ccccc Important variables for transformations
       real ThFM,PhiFM,Kf !Theta, Phi and K Fermi
       real BB1,B1x,B1y,B1z ! Lorentz kinematics
+      real BB2,B2x,B2y,B2z ! Lorentz kinematics
       real Thi,Phi !angles for rotation
       real Beta,ECoM ! For calculation of the CoM energy
-      common/TransfoVar/ThFM,PhiFM,BB1,B1x,B1y,B1z,Thi,Phi,Beta,ECoM,Kf
+      common/TransfoVar/ThFM,PhiFM,BB1,B1x,B1y,B1z,BB2,B2x,B2y,B2z,
+     &                  Thi,Phi,Beta,ECoM,Kf
 
 ccccc Files names
       character*60 bosout,hbookout

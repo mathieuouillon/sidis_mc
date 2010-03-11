@@ -1,4 +1,139 @@
 c------------------------------------------------------------------------------
+c Initialization of variables to book in the ntuple
+c------------------------------------------------------------------------------
+      subroutine InitKin2Book
+      implicit none
+
+ccccc Include all the common blocks
+      include 'common.f'
+
+      Nu = 0.
+      Q22 = 0
+      XBj = 0
+      W = 0
+      TrkGS = 0
+      Nb_part = 0
+
+      end
+c------------------------------------------------------------------------------
+c Computation of variables to book in the ntuple
+c------------------------------------------------------------------------------
+      subroutine ComputV
+      implicit none
+
+ccccc Include all the common blocks
+      include 'common.f'
+
+      integer ip
+ccccc for calculation of Phih
+      real A1,A2,A3,AA
+      real B1,B2,B3,BB
+      real phi_ele
+ccccc function
+      integer clas12_accept,RTPC_accept
+ccccc dummy
+      real Ekin,Theta
+ccccc Nucleon Momentum
+      real pp
+ccccc gamma beta
+      real ga,be
+ccccc Initial kinematics
+      real eip
+      real nip,nie
+
+      eip = P(1,4)
+      nip = 0
+      nie = P(2,5)
+
+      if(iColl.eq.1) then
+         nie = EColl
+         nip = sqrt(EColl**2 - P(2,5)**2)
+      endif
+
+C.. Booking the hbook
+      do ip=1,N
+        if (k(ip,2).eq.22 .and. k(ip,3).eq.1) then
+          Nu = (p(ip,4)*nie+p(ip,3)*nip)/P(2,5)
+          Q22 = P(ip,5)**2
+          if (Nu .ne. 0) XBj = Q22 /2 /P(2,5) /Nu
+          if (Nu .ne. 0) y_ele = Nu * P(2,5) /eip /(nie+nip)
+          W = 0.
+          W = dsqrt((nie+p(ip,4))**2-(-nip+p(ip,3))**2
+     &                                 -p(ip,2)**2-p(ip,1)**2)
+          TrkGS = ip
+          phi_ele = atan2(p(ip,2),p(ip,1))*57.2958 +210
+        endif
+
+        if (k(ip,2).eq.111 .or. abs(k(ip,2)).eq.211
+     &       .or. k(ip,2).eq.221 .or. k(ip,2).eq.223
+     &       .or. k(ip,2).eq.331 .or. k(ip,2).eq.333
+     &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
+     &       .or. k(ip,2).eq.130 .or. abs(k(ip,2)).eq.2212
+     &       .or. abs(k(ip,2)).eq.2112 .or. k(ip,2).eq.3122
+     &       .or. k(ip,2).eq.3222 .or. k(ip,2).eq.3212
+     &       .or. k(ip,2).eq.3322 .or. k(ip,2).eq.3312
+     &       .or. k(ip,2).eq.3334 .or. abs(k(ip,2)).eq.411
+     &       .or. k(ip,2).eq.421 .or. k(ip,2).eq.443
+     &       .or. abs(k(ip,2)).eq.521 .or .k(ip,2).eq.511 ) then
+
+          Nb_part           = Nb_part + 1
+          acc_part(Nb_part) = 0
+          if(iAccept.eq.1) then
+            if(abs(k(ip,2)).eq.11.or.abs(k(ip,2)).eq.211.or.
+     &         abs(k(ip,2)).eq.321.or.abs(k(ip,2)).eq.2212.or.
+     &         k(ip,2).eq.2112.or.k(ip,2).eq.22) then
+               acc_part(Nb_part) = 
+     &               clas12_accept(k(ip,2),p(ip,1),p(ip,2),p(ip,3))
+            else if( k(ip,2).eq.10203 .or. k(ip,2).eq.10103 ) then
+               Ekin = (p(ip,4) - p(ip,5))*1000
+               theta = acos(p(ip,3)/
+     &                sqrt(p(ip,1)**2+p(ip,2)**2+p(ip,3)**2))
+c               write(*,*) p(ip,4),p(ip,5),Ekin,theta
+               acc_part(Nb_part) = RTPC_accept(k(ip,2),Ekin,theta)
+            endif
+          endif
+
+          id_part(Nb_part)  = k(ip,2)
+          id_mother(Nb_part)= k(k(ip,3),2)
+          px_part(Nb_part)  = p(ip,1)
+          py_part(Nb_part)  = p(ip,2)
+          pz_part(Nb_part)  = p(ip,3)
+          p_part(Nb_part)   = sqrt(p(ip,4)**2-p(ip,5)**2)
+          E_part(Nb_part)   = p(ip,4)
+          m_part(Nb_part)   = p(ip,5)
+          z_part(Nb_part)   = (p(ip,4)*nie+p(ip,3)*nip)/Nu/P(2,5)
+          th_part(Nb_part)  = 57.2957795*acos(pz_part(Nb_part)/
+     &                sqrt(p(ip,1)**2+p(ip,2)**2+pz_part(Nb_part)**2))
+          phi_part(Nb_part) = atan2(p(ip,2),p(ip,1))*57.2958 +30
+          if(phi_part(Nb_part).lt.0) 
+     &    phi_part(Nb_part) = phi_part(Nb_part) + 360
+
+          A1 = sin(phi_ele)
+          A2 = -cos(phi_ele)
+          A3 = 0
+          AA = A1**2 + A2**2 + A3**2
+       
+          B1 = p(TrkGS,2)*p(ip,3) - p(TrkGS,3)*p(ip,2)
+          B2 = p(TrkGS,3)*p(ip,1) - p(TrkGS,1)*p(ip,3)
+          B3 = p(TrkGS,1)*p(ip,2) - p(TrkGS,2)*p(ip,1)
+          BB = B1**2 + B2**2 + B3**2
+     
+          phih_part(Nb_part) = 
+     &         acos((A1*B1+A2*B2+A3*B3)/sqrt(AA*BB))*57.2958
+
+          tt_part(Nb_part)  =
+     &               (Nu-p(ip,4))**2 - (p(TrkGS,1)-p(ip,1))**2 - 
+     &               (p(TrkGS,2)-p(ip,2))**2 - (p(TrkGS,3)-p(ip,3))**2
+          Pts_part(Nb_part) = (p(ip,1)**2+p(ip,2)**2+p(ip,3)**2)
+     &    -((p(TrkGS,1)*p(ip,1)+p(TrkGS,2)*p(ip,2)+p(TrkGS,3)*p(ip,3))
+     &    / sqrt(p(TrkGS,1)**2+p(TrkGS,2)**2+p(TrkGS,3)**2))**2
+
+        endif
+      enddo      
+
+      end
+
+c------------------------------------------------------------------------------
 c Variables to book in the ntuple
 c------------------------------------------------------------------------------
       subroutine InitHbook
@@ -64,137 +199,4 @@ ccccc Include all the common blocks
       call HBNAME(33,'PartInfo',Pts_part ,'part_Pts(Nb_part)  ')
 
       end
-c------------------------------------------------------------------------------
-c Initialization of variables to book in the ntuple
-c------------------------------------------------------------------------------
-      subroutine InitKin2Book
-      implicit none
-
-ccccc Include all the common blocks
-      include 'common.f'
-
-      Nu = 0.
-      Q22 = 0
-      XBj = 0
-      W = 0
-      TrkGS = 0
-      Nb_part = 0
-
-      end
-c------------------------------------------------------------------------------
-c Computation of variables to book in the ntuple
-c------------------------------------------------------------------------------
-      subroutine ComputV
-      implicit none
-
-ccccc Include all the common blocks
-      include 'common.f'
-
-      integer ip
-ccccc for calculation of Phih
-      real A1,A2,A3,AA
-      real B1,B2,B3,BB
-      real phi_ele
-ccccc function
-      integer clas12_accept,RTPC_accept
-ccccc dummy
-      real Ekin,Theta
-ccccc Nucleon Momentum
-      real pp
-ccccc gamma beta
-      real ga,be
-
-      if(iColl.eq.1) then
-        pp = sqrt(EColl**2 - .939**2)
-        be = pp / EColl
-        ga = 1 / sqrt(1-be**2)
-      endif
-
-C.. Booking the hbook
-      do ip=1,N
-
-
-        if (k(ip,2).eq.22 .and. k(ip,3).eq.1) then
-          Nu = p(ip,4)
-          if(iColl.eq.1) Nu = ga*(Nu + be*sqrt(Nu**2+Q22))
-          Q22 = P(ip,5)**2
-          if (Nu .ne. 0) XBj = Q22 /2 /0.938 /Nu
-          if (Nu .ne. 0) y_ele = Nu / p(1,4)
-          if(iColl.eq.1) y_ele = Nu / ga / (1+be) / p(1,4)
-          W = 0.
-          W = dsqrt((p(2,4)+p(ip,4))**2-(p(2,3)+p(ip,3))**2
-     &                                 -p(ip,2)**2-p(ip,1)**2)
-          TrkGS = ip
-          phi_ele = atan2(p(ip,2),p(ip,1))*57.2958 +210
-        endif
-
-        if (k(ip,2).eq.111 .or. abs(k(ip,2)).eq.211
-     &       .or. k(ip,2).eq.221 .or. k(ip,2).eq.223
-     &       .or. k(ip,2).eq.331 .or. k(ip,2).eq.333
-     &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
-     &       .or. k(ip,2).eq.130 .or. abs(k(ip,2)).eq.2212
-     &       .or. abs(k(ip,2)).eq.2112 .or. k(ip,2).eq.3122
-     &       .or. k(ip,2).eq.3222 .or. k(ip,2).eq.3212
-     &       .or. k(ip,2).eq.3322 .or. k(ip,2).eq.3312
-     &       .or. k(ip,2).eq.3334 .or. abs(k(ip,2)).eq.411
-     &       .or. k(ip,2).eq.421 .or. k(ip,2).eq.443
-     &       .or. abs(k(ip,2)).eq.521 .or .k(ip,2).eq.511 ) then
-
-          Nb_part           = Nb_part + 1
-          acc_part(Nb_part) = 0
-          if(iAccept.eq.1) then
-            if(abs(k(ip,2)).eq.11.or.abs(k(ip,2)).eq.211.or.
-     &         abs(k(ip,2)).eq.321.or.abs(k(ip,2)).eq.2212.or.
-     &         k(ip,2).eq.2112.or.k(ip,2).eq.22) then
-               acc_part(Nb_part) = 
-     &               clas12_accept(k(ip,2),p(ip,1),p(ip,2),p(ip,3))
-            else if( k(ip,2).eq.10203 .or. k(ip,2).eq.10103 ) then
-               Ekin = (p(ip,4) - p(ip,5))*1000
-               theta = acos(p(ip,3)/
-     &                sqrt(p(ip,1)**2+p(ip,2)**2+p(ip,3)**2))
-c               write(*,*) p(ip,4),p(ip,5),Ekin,theta
-               acc_part(Nb_part) = RTPC_accept(k(ip,2),Ekin,theta)
-            endif
-          endif
-
-          id_part(Nb_part)  = k(ip,2)
-          id_mother(Nb_part)= k(k(ip,3),2)
-          px_part(Nb_part)  = p(ip,1)
-          py_part(Nb_part)  = p(ip,2)
-          pz_part(Nb_part)  = p(ip,3)
-          p_part(Nb_part)   = sqrt(p(ip,4)**2-p(ip,5)**2)
-          E_part(Nb_part)   = p(ip,4)
-          m_part(Nb_part)   = p(ip,5)
-          z_part(Nb_part)   = p(ip,4)/Nu
-          th_part(Nb_part)  = 57.2957795*acos(pz_part(Nb_part)/
-     &                sqrt(p(ip,1)**2+p(ip,2)**2+pz_part(Nb_part)**2))
-          phi_part(Nb_part) = atan2(p(ip,2),p(ip,1))*57.2958 +30
-          if(phi_part(Nb_part).lt.0) 
-     &    phi_part(Nb_part) = phi_part(Nb_part) + 360
-
-          A1 = sin(phi_ele)
-          A2 = -cos(phi_ele)
-          A3 = 0
-          AA = A1**2 + A2**2 + A3**2
-       
-          B1 = p(TrkGS,2)*p(ip,3) - p(TrkGS,3)*p(ip,2)
-          B2 = p(TrkGS,3)*p(ip,1) - p(TrkGS,1)*p(ip,3)
-          B3 = p(TrkGS,1)*p(ip,2) - p(TrkGS,2)*p(ip,1)
-          BB = B1**2 + B2**2 + B3**2
-     
-          phih_part(Nb_part) = 
-     &         acos((A1*B1+A2*B2+A3*B3)/sqrt(AA*BB))*57.2958
-
-          tt_part(Nb_part)  =
-     &               (Nu-p(ip,4))**2 - (p(TrkGS,1)-p(ip,1))**2 - 
-     &               (p(TrkGS,2)-p(ip,2))**2 - (p(TrkGS,3)-p(ip,3))**2
-          Pts_part(Nb_part) = (p(ip,1)**2+p(ip,2)**2+p(ip,3)**2)
-     &    -((p(TrkGS,1)*p(ip,1)+p(TrkGS,2)*p(ip,2)+p(TrkGS,3)*p(ip,3))
-     &    / sqrt(p(TrkGS,1)**2+p(TrkGS,2)**2+p(TrkGS,3)**2))**2
-
-        endif
-      enddo      
-
-      end
-
 
