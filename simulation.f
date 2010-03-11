@@ -18,13 +18,6 @@ ccccc Miscellaneous
       real Mom1,Mom2,Mom3,Mom4 ! Dummy value
       double precision BeamE !Input value for pythia
       integer ip ! For do
-      real ipx,ipy,ipz,E !dummy only for test
-      real ipl,ipt
-      integer flag
-      real iplx,iply,iplz
-      real iptx,ipty,iptz
-      real ipix,ipiy,ipiz
-      real th,ph
       integer i,j
  
 
@@ -204,69 +197,7 @@ ccc Lorentz boost of all the particles
 ccc Energy loss of the partons
           if (iQuenching.ne.0.and.iTg.gt.1) then
             call InterPos
-            flag = 0
-            do ip =1,N
-c              if((abs(K(ip,2)).lt.6.or.K(ip,2).eq.21).and.K(ip,1).lt.9) then
-              if(abs(K(ip,2)).lt.6.and.K(ip,1).lt.9) then
- 101            continue
-                call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
-                if (QW_w .gt. 0.) then
-                  if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)-.25) then
-                    ipt = sqrt(8*QW_w/3/alphas/QW_L)
-                    ipl = dsqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
-                    iplx = P(ip,1)/ipl
-                    iply = P(ip,2)/ipl
-                    iplz = P(ip,3)/ipl
-                    iptz = 0.
-                    if (iply .ne. 0) then
-c                      ipty = sqrt(iplx**2/(iply**2*((iplx/iply)**2+1)))
-c                      iptx = sqrt(1-ipty**2)
-c                      if (iplx*iply.gt.0) ipty = -ipty
-                       ipiz = ranf(0)*4*asin(1.)
-                       ipix = cos(iptz)
-                       ipiy = sin(iptz)
-                       ipiz = 0
-                       iptx = -ipix*iplx*iplz/sqrt(1-iplz**2)
-     &                        -ipiy*iply/sqrt(1-iplz**2)
-                       ipty = -ipix*iply*iplz/sqrt(1-iplz**2)
-     &                        -ipiy*iplx/sqrt(1-iplz**2)
-                       iptz = ipix*sqrt(1-iplz**2)
-                    else
-                      ipty = 1.
-                      iptx = 0.
-                    endif
-c                   write(*,*) 'Pl:',ipl,iplx,iply,iplz
-c                   write(*,*) 'Pt:',ipt,iptx,ipty,iptz
-c                   write(*,*) 'QW:',QW_w
-c                   write(*,*) 'test',iplx*iptx+iply*ipty+iplz*iptz
-
-                    ipl = ipl - QW_w
-                    if (ipt.ge.ipl) then
-                      ipx = ipl*iptx
-                      ipy = ipl*ipty
-                      ipz = ipl*iptz
-                    else
-                      ipl = sqrt(ipl**2 - ipt**2)
-                      ipx = ipt*iptx+ipl*iplx
-                      ipy = ipt*ipty+ipl*iply
-                      ipz = ipt*iptz+ipl*iplz
-                    endif
-
-                    P(ip,1) = ipx
-                    P(ip,2) = ipy
-                    P(ip,3) = ipz
-                    P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
-                  else
-                    th = acos(2*ranf(0)-1)
-                    ph = 2*pi*ranf(0)
-                    P(ip,1) = sin(th)*cos(ph)*.25
-                    P(ip,2) = sin(th)*sin(ph)*.25
-                    P(ip,3) = cos(th)*.25
-                    P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
-                  endif
-                endif
-              endif
-            enddo
+            call ApplyQW
           endif
 
 ccc Fragmentation
@@ -282,39 +213,8 @@ c          write(*,*) 'Momentum of the electron: ',p(1,4)
 c           write(*,*) PPn,Pnx,Pny,Pnz
 c           write(*,*) nuc_mom,nuc_the,nuc_phi 
 
-          if (iNS .eq. 1 .and. (iTg .eq. 1 .or. iTg .eq. 7)) then
-            N = N+1
-            if (iTg .eq. 1 .and. nucleon .eq. 0) then
-              specId = 2212
-            else if (iTg .eq. 1 .and. nucleon .eq. 1) then
-              specId = 2112
-            else if (iTg .eq. 7 .and. nucleon .eq. 0) then
-              specId = 10203
-            else if (iTg .eq. 7 .and. nucleon .eq. 1) then
-              specId = 10103
-            endif
- 
-            k(N,1) = 1
-            k(N,2) = specId
-            k(N,3) = 2
-
-            p(N,1) = -sin(nuc_the)*cos(nuc_phi)*nuc_mom
-            p(N,2) = -sin(nuc_the)*sin(nuc_phi)*nuc_mom
-            p(N,3) = -cos(nuc_the)*nuc_mom
-            if (k(N,2) .eq. 2212) then
-              p(N,5) = .938272
-            else if (k(N,2) .eq. 2112) then
-              p(N,5) = .939566
-            else if (k(N,2) .eq. 10203) then
-              p(N,5) = 2.809356
-            else if (k(N,2) .eq. 10103) then
-              p(N,5) = 2.809356
-            endif
-            P(N,4) = sqrt(P(N,1)**2+P(N,2)**2+P(N,3)**2+P(N,5)**2)
-
-c            write(*,*) K(N,1),K(N,2),K(N,3)
-c            write(*,*) P(N,1),P(N,2),P(N,3),P(N,4),P(N,5)
-          endif
+          if (iNS .eq. 1 .and. (iTg .eq. 1 .or. iTg .eq. 7)) 
+     &       call CreateSpec
 
 ccc Compute of physical values for the hbook
           call ComputV
@@ -407,5 +307,47 @@ ccccc Include all the common blocks
       nuc_mom = Kf
       nuc_the = ThFM
       nuc_phi = PhiFM
+
+      end
+
+c------------------------------------------------------------------------------
+c Create spectators
+c------------------------------------------------------------------------------
+      subroutine CreateSpec()
+      implicit none
+
+      include 'common.f'
+
+      N = N+1
+      if (iTg .eq. 1 .and. nucleon .eq. 0) then
+        specId = 2212
+      else if (iTg .eq. 1 .and. nucleon .eq. 1) then
+        specId = 2112
+      else if (iTg .eq. 7 .and. nucleon .eq. 0) then
+        specId = 10203
+      else if (iTg .eq. 7 .and. nucleon .eq. 1) then
+        specId = 10103
+      endif
+ 
+      k(N,1) = 1
+      k(N,2) = specId
+      k(N,3) = 2
+
+      p(N,1) = -sin(nuc_the)*cos(nuc_phi)*nuc_mom
+      p(N,2) = -sin(nuc_the)*sin(nuc_phi)*nuc_mom
+      p(N,3) = -cos(nuc_the)*nuc_mom
+      if (k(N,2) .eq. 2212) then
+        p(N,5) = .938272
+      else if (k(N,2) .eq. 2112) then
+        p(N,5) = .939566
+      else if (k(N,2) .eq. 10203) then
+        p(N,5) = 2.809356
+      else if (k(N,2) .eq. 10103) then
+        p(N,5) = 2.809356
+      endif
+      P(N,4) = sqrt(P(N,1)**2+P(N,2)**2+P(N,3)**2+P(N,5)**2)
+
+c      write(*,*) K(N,1),K(N,2),K(N,3)
+c      write(*,*) P(N,1),P(N,2),P(N,3),P(N,4),P(N,5)
 
       end

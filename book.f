@@ -128,9 +128,17 @@ C.. Booking the hbook
           phi_ele = atan2(p(ip,2),p(ip,1))*57.2958 +210
         endif
 
-        if (k(ip,1).eq.1 .or. k(ip,2).eq.111 .or .k(ip,2).eq.310
-     &       .or. k(ip,2).eq.221 .or .k(ip,2).eq.333 .or.
-     &        k(ip,2).eq.2114 .or .k(ip,2).eq.3122 ) then
+        if (k(ip,2).eq.111 .or. abs(k(ip,2)).eq.211
+     &       .or. k(ip,2).eq.221 .or. k(ip,2).eq.223
+     &       .or. k(ip,2).eq.331 .or. k(ip,2).eq.333
+     &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
+     &       .or. k(ip,2).eq.130 .or. abs(k(ip,2)).eq.2212
+     &       .or. abs(k(ip,2)).eq.2112 .or. k(ip,2).eq.3122
+     &       .or. k(ip,2).eq.3222 .or. k(ip,2).eq.3212
+     &       .or. k(ip,2).eq.3322 .or. k(ip,2).eq.3312
+     &       .or. k(ip,2).eq.3334 .or. abs(k(ip,2)).eq.411
+     &       .or. k(ip,2).eq.421 .or. k(ip,2).eq.443
+     &       .or. abs(k(ip,2)).eq.521 .or .k(ip,2).eq.511 ) then
 
           Nb_part           = Nb_part + 1
           acc_part(Nb_part) = 0
