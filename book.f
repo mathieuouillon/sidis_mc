@@ -65,6 +65,7 @@ C.. Booking the hbook
         endif
 
         if (k(ip,2).eq.111 .or. abs(k(ip,2)).eq.211
+     &       .or. k(ip,2).eq.113 .or. k(ip,2).eq.100443
      &       .or. k(ip,2).eq.221 .or. k(ip,2).eq.223
      &       .or. k(ip,2).eq.331 .or. k(ip,2).eq.333
      &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310

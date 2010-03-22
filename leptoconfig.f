@@ -14,7 +14,7 @@ c Lowest CM energy D = 10 H = 3
       PARP(2) = 2 ! Modify because of the FM
 
 c remaining energy below witch the fragmentation is stopped D = 0.8
-      PARJ(33) = 0.3 ! This parameter have huge effect on z distribution
+      PARJ(33) = 0.3 
 
 c Lower limit for sqrt(s)
       CKIN(1) = 1. 
@@ -111,6 +111,9 @@ c Stuff about the number of flavour
       MSTU(112) = 3
       MSTU(113) = 2
       MSTU(114) = 3
+
+c remaining energy below witch the fragmentation is stopped D = 0.8
+      PARJ(33) = 0.3
 
 
       end

@@ -3,8 +3,6 @@
 c------------------------------------------------------------------------------
 c TO DO LIST:
 c   Implement some radiative effect
-c   Check if there is flag for every options
-c   CoM output energy broken
 c------------------------------------------------------------------------------
 
 ccccc Include all the common blocks
@@ -22,13 +20,13 @@ ccccc Miscellaneous
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics
-      nkin = 200
+      nkin = 1000
 ccc Number of events per kinematics
-      nevent = 200
+      nevent = 1000
 ccc Electron energy (GeV)
-      E0 = 5.014
+      E0 = 27.014
 ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
-      iTg = 1
+      iTg = 4
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -38,9 +36,9 @@ c     real EColl ! energy of the nuclei (GeV/nucleon)
 
 ccc Fermimotion flag 
 c     0 = no FM
-c     1 = like 0 plus a tail from [2],
-c     2 = Accardi SVG (put list of available nuclei)
-c     3 = Accardi CS (put list of available nuclei)
+c     1 = like 4 plus a tail from [2] (deut, C, Al, Fe, Sn, Pb, 4He)
+c     2 = Accardi SVG (7Li, C, O, Ne, Al, Ar, Ca, Ni, Cu, Zr, Sn, Pb)
+c     3 = Accardi CS (2H, 3He, 4He, C, O, Ca, Fe, Pb)
 c     4 = hard sphere with values from [1], 
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
@@ -68,7 +66,7 @@ c     integer iqw 1 SW, 2 Arleo
       ncor = 0
       sfthrd = 1
 c     real qhat !Transport coefficient (GeV^2.fm^-1)
-      qhat =0.8
+      qhat = 2
 c     integer iDens !0= hard sphere, 1= Wood Saxon param
       iDens = 1
 
@@ -105,13 +103,10 @@ ccc Going in the nucleon rest frame
         if(iColl.ne.0) call LorentzFM(2)
         if(iFM.ne.0) call LorentzFM(1)
 
-        if (PPe .lt. 2.5) goto 100
+        if (PPe .lt. 4) goto 100
 
 ccc Parameters for Pythia
-c        call PythiaConfigBrahim
         call PythiaConfigOWN
-c        call PythiaConfigHayk
-c        call PythiaConfigCLAS
 
 ccc Block fragmentation if QW will be applied
         if (iQuenching.ne.0) MSTJ(1) =0
