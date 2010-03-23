@@ -20,13 +20,13 @@ ccccc Miscellaneous
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics
-      nkin = 1000
+      nkin = 100
 ccc Number of events per kinematics
       nevent = 1000
 ccc Electron energy (GeV)
       E0 = 27.014
 ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
-      iTg = 4
+      iTg = 5
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -43,7 +43,7 @@ c     4 = hard sphere with values from [1],
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 3
+      iFM = 0
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
 c                 ! this option is only for 2H and 4He targets
@@ -106,14 +106,14 @@ ccc Going in the nucleon rest frame
         if (PPe .lt. 4) goto 100
 
 ccc Parameters for Pythia
-        call PythiaConfigOWN
+        call PythiaConfigCLAS
 
 ccc Block fragmentation if QW will be applied
         if (iQuenching.ne.0) MSTJ(1) =0
 
 
 ccc Initialize the simulation
-        if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
+c        if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
           BeamE = PPe
         if(iSim.ne.0) then
           if(j.lt.(nkin*iZ/iA)) then
@@ -195,9 +195,15 @@ c------------------------------------------------------------------------------
       double precision RRPY(100),PYR
       COMMON/PYDATR/MRPY,RRPY
       SAVE /PYDATR/
+      integer*4 today(3), now(3)
+
+      call idate(today)   ! today(1)=day, (2)=month, (3)=year
+      call itime(now)     ! now(1)=hour, (2)=minute, (3)=second
+
+      test = now(1)*now(2)/now(3)
 
       call datime(initrm1,initrm2)
-      call ranset(initrm1*initrm2)
+      call ranset(initrm1*initrm2*int(test))
 
       MRPY(2) = 0
       MRPY(3) = mod(initrm1,85635)
@@ -208,7 +214,7 @@ c------------------------------------------------------------------------------
        RRPY(i) = ranf(0)
       enddo
 
-      do i=1,initrm2
+      do i=1,initrm2*int(test)
         test = ranf(0)
         test = PYR(0)
       enddo

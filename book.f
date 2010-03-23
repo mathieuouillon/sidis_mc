@@ -128,6 +128,10 @@ c               write(*,*) p(ip,4),p(ip,5),Ekin,theta
           Pts_part(Nb_part) = (p(ip,1)**2+p(ip,2)**2+p(ip,3)**2)
      &    -((p(TrkGS,1)*p(ip,1)+p(TrkGS,2)*p(ip,2)+p(TrkGS,3)*p(ip,3))
      &    / sqrt(p(TrkGS,1)**2+p(TrkGS,2)**2+p(TrkGS,3)**2))**2
+          Xf_part(Nb_part) = (p(TrkGS,1)*p(ip,1)
+     &                       +p(TrkGS,2)*p(ip,2)+p(TrkGS,3)*p(ip,3))
+     &                 / sqrt(p(TrkGS,1)**2+p(TrkGS,2)**2+p(TrkGS,3)**2)
+     &                 / sqrt(p(ip,1)**2+p(ip,2)**2+p(ip,3)**2)
 
         endif
       enddo      

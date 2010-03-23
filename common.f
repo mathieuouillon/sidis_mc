@@ -43,11 +43,11 @@ ccccc Recoiled Particles
       real p_part(100),px_part(100),py_part(100),pz_part(100)
       real E_part(100),m_part(100),z_part(100),th_part(100)
       real tt_part(100),Pts_part(100),phih_part(100),phi_part(100)
-      real vx_part(100)
+      real vx_part(100),Xf_part(100)
       common/part/TrkGS,Nb_part,id_part,id_mother,acc_part,
      &      p_part,px_part,py_part,pz_part,E_part,m_part,
      &      z_part,th_part,tt_part,Pts_part,phih_part,phi_part,
-     &      vx_part
+     &      vx_part,Xf_part
 
 ccccc Table for FM distribution
       real FM_table(1000),step_size_FM

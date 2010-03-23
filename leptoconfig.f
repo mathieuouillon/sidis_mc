@@ -21,11 +21,27 @@ c Lower limit for sqrt(s)
 
 c Q2 Limits
       CKIN(65) = .9 
-      CKIN(66) = 15. 
+      CKIN(66) = -1 
 c W limit
       CKIN(77) = 1.90 
       CKIN(78) = -1. 
 
+c HERMES Params
+
+
+      PARJ(1) = 0.02 
+      PARJ(2) = 0.25
+      PARJ(11) = 0.51 
+      PARJ(12) = 0.57
+      PARJ(21) = 0.42
+      PARJ(33) = 0.47
+      PARJ(41) = 0.68
+      PARJ(42) = 0.35
+      PARJ(45) = 0.74
+
+      PARJ(21) = 0.44
+      PARJ(23) = 0.01 
+      PARJ(24) = 2.0
 
       end
 
@@ -42,7 +58,8 @@ ccc Deeply Inelastic Scattering and γ ∗ γ ∗ physics
 ccc MSEL = 1, 2, 35, 36, 37, 38
 c MSEL = 0 Tout les process doivent etre activer individuellement
 c MSEL = 1 in our case call MSTP(14)
-c MSEL = 2 include 1 + elastic? + diffractive? + low Pt process
+c MSEL = 2 include 1 + elastic (hadronic) + diffractive (hadronic) 
+c                    + low Pt process
       MSEL = 2
 
 ccc MSUB(ISUB) = 0 : the subprocess is excluded.
@@ -52,17 +69,7 @@ ccc MSUB(ISUB) = 1 : the subprocess is included.
 C ... Set kinematic cuts
 c min invariant mass = sqrt(s)
       CKIN(1)  = 1.d0             ! lower lim 
-c      CKIN(2)  = -1.d0            ! no higher limit
-c range of Pt
-c      CKIN(3)  = 0.d0  
-c      CKIN(4)  = 2.d0  
-c      CKIN(21) = .5d0                      ! min x1
-c      CKIN(23) = .5d0                      ! min x2
-c      CKIN(35) = .1d0                      ! min t
-c      CKIN(61) = .5d0                      ! min x=nu/E0 (beam)
-c      CKIN(63) = .5d0                      ! min x=..    (target)
       CKIN(65) = 0.85d0           ! min Q2
-c      CKIN(74) = .9d0             ! max y
       CKIN(77) = 1.8d0            ! min W
 
 c Suppression of VMD (0:none)
@@ -107,13 +114,13 @@ c Minor change about vector meson production
       PARP(165) = .33d0  ! reduce the min. mass of time-like parton
 
 c Stuff about the number of flavour
-      MSTJ(45) = 3
-      MSTU(112) = 3
-      MSTU(113) = 2
-      MSTU(114) = 3
+c     MSTJ(45) = 3
+c     MSTU(112) = 3
+c     MSTU(113) = 2
+c     MSTU(114) = 3
 
 c remaining energy below witch the fragmentation is stopped D = 0.8
-      PARJ(33) = 0.3
+      PARJ(33) = 0.47
 
 
       end
