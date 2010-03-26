@@ -13,7 +13,8 @@
 
       do ip =1,N
 c        if((abs(K(ip,2)).lt.6.or.K(ip,2).eq.21).and.K(ip,1).lt.9) then
-        if(abs(K(ip,2)).lt.6.and.K(ip,1).lt.9) then
+        if((abs(K(ip,2)).lt.6 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
+     &       .and.K(ip,1).lt.9.and.P(ip,4).lt..5) then
           call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
           if (QW_w .gt. 0.) then
             if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)-.5) then
@@ -44,9 +45,15 @@ c                if (iplx*iply.gt.0) ipty = -ipty
 
               ipl = ipl - QW_w
               if (ipt.ge.ipl) then
-                ipx = ipl*iptx
-                ipy = ipl*ipty
-                ipz = ipl*iptz
+                th = acos(2*ranf(0)-1)
+                ph = 2*pi*ranf(0)
+                ipx = sin(th)*cos(ph)*ipl
+                ipy = sin(th)*sin(ph)*ipl
+                ipz = cos(th)*ipl
+
+c               ipx = ipl*iptx
+c               ipy = ipl*ipty
+c               ipz = ipl*iptz
               else
                 ipl = sqrt(ipl**2 - ipt**2)
                 ipx = ipt*iptx+ipl*iplx

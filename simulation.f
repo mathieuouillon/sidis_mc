@@ -3,6 +3,7 @@
 c------------------------------------------------------------------------------
 c TO DO LIST:
 c   Implement some radiative effect
+c   Have alpha s changing with Q2 in QW
 c------------------------------------------------------------------------------
 
 ccccc Include all the common blocks
@@ -70,6 +71,8 @@ c     real qhat !Transport coefficient (GeV^2.fm^-1)
       qhat = .5
 c     integer iDens !0= hard sphere, 1= Wood Saxon param
       iDens = 1
+c     iqg = 1 -> quark and gluons are quenched
+      iqg = 1
 
 c     integer iSim ! 0 = Turn off Pythia for tests
       iSim = 1
@@ -126,7 +129,6 @@ c        if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
             call pyinit('FIXT','gamma/e-','n0',BeamE)
             nucleon = 0
           endif
-          if (XSEC(99,1).eq.0) goto 100
         endif
 
 ccc Counter
@@ -138,12 +140,12 @@ ccc Some initialization
 
 ccc Event generation
         if(iSim.ne.0) CALL pyevnt
+c        if(iSim.ne.0) CALL pylist
 
 ccc Come back in target frame
         if(iFM.ne.0) call LorentzFMBack(1)
 
-        if (iNS .eq. 1 .and. (iTg .eq. 1 .or. iTg .eq. 7)) 
-     &       call CreateSpec
+        if (iNS.eq.1 .and. (iTg.eq.1 .or. iTg.eq.7)) call CreateSpec
 
 ccc Energy loss of the partons
         if (iQuenching.ne.0.and.iTg.gt.1) then
@@ -366,3 +368,4 @@ ccc Lorentz boost of all the particles
       enddo
 
       end
+
