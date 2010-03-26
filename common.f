@@ -32,6 +32,9 @@ C...Stuff for PYTHIA 6.4
       integer MSEL,MSELPD,MSUB(500),KFIN(2,-40:40)
       double precision CKIN(200)
       COMMON/PYSUBS/MSEL,MSELPD,MSUB,KFIN,CKIN
+      integer NGENPD,NGEN(0:500,3)
+      double precision XSEC(0:500,3)
+      COMMON/PYINT5/NGENPD,NGEN,XSEC
 
 ccccc Events information
       real Q22,W,Nu,XBj,y_ele
@@ -88,9 +91,9 @@ c Position of the interaction in CLAS for GSIM
 c Flags and config values
       integer iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent 
       integer nkin,nucleon,specId,iColl 
-      real rFM,E0,qhat,EColl 
+      real rFM,E0,qhat,EColl,FMlimit
       common/flags/iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent,
-     &             nkin,nucleon,specId,rFM,E0,qhat,iColl,EColl
+     &             nkin,nucleon,specId,rFM,E0,qhat,iColl,EColl,FMlimit
 
 
 c Tables

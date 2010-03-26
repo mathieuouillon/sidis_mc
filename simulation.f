@@ -20,11 +20,11 @@ ccccc Miscellaneous
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics
-      nkin = 100
+      nkin = 1000
 ccc Number of events per kinematics
-      nevent = 1000
+      nevent = 1000000
 ccc Electron energy (GeV)
-      E0 = 27.014
+      E0 = 27
 ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
       iTg = 5
 
@@ -43,7 +43,8 @@ c     4 = hard sphere with values from [1],
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 0
+      iFM = 2
+      FMlimit = 1
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
 c                 ! this option is only for 2H and 4He targets
@@ -66,7 +67,7 @@ c     integer iqw 1 SW, 2 Arleo
       ncor = 0
       sfthrd = 1
 c     real qhat !Transport coefficient (GeV^2.fm^-1)
-      qhat = 2
+      qhat = .5
 c     integer iDens !0= hard sphere, 1= Wood Saxon param
       iDens = 1
 
@@ -74,9 +75,10 @@ c     integer iSim ! 0 = Turn off Pythia for tests
       iSim = 1
 
 ccc To save time with useless Pythia initialization
+      j = 0
+      i = 0
       if (iTg .eq. 0 .or. iFM.eq.0) then
-        nevent = nkin*nevent
-        nkin = 1
+        nkin = nevent +1
       endif
 ccc Initialize
       ievent = 0
@@ -90,8 +92,7 @@ c      call InitHbook
       if (iAccept.eq.1) call readtables
 c      call CLASBOSINIT('MCEVENT')
 
-      do j=1,nkin
-
+      do while (j.lt.nevent)
  100    continue
 ccc Randomize Theta Phi and Kf
       if(rFM.ne.0.and.iFM.ne.0) call FMParam
@@ -115,59 +116,60 @@ ccc Block fragmentation if QW will be applied
 ccc Initialize the simulation
 c        if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
           BeamE = PPe
-        if(iSim.ne.0) then
-          if(j.lt.(nkin*iZ/iA)) then
+        if(iSim.ne.0.and.
+     &     (j.eq.0.or.i.eq.nkin.or.j.eq.int(nevent*iZ/iA))) then
+          i = 0
+          if(j.lt.(nevent*iZ/iA)) then
             call pyinit('FIXT','gamma/e-','p+',BeamE)
             nucleon = 1
           else
             call pyinit('FIXT','gamma/e-','n0',BeamE)
             nucleon = 0
           endif
+          if (XSEC(99,1).eq.0) goto 100
         endif
 
-ccc Loop over events of a given kinematic
-        do i=1,nevent
-
 ccc Counter
-          ievent = ievent + 1
-          if (MOD(i,10000) .eq. 0) write(*,*) ievent,'events proceded'
+        ievent = ievent + 1
+        if (MOD(ievent,10000).eq.0) write(*,*) ievent,'events proceded'
 
 ccc Some initialization
-          call InitKin2Book
+        call InitKin2Book
 
 ccc Event generation
-          if(iSim.ne.0) CALL pyevnt
+        if(iSim.ne.0) CALL pyevnt
 
 ccc Come back in target frame
-          if(iFM.ne.0) call LorentzFMBack(1)
+        if(iFM.ne.0) call LorentzFMBack(1)
 
-          if (iNS .eq. 1 .and. (iTg .eq. 1 .or. iTg .eq. 7)) 
+        if (iNS .eq. 1 .and. (iTg .eq. 1 .or. iTg .eq. 7)) 
      &       call CreateSpec
 
 ccc Energy loss of the partons
-          if (iQuenching.ne.0.and.iTg.gt.1) then
-            call InterPos
-            call ApplyQW
-          endif
+        if (iQuenching.ne.0.and.iTg.gt.1) then
+          call InterPos
+          call ApplyQW
+        endif
 
 ccc Fragmentation
-          if (iQuenching.ne.0) then
-            MSTJ(1) =1
-            if(iSim.ne.0) call PYEXEC
-            MSTJ(1) =0
-          endif
+        if (iQuenching.ne.0) then
+          MSTJ(1) =1
+          if(iSim.ne.0) call PYEXEC
+          MSTJ(1) =0
+        endif
 
 ccc Go back in lab frame
-          if(iColl.ne.0) call LorentzFMBack(2)
+        if(iColl.ne.0) call LorentzFMBack(2)
 
 ccc Compute of physical values for the hbook
-          call ComputV
+        call ComputV
 
 ccc Book the ntuple
-          call fillroot()
+        call fillroot()
+        j = j+ 1
+        i = i+ 1
 c          call hfnt(33)
 c          call CLASBOSFILL(iTg)
-        enddo
       enddo
 
 ccc Close the hbook file
@@ -177,7 +179,7 @@ c      call CLASBOSEND('MCEVENT')
 
       call TIMEX(T2)
 
-      write(*,*) nevent*nkin,'events in ',T2-T1,'s'
+      write(*,*) nevent,'events in ',T2-T1,'s'
    
       end
 

@@ -5,8 +5,8 @@
       double precision rhofermi,mom,proba,ptot,step
       include 'common.f'
 
-      step_size_FM = 0.001
       FMnb = 1000
+      step_size_FM = FMlimit/FMnb
       mom = 0.
       proba = 0.
       ptot = 0.

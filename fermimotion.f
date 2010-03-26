@@ -74,8 +74,6 @@ c------------------------------------------------------------------------------
 
       real a
       data a/2./
-      real Plim
-      data Plim/1./
       real R
 
 ccccc Important variables for simulation
@@ -100,7 +98,7 @@ ccc Constant calculation
         C = 4./3.*pi*rFM**3.
 
 ccc Remove events with Pf > 4 GeV/c or negative values
-        do while (Ps.gt.Plim .or. Ps.lt.0)
+        do while (Ps.gt.FMlimit .or. Ps.lt.0)
 ccc Generation of random number
           Kf = ranf(0)
 ccc Apply the threshold and produce the tail
