@@ -79149,3 +79149,40 @@ C...Common code to ensure right century.
  
       RETURN
       END
+
+      subroutine PYREST
+
+C...Double precision and integer declarations.
+      IMPLICIT DOUBLE PRECISION(A-H, O-Z)
+      IMPLICIT INTEGER(I-N)
+C...Commonblocks.
+      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+ 
+      double precision NEWCKIN(200)
+
+      DATA NEWCKIN/
+     &  2.0D0, -1.0D0,  0.0D0, -1.0D0,  1.0D0,
+     &  1.0D0,  -10D0,   10D0,  -40D0,   40D0,
+     1  -40D0,   40D0,  -40D0,   40D0,  -40D0,
+     1   40D0, -1.0D0,  1.0D0, -1.0D0,  1.0D0,
+     2  0.0D0,  1.0D0,  0.0D0,  1.0D0, -1.0D0,
+     2  1.0D0, -1.0D0,  1.0D0,    0D0,    0D0,
+     3  2.0D0, -1.0D0,    0D0,    0D0,  0.0D0,
+     3 -1.0D0,  0.0D0, -1.0D0,  4.0D0, -1.0D0,
+     4 12.0D0, -1.0D0, 12.0D0, -1.0D0, 12.0D0,
+     4 -1.0D0, 12.0D0, -1.0D0,    0D0,    0D0,
+     5  0.0D0, -1.0D0,  0.0D0, -1.0D0,  0.0D0,
+     5 -1.0D0,    0D0,    0D0,    0D0,    0D0,
+     6 0.0001D0, 0.99D0, 0.0001D0, 0.99D0,    0D0,
+     6   -1D0,    0D0,   -1D0,    0D0,   -1D0,
+     7    0D0,   -1D0, 0.0001D0, 0.99D0, 0.0001D0,
+     7 0.99D0,    2D0,   -1D0,    0D0,    0D0,
+     8  120*0D0/
+
+      do i=1,200
+        write(*,*) 'Kin',i,' = ',CKIN(i),NEWCKIN(i)
+      enddo
+ 
+      CKIN       = NEWCKIN    
+      STOP
+      END

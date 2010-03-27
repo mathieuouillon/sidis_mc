@@ -19,6 +19,9 @@ c remaining energy below witch the fragmentation is stopped D = 0.8
 c Lower limit for sqrt(s)
       CKIN(1) = 1. 
 
+c To avoid random crash of init:
+      CKIN(1) = 2
+      CKIN(3) = 0
 c Q2 Limits
       CKIN(65) = .9 
       CKIN(66) = -1 

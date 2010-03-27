@@ -96,38 +96,42 @@ c      call InitHbook
 c      call CLASBOSINIT('MCEVENT')
 
       do while (j.lt.nevent)
- 100    continue
-ccc Randomize Theta Phi and Kf
-      if(rFM.ne.0.and.iFM.ne.0) call FMParam
-
-ccc Initialize the kinematics
-        call InitKin
-
-ccc Going in the nucleon rest frame
-        if(iColl.ne.0) call LorentzFM(2)
-        if(iFM.ne.0) call LorentzFM(1)
-
-        if (PPe .lt. 4) goto 100
-
-ccc Parameters for Pythia
-        call PythiaConfigCLAS
-
-ccc Block fragmentation if QW will be applied
-        if (iQuenching.ne.0) MSTJ(1) =0
-
 
 ccc Initialize the simulation
 c        if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
-          BeamE = PPe
         if(iSim.ne.0.and.
      &     (j.eq.0.or.i.eq.nkin.or.j.eq.int(nevent*iZ/iA))) then
           i = 0
+ 100      continue
+ccc Randomize Theta Phi and Kf
+          if(rFM.ne.0.and.iFM.ne.0) call FMParam
+
+ccc Initialize the kinematics
+          call InitKin
+
+ccc Going in the nucleon rest frame
+          if(iColl.ne.0) call LorentzFM(2)
+          if(iFM.ne.0) call LorentzFM(1)
+
+          if (PPe .lt. 4) goto 100
+ 200      continue
+ccc Parameters for Pythia
+          call PythiaConfigCLAS
+
+ccc Block fragmentation if QW will be applied
+          if (iQuenching.ne.0) MSTJ(1) =0
+
+          BeamE = PPe
           if(j.lt.(nevent*iZ/iA)) then
             call pyinit('FIXT','gamma/e-','p+',BeamE)
             nucleon = 1
           else
             call pyinit('FIXT','gamma/e-','n0',BeamE)
             nucleon = 0
+          endif
+          if (XSEC(99,1).eq.0) then
+            call pyrest
+            goto 200
           endif
         endif
 
