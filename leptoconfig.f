@@ -1,12 +1,13 @@
 c------------------------------------------------------------------------------
 c Initialize the config values of LEPTO
 c------------------------------------------------------------------------------
-      subroutine PythiaConfigCLAS
+      subroutine PythiaConfigAll
       implicit none
 
 ccccc Include all the common blocks
       include 'common.f'
 
+      MSEL = 2
 c Kind of possible multiple interaction (needed to avoid bugs) D = 4 H =1
       MSTP(82) = 1 
 
@@ -31,20 +32,53 @@ c W limit
 
 c HERMES Params
 
+c     PARJ(1) = 0.02 
+c     PARJ(2) = 0.25
+c     PARJ(11) = 0.51 
+c     PARJ(12) = 0.57
+c     PARJ(21) = 0.42
+c     PARJ(33) = 0.47
+c     PARJ(41) = 0.68
+c     PARJ(42) = 0.35
+c     PARJ(45) = 0.74
 
-      PARJ(1) = 0.02 
-      PARJ(2) = 0.25
-      PARJ(11) = 0.51 
-      PARJ(12) = 0.57
-      PARJ(21) = 0.42
-      PARJ(33) = 0.47
-      PARJ(41) = 0.68
-      PARJ(42) = 0.35
-      PARJ(45) = 0.74
+c     PARJ(21) = 0.44
+c     PARJ(23) = 0.01 
+c     PARJ(24) = 2.0
 
-      PARJ(21) = 0.44
-      PARJ(23) = 0.01 
-      PARJ(24) = 2.0
+      end
+
+      subroutine PythiaConfigDIS
+      implicit none
+
+ccccc Include all the common blocks
+      include 'common.f'
+      integer i
+
+c DIS only
+      MSTP(14) = 26
+
+c Kind of possible multiple interaction (needed to avoid bugs) D = 4 H =1
+      MSTP(82) = 1 
+
+c Lowest CM energy D = 10 H = 3
+      PARP(2) = 2 ! Modify because of the FM
+
+c remaining energy below witch the fragmentation is stopped D = 0.8
+      PARJ(33) = 0.3 
+
+c Lower limit for sqrt(s)
+      CKIN(1) = 1. 
+
+c To avoid random crash of init:
+      CKIN(1) = 2
+      CKIN(3) = 0
+c Q2 Limits
+      CKIN(65) = .9 
+      CKIN(66) = -1 
+c W limit
+      CKIN(77) = 1.90 
+      CKIN(78) = -1. 
 
       end
 

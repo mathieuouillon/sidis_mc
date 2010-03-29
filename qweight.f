@@ -11,13 +11,17 @@
       real ipix,ipiy,ipiz
       real th,ph
 
+      real cutoff
+
+      cutoff =0.5
+
       do ip =1,N
 c        if((abs(K(ip,2)).lt.6.or.K(ip,2).eq.21).and.K(ip,1).lt.9) then
         if((abs(K(ip,2)).lt.6 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
-     &       .and.K(ip,1).lt.9.and.P(ip,4).lt..5) then
+     &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
           call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
           if (QW_w .gt. 0.) then
-            if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)-.5) then
+            if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)-cutoff) then
               ipt = sqrt(8*QW_w/3/alphas/QW_L)
               ipl = dsqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
               iplx = P(ip,1)/ipl
@@ -68,9 +72,9 @@ c               ipz = ipl*iptz
             else
               th = acos(2*ranf(0)-1)
               ph = 2*pi*ranf(0)
-              P(ip,1) = sin(th)*cos(ph)*.5
-              P(ip,2) = sin(th)*sin(ph)*.5
-              P(ip,3) = cos(th)*.5
+              P(ip,1) = sin(th)*cos(ph)*cutoff
+              P(ip,2) = sin(th)*sin(ph)*cutoff
+              P(ip,3) = cos(th)*cutoff
               P(ip,4) =sqrt(P(ip,5)**2+P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
             endif
           endif
