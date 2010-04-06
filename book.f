@@ -69,13 +69,15 @@ C.. Booking the hbook
      &       .or. k(ip,2).eq.221 .or. k(ip,2).eq.223
      &       .or. k(ip,2).eq.331 .or. k(ip,2).eq.333
      &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
-     &       .or. k(ip,2).eq.130 .or. abs(k(ip,2)).eq.2212
-     &       .or. abs(k(ip,2)).eq.2112 .or. k(ip,2).eq.3122
+     &       .or. k(ip,2).eq.130 .or. k(ip,2).eq.3122
      &       .or. k(ip,2).eq.3222 .or. k(ip,2).eq.3212
      &       .or. k(ip,2).eq.3322 .or. k(ip,2).eq.3312
      &       .or. k(ip,2).eq.3334 .or. abs(k(ip,2)).eq.411
      &       .or. k(ip,2).eq.421 .or. k(ip,2).eq.443
-     &       .or. abs(k(ip,2)).eq.521 .or .k(ip,2).eq.511 ) then
+     &       .or. abs(k(ip,2)).eq.521 .or .k(ip,2).eq.511 
+     &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
+     &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)) then
+
 
           Nb_part           = Nb_part + 1
           acc_part(Nb_part) = 0

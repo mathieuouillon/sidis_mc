@@ -79179,10 +79179,9 @@ C...Commonblocks.
      7 0.99D0,    2D0,   -1D0,    0D0,    0D0,
      8  120*0D0/
 
-      do i=1,200
-        write(*,*) 'Kin',i,' = ',CKIN(i),NEWCKIN(i)
-      enddo
+c     do i=1,200
+c       write(*,*) 'Kin',i,' = ',CKIN(i),NEWCKIN(i)
+c     enddo
  
       CKIN       = NEWCKIN    
-      STOP
       END

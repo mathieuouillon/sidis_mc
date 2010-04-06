@@ -15,7 +15,7 @@ ccccc Miscellaneous
       real T1,T2 ! For time of computation
       double precision BeamE !Input value for pythia
       integer ip ! For do
-      integer i,j
+      integer i
  
 
       call TIMEX(T1)
@@ -23,17 +23,17 @@ CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics
       nkin = 1000
 ccc Number of events per kinematics
-      nevent = 1000000
+      nevent = 10000000
 ccc Electron energy (GeV)
-      E0 = 27
+      E0 = 4
 ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
-      iTg = 5
+      iTg = 1
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
-      iColl = 0
+      iColl = 1
 c     real EColl ! energy of the nuclei (GeV/nucleon)
-      EColl = 5.0
+      EColl = 100.0
 
 ccc Fermimotion flag 
 c     0 = no FM
@@ -44,7 +44,7 @@ c     4 = hard sphere with values from [1],
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 2
+      iFM = 3
       FMlimit = 1
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
@@ -68,17 +68,16 @@ c     integer iqw 1 SW, 2 Arleo
       ncor = 0
       sfthrd = 1
 c     real qhat !Transport coefficient (GeV^2.fm^-1)
-      qhat = .5
+      qhat = 0.4
 c     integer iDens !0= hard sphere, 1= Wood Saxon param
       iDens = 1
-c     iqg = 1 -> quark and gluons are quenched
+c     iqg = 1 -> quark and gluons are quenched other -> only q
       iqg = 1
 
 c     integer iSim ! 0 = Turn off Pythia for tests
       iSim = 1
 
 ccc To save time with useless Pythia initialization
-      j = 0
       i = 0
       if (iTg .eq. 0 .or. iFM.eq.0) then
         nkin = nevent +1
@@ -95,12 +94,12 @@ c      call InitHbook
       if (iAccept.eq.1) call readtables
 c      call CLASBOSINIT('MCEVENT')
 
-      do while (j.lt.nevent)
+      do while (ievent.lt.nevent)
 
 ccc Initialize the simulation
 c        if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
         if(iSim.ne.0.and.
-     &     (j.eq.0.or.i.eq.nkin.or.j.eq.int(nevent*iZ/iA))) then
+     &   (ievent.eq.0.or.i.eq.nkin.or.ievent.eq.int(nevent*iZ/iA))) then
           i = 0
  100      continue
 ccc Randomize Theta Phi and Kf
@@ -116,13 +115,13 @@ ccc Going in the nucleon rest frame
           if (PPe .lt. 4) goto 100
  200      continue
 ccc Parameters for Pythia
-          call PythiaConfigCLAS
+          call PythiaConfigDIS
 
 ccc Block fragmentation if QW will be applied
           if (iQuenching.ne.0) MSTJ(1) =0
 
           BeamE = PPe
-          if(j.lt.(nevent*iZ/iA)) then
+          if(ievent.lt.(nevent*iZ/iA)) then
             call pyinit('FIXT','gamma/e-','p+',BeamE)
             nucleon = 1
           else
@@ -136,7 +135,6 @@ ccc Block fragmentation if QW will be applied
         endif
 
 ccc Counter
-        ievent = ievent + 1
         if (MOD(ievent,10000).eq.0) write(*,*) ievent,'events proceded'
 
 ccc Some initialization
@@ -172,7 +170,7 @@ ccc Compute of physical values for the hbook
 
 ccc Book the ntuple
         call fillroot()
-        j = j+ 1
+        ievent = ievent+ 1
         i = i+ 1
 c          call hfnt(33)
 c          call CLASBOSFILL(iTg)
