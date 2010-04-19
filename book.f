@@ -127,9 +127,12 @@ c               write(*,*) p(ip,4),p(ip,5),Ekin,theta
           tt_part(Nb_part)  =
      &               (Nu-p(ip,4))**2 - (p(TrkGS,1)-p(ip,1))**2 - 
      &               (p(TrkGS,2)-p(ip,2))**2 - (p(TrkGS,3)-p(ip,3))**2
-          Pts_part(Nb_part) = (p(ip,1)**2+p(ip,2)**2+p(ip,3)**2)
-     &    -((p(TrkGS,1)*p(ip,1)+p(TrkGS,2)*p(ip,2)+p(TrkGS,3)*p(ip,3))
-     &    / sqrt(p(TrkGS,1)**2+p(TrkGS,2)**2+p(TrkGS,3)**2))**2
+
+          Pts_part(Nb_part) = (z_part(Nb_part)*Nu)**2-m_part(Nb_part)**2
+     &      -((- p(TrkGS,4)*p(ip,4) + p(TrkGS,1)*p(ip,1) 
+     &         + p(TrkGS,2)*p(ip,2) + p(TrkGS,3)*p(ip,3) 
+     &         + z_part(Nb_part)*Nu**2)**2 / (Nu**2+Q22))
+
           Xf_part(Nb_part) = (p(TrkGS,1)*p(ip,1)
      &                       +p(TrkGS,2)*p(ip,2)+p(TrkGS,3)*p(ip,3))
      &                 / W
