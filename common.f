@@ -70,8 +70,10 @@ ccccc Interaction position
      &      pos_radius,pos_theta,pos_phi
 
 ccccc Quenching Weight variables
-      real QW_wc,QW_R,QW_L,QW_w
-      common/QuenWei/QW_wc,QW_R,QW_L,QW_w
+      integer QW_nb
+      real QW_wc,QW_R,QW_L,QW_w,QW_qhat
+      common/QuenWei/QW_nb,QW_wc,QW_R,QW_L,QW_w,QW_qhat
+
 ccccc AA routine variables
       double precision alphas
             integer iqw,scor,ncor,sfthrd,irw

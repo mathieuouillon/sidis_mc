@@ -23,17 +23,17 @@ CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics
       nkin = 1000
 ccc Number of events per kinematics
-      nevent = 10000000
+      nevent = 1000000
 ccc Electron energy (GeV)
-      E0 = 4
+      E0 = 11
 ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
-      iTg = 1
+      iTg = 4
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
       iColl = 1
 c     real EColl ! energy of the nuclei (GeV/nucleon)
-      EColl = 100.0
+      EColl = 30.0
 
 ccc Fermimotion flag 
 c     0 = no FM
@@ -44,7 +44,7 @@ c     4 = hard sphere with values from [1],
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 3
+      iFM = 0
       FMlimit = 1
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
@@ -115,7 +115,7 @@ ccc Going in the nucleon rest frame
           if (PPe .lt. 4) goto 100
  200      continue
 ccc Parameters for Pythia
-          call PythiaConfigDIS
+          call PythiaConfigAll
 
 ccc Block fragmentation if QW will be applied
           if (iQuenching.ne.0) MSTJ(1) =0
@@ -125,6 +125,7 @@ ccc Block fragmentation if QW will be applied
             call pyinit('FIXT','gamma/e-','p+',BeamE)
             nucleon = 1
           else
+            write(*,*) 'X sec 99 = ', XSEC(99,1)
             call pyinit('FIXT','gamma/e-','n0',BeamE)
             nucleon = 0
           endif
@@ -180,6 +181,9 @@ ccc Close the hbook file
 c      call hrout(33,icycle,' ')
 c      call hrend('out')
 c      call CLASBOSEND('MCEVENT')
+
+      write(*,*) 'X sec 99 = ', XSEC(99,1)
+      write(*,*) 'q hat = ', QW_qhat/QW_nb
 
       call TIMEX(T2)
 

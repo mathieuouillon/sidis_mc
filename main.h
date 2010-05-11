@@ -45,7 +45,8 @@ extern "C" {
 
 // Quenching Weight variables
   extern struct {
-      float QW_wc,QW_R,QW_L,QW_w;
+      int QW_nb;
+      float QW_wc,QW_R,QW_L,QW_w,QW_qhat;
   }quenwei_;
 }
 

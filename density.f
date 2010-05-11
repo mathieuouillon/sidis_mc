@@ -38,6 +38,10 @@ ccccc Generate the table of density in function of r
       double precision nucdens,r
       real integral
 
+ccccc Some init
+      QW_nb = 0
+      QW_qhat = 0.
+
       idist = iDens
       irho = 1
       step_size_dens = 0.01

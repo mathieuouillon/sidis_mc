@@ -16,10 +16,10 @@
       cutoff =0.5
 
       do ip =1,N
-c        if((abs(K(ip,2)).lt.6.or.K(ip,2).eq.21).and.K(ip,1).lt.9) then
         if((abs(K(ip,2)).lt.6 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
      &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
           call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
+          QW_nb = QW_nb + 1
           if (QW_w .gt. 0.) then
             if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)-cutoff) then
               ipt = sqrt(8*QW_w/3/alphas/QW_L)
@@ -28,10 +28,7 @@ c        if((abs(K(ip,2)).lt.6.or.K(ip,2).eq.21).and.K(ip,1).lt.9) then
               iply = P(ip,2)/ipl
               iplz = P(ip,3)/ipl
               iptz = 0.
-              if (iply .ne. 0) then
-c                ipty = sqrt(iplx**2/(iply**2*((iplx/iply)**2+1)))
-c                iptx = sqrt(1-ipty**2)
-c                if (iplx*iply.gt.0) ipty = -ipty
+              if (iplz .ne. 1) then
                  ipiz = ranf(0)*4*asin(1.)
                  ipix = cos(iptz)
                  ipiy = sin(iptz)
@@ -42,8 +39,8 @@ c                if (iplx*iply.gt.0) ipty = -ipty
      &                  -ipiy*iplx/sqrt(1-iplz**2)
                  iptz = ipix*sqrt(1-iplz**2)
               else
-                ipty = 1.
-                iptx = 0.
+                ipty = ranf(0)
+                iptx = sqrt(1-ipty**2)
                 iptz = 0.
               endif
 
@@ -55,16 +52,15 @@ c                if (iplx*iply.gt.0) ipty = -ipty
                 ipy = sin(th)*sin(ph)*ipl
                 ipz = cos(th)*ipl
 
-c               ipx = ipl*iptx
-c               ipy = ipl*ipty
-c               ipz = ipl*iptz
               else
                 ipl = sqrt(ipl**2 - ipt**2)
                 ipx = ipt*iptx+ipl*iplx
                 ipy = ipt*ipty+ipl*iply
                 ipz = ipt*iptz+ipl*iplz
               endif
-
+              QW_qhat=QW_qhat + ( (ipx**2+ipy**2+ipz**2)
+     &                   - (ipx*P(ip,1)+ipy*P(ip,2)+ipz*P(ip,3))**2
+     &                     / (P(ip,1)**2+P(ip,2)**2+P(ip,3)**2) ) / QW_L
               P(ip,1) = ipx
               P(ip,2) = ipy
               P(ip,3) = ipz
@@ -72,6 +68,12 @@ c               ipz = ipl*iptz
             else
               th = acos(2*ranf(0)-1)
               ph = 2*pi*ranf(0)
+
+              QW_qhat = QW_qhat + ( cutoff**2 * (1 
+     &                   - (sin(th)*(cos(ph)*P(ip,1)+sin(ph)*P(ip,2))
+     &                      +cos(th)*P(ip,3))**2
+     &                   / (P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)) ) / QW_L
+
               P(ip,1) = sin(th)*cos(ph)*cutoff
               P(ip,2) = sin(th)*sin(ph)*cutoff
               P(ip,3) = cos(th)*cutoff
@@ -164,7 +166,6 @@ ccccc Calculate the energy loss probability
       do i=1,nb_step
         xx = step_QW * i
         call qweight(ipart,dble(QW_R),xx,yy,cont(i),disc)
-c        write (*,*) i,cont(i),disc
         total = total + cont(i)*step_QW
       enddo
       total = total + disc
