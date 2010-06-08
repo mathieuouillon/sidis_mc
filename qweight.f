@@ -13,11 +13,18 @@
 
       real cutoff
 
+      real inix,iniy,iniz,tot
+      integer new
+
+      new = 0
       cutoff =0.5
 
       do ip =1,N
         if((abs(K(ip,2)).lt.6 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
      &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
+          inix = P(ip,1)
+          iniy = P(ip,2)
+          iniz = P(ip,3)
           call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
           QW_nb = QW_nb + 1
           if (QW_w .gt. 0.) then
@@ -79,9 +86,28 @@
               P(ip,3) = cos(th)*cutoff
               P(ip,4) =sqrt(P(ip,5)**2+P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
             endif
+            new = new + 1
+            inix = inix - P(ip,1)
+            iniy = iniy - P(ip,2)
+            iniz = iniz - P(ip,3)
+            tot = sqrt(inix**2+iniy**2+iniz**2)
+            P(N+new,1) = inix
+            P(N+new,2) = iniy
+            P(N+new,3) = iniz
+            P(N+new,4) = tot
+            P(N+new,5) = 0.
+            K(N+new-1,1) = 2
+            K(N+new,1) = 1
+            K(N+new,2) = 21
+            K(N+new,3) = ip
+            K(N+new,4) = K(ip,4)
+            K(N+new,5) = K(ip,5)
           endif
         endif
       enddo
+
+      N = N + new
+
       end
 
       subroutine QWComput(ipx,ipy,ipz,E,id)
