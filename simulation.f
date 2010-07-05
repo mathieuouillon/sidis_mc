@@ -73,6 +73,8 @@ c     integer iDens !0= hard sphere, 1= Wood Saxon param
       iDens = 1
 c     iqg = 1 -> quark and gluons are quenched other -> only q
       iqg = 1
+c     iEg = 1 -> a gluon is added to satisfy momentum conservation
+      iEg = 1
 
 c     integer iSim ! 0 = Turn off Pythia for tests
       iSim = 1
@@ -160,6 +162,7 @@ ccc Fragmentation
         if (iQuenching.ne.0) then
           MSTJ(1) =1
           if(iSim.ne.0) call PYEXEC
+c          if(iSim.ne.0) CALL pylist(1)
           MSTJ(1) =0
         endif
 

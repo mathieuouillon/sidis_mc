@@ -3,7 +3,7 @@
 
       include 'common.f'
 
-      integer ip ! For do
+      integer ip,iq,ir ! For do
       real ipx,ipy,ipz,E 
       real ipl,ipt
       real iplx,iply,iplz
@@ -19,7 +19,9 @@
       new = 0
       cutoff =0.5
 
-      do ip =1,N
+      ip = 1
+      do while (ip.le.N)
+c      do ip =1,N
         if((abs(K(ip,2)).lt.6 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
      &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
           inix = P(ip,1)
@@ -86,27 +88,59 @@
               P(ip,3) = cos(th)*cutoff
               P(ip,4) =sqrt(P(ip,5)**2+P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
             endif
-            new = new + 1
-            inix = inix - P(ip,1)
-            iniy = iniy - P(ip,2)
-            iniz = iniz - P(ip,3)
-            tot = sqrt(inix**2+iniy**2+iniz**2)
-            P(N+new,1) = inix
-            P(N+new,2) = iniy
-            P(N+new,3) = iniz
-            P(N+new,4) = tot
-            P(N+new,5) = 0.
-            K(N+new-1,1) = 2
-            K(N+new,1) = 1
-            K(N+new,2) = 21
-            K(N+new,3) = ip
-            K(N+new,4) = K(ip,4)
-            K(N+new,5) = K(ip,5)
+
+            if (iEg.eq.1) then
+              new = new + 1
+              inix = inix - P(ip,1)
+              iniy = iniy - P(ip,2)
+              iniz = iniz - P(ip,3)
+              tot = sqrt(inix**2+iniy**2+iniz**2)
+              do iq=ip,N
+                ir = ip+N-iq
+                if (K(ip-1,1).eq.2 .or. ir.ne.ip) then
+                  P(ir+1,1) = P(ir,1)
+                  P(ir+1,2) = P(ir,2)
+                  P(ir+1,3) = P(ir,3)
+                  P(ir+1,4) = P(ir,4)
+                  P(ir+1,5) = P(ir,5)
+                  K(ir+1,1) = K(ir,1)
+                  K(ir+1,2) = K(ir,2)
+                  K(ir+1,3) = K(ir,3)
+                  K(ir+1,4) = K(ir,4)
+                  K(ir+1,5) = K(ir,5)
+                endif
+              enddo
+              if(K(ip-1,1).eq.2) then
+              P(ip,1) = inix
+              P(ip,2) = iniy
+              P(ip,3) = iniz
+              P(ip,4) = tot
+              P(ip,5) = 0.
+            
+              K(ip,1) = 2
+              K(ip,2) = 21
+              K(ip,3) = ip
+              ip = ip + 1
+              else
+              ip = ip + 1
+              P(ip,1) = inix
+              P(ip,2) = iniy
+              P(ip,3) = iniz
+              P(ip,4) = tot
+              P(ip,5) = 0.
+            
+              K(ip,1) = 2
+              K(ip,2) = 21
+              K(ip,3) = ip
+              endif
+              N = N + 1
+            endif
           endif
         endif
+        ip = ip + 1
       enddo
 
-      N = N + new
+c      N = N + new
 
       end
 
