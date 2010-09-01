@@ -23,15 +23,15 @@ CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics
       nkin = 1000
 ccc Number of events per kinematics
-      nevent = 1000000
+      nevent = 100000
 ccc Electron energy (GeV)
-      E0 = 11
+      E0 = 27.5
 ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
       iTg = 4
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
-      iColl = 1
+      iColl = 0
 c     real EColl ! energy of the nuclei (GeV/nucleon)
       EColl = 30.0
 

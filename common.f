@@ -71,8 +71,8 @@ ccccc Interaction position
 
 ccccc Quenching Weight variables
       integer QW_nb
-      real QW_wc,QW_R,QW_L,QW_w,QW_qhat
-      common/QuenWei/QW_nb,QW_wc,QW_R,QW_L,QW_w,QW_qhat
+      real QW_wc,QW_R,QW_L,QW_w,QW_qhat,QW_chi,QW_th
+      common/QuenWei/QW_nb,QW_wc,QW_R,QW_L,QW_w,QW_qhat,QW_chi,QW_th
 
 ccccc AA routine variables
       double precision alphas

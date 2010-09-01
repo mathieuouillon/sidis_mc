@@ -55,7 +55,8 @@ c      do ip =1,N
 
               ipl = ipl - QW_w
               if (ipt.ge.ipl) then
-                th = acos(2*ranf(0)-1)
+c               th = acos(2*ranf(0)-1)
+                th = QW_th
                 ph = 2*pi*ranf(0)
                 ipx = sin(th)*cos(ph)*ipl
                 ipy = sin(th)*sin(ph)*ipl
@@ -75,7 +76,8 @@ c      do ip =1,N
               P(ip,3) = ipz
               P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
             else
-              th = acos(2*ranf(0)-1)
+c             th = acos(2*ranf(0)-1)
+              th = QW_th
               ph = 2*pi*ranf(0)
 
               QW_qhat = QW_qhat + ( cutoff**2 * (1 
@@ -164,6 +166,7 @@ c      N = N + new
       double precision total !Total of QW for normalization purpose
       real randnum !random number to pick the QW
       integer id !id of the parton
+      double precision ChiR !Chi sq R
 
       QW_w = 0.
       QW_L = 0.
@@ -247,6 +250,35 @@ ccccc Pick randomely a quenching in the table
           QW_w = i * step_QW * QW_wc 
         endif
       endif
+
+ccccc Calculate the angle probability
+      if(QW_w .gt. 0) then
+        step_QW = 1./nb_step
+        yy = E/QW_wc
+        xx = QW_w/QW_wc 
+       
+        total = 0.
+        do i=1,nb_step
+          ChiR = (step_QW * i)**2 * QW_R
+          call qweight(ipart,ChiR,xx,yy,cont(i),disc)
+c Do not keep negative probabilities
+          if (cont(i).lt.0) cont(i) = 0
+          total = total + cont(i)*step_QW
+        enddo
+        do i=1,nb_step
+          cont(i) = cont(i) / total
+        enddo
+        randnum = ranf(0)
+        total = 0.
+        i = 1
+        do while (randnum.gt.total)
+          total = total + cont(i)*step_QW
+          i = i + 1
+        enddo
+        QW_chi = i * step_QW
+        QW_th = asin(QW_chi)
+      endif
+      if (isnan(QW_th)) QW_th = 3.14159/2
 
       end
 
