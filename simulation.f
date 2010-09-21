@@ -27,7 +27,7 @@ ccc Number of events per kinematics
 ccc Electron energy (GeV)
       E0 = 27.5
 ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
-      iTg = 4
+      iTg = 5
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic

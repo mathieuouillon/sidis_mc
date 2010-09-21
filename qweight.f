@@ -4,19 +4,15 @@
       include 'common.f'
 
       integer ip,iq,ir ! For do
-      real ipx,ipy,ipz,E 
-      real ipl,ipt
-      real iplx,iply,iplz
-      real iptx,ipty,iptz
+      real ipi,ipg
       real ipix,ipiy,ipiz
+      real ipgx,ipgy,ipgz
       real th,ph
+      real ptg,pmax
+      real ippx,ippy,ippz
 
-      real cutoff
+      real cutoff,sca
 
-      real inix,iniy,iniz,tot
-      integer new
-
-      new = 0
       cutoff =0.5
 
       ip = 1
@@ -24,79 +20,72 @@
 c      do ip =1,N
         if((abs(K(ip,2)).lt.6 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
      &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
-          inix = P(ip,1)
-          iniy = P(ip,2)
-          iniz = P(ip,3)
           call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
           QW_nb = QW_nb + 1
           if (QW_w .gt. 0.) then
-            if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)-cutoff) then
-              ipt = sqrt(8*QW_w/3/alphas/QW_L)
-              ipl = dsqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
-              iplx = P(ip,1)/ipl
-              iply = P(ip,2)/ipl
-              iplz = P(ip,3)/ipl
-              iptz = 0.
-              if (iplz .ne. 1) then
-                 ipiz = ranf(0)*4*asin(1.)
-                 ipix = cos(iptz)
-                 ipiy = sin(iptz)
-                 ipiz = 0
-                 iptx = -ipix*iplx*iplz/sqrt(1-iplz**2)
-     &                  -ipiy*iply/sqrt(1-iplz**2)
-                 ipty = -ipix*iply*iplz/sqrt(1-iplz**2)
-     &                  -ipiy*iplx/sqrt(1-iplz**2)
-                 iptz = ipix*sqrt(1-iplz**2)
-              else
-                ipty = ranf(0)
-                iptx = sqrt(1-ipty**2)
-                iptz = 0.
-              endif
-
-              ipl = ipl - QW_w
-              if (ipt.ge.ipl) then
-c               th = acos(2*ranf(0)-1)
-                th = QW_th
-                ph = 2*pi*ranf(0)
-                ipx = sin(th)*cos(ph)*ipl
-                ipy = sin(th)*sin(ph)*ipl
-                ipz = cos(th)*ipl
-
-              else
-                ipl = sqrt(ipl**2 - ipt**2)
-                ipx = ipt*iptx+ipl*iplx
-                ipy = ipt*ipty+ipl*iply
-                ipz = ipt*iptz+ipl*iplz
-              endif
-              QW_qhat=QW_qhat + ( (ipx**2+ipy**2+ipz**2)
-     &                   - (ipx*P(ip,1)+ipy*P(ip,2)+ipz*P(ip,3))**2
-     &                     / (P(ip,1)**2+P(ip,2)**2+P(ip,3)**2) ) / QW_L
-              P(ip,1) = ipx
-              P(ip,2) = ipy
-              P(ip,3) = ipz
-              P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
-            else
-c             th = acos(2*ranf(0)-1)
-              th = QW_th
-              ph = 2*pi*ranf(0)
-
-              QW_qhat = QW_qhat + ( cutoff**2 * (1 
-     &                   - (sin(th)*(cos(ph)*P(ip,1)+sin(ph)*P(ip,2))
-     &                      +cos(th)*P(ip,3))**2
-     &                   / (P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)) ) / QW_L
-
-              P(ip,1) = sin(th)*cos(ph)*cutoff
-              P(ip,2) = sin(th)*sin(ph)*cutoff
-              P(ip,3) = cos(th)*cutoff
-              P(ip,4) =sqrt(P(ip,5)**2+P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
+            if (QW_w.gt.abs(sqrt(P(ip,4)**2 -P(ip,5)**2)-cutoff)) then
+              QW_w = abs(sqrt(P(ip,4)**2 -P(ip,5)**2)-cutoff)
             endif
+c Initial parton kinematic
+            ipi = dsqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
+            ipix = P(ip,1)/ipi
+            ipiy = P(ip,2)/ipi
+            ipiz = P(ip,3)/ipi
+c           write(*,*) 'Initial parton'
+c           write(*,*) P(ip,1),P(ip,2),P(ip,3),P(ip,4)
 
+c Calculate the gluon kinematic
+            th = QW_th
+            ph = 2*pi*ranf(0)
+c           write(*,*) 'qweight give: (th, ph, w)'
+c           write(*,*) QW_th,ph,QW_w
+
+            ipg = QW_w
+            ipgz = ipiz*cos(th) - ipiy*sin(th)
+            ipgy = ipiz*sin(th)*cos(ph) + ipiy*cos(th)*cos(ph) 
+     &                                  - ipix*sin(ph)
+            ipgx = ipiz*sin(th)*sin(ph) + ipiy*cos(th)*sin(ph) 
+     &                                  + ipix*cos(ph)
+
+            ipgx = ipgx * QW_w
+            ipgy = ipgy * QW_w
+            ipgz = ipgz * QW_w
+  
+c           write(*,*) 'gluon'
+c           write(*,*) ipgx,ipgy,ipgz
+
+            ptg = ipgx*ipix + ipgy*ipiy + ipgz*ipiz
+            ptg = sqrt(QW_w**2-ptg**2)
+
+
+c Calculate Parton kinematic
+            pmax = sqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
+            if (ptg.gt.pmax) ptg = pmax
+
+c           write(*,*) 'Pt gluon, pmax '
+c           write(*,*) ptg,pmax
+
+            th = asin(ptg/pmax)
+            ph = -ph
+
+            ippz = ipiz*cos(th) - ipiy*sin(th)
+            ippy = ipiz*sin(th)*cos(ph) + ipiy*cos(th)*cos(ph) 
+     &                                  - ipix*sin(ph)
+            ippx = ipiz*sin(th)*sin(ph) + ipiy*cos(th)*sin(ph) 
+     &                                  + ipix*cos(ph)
+            P(ip,1) = P(ip,1)/pmax*(pmax-QW_w)+ippx
+            P(ip,2) = P(ip,2)/pmax*(pmax-QW_w)+ippy
+            P(ip,3) = P(ip,3)/pmax*(pmax-QW_w)+ippz
+            sca = sqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2+P(ip,5)**2)
+            P(ip,4) = sca
+c           write(*,*) 'Final parton'
+c           write(*,*) P(ip,1),P(ip,2),P(ip,3),P(ip,4)
+
+            QW_qhat = QW_qhat 
+     &              + (ipix*P(ip,1) + ipiy*P(ip,2) + ipiz*P(ip,3))/QW_L
+
+c Add gluon if requested
             if (iEg.eq.1) then
-              new = new + 1
-              inix = inix - P(ip,1)
-              iniy = iniy - P(ip,2)
-              iniz = iniz - P(ip,3)
-              tot = sqrt(inix**2+iniy**2+iniz**2)
               do iq=ip,N
                 ir = ip+N-iq
                 if (K(ip-1,1).eq.2 .or. ir.ne.ip) then
@@ -113,27 +102,27 @@ c             th = acos(2*ranf(0)-1)
                 endif
               enddo
               if(K(ip-1,1).eq.2) then
-              P(ip,1) = inix
-              P(ip,2) = iniy
-              P(ip,3) = iniz
-              P(ip,4) = tot
-              P(ip,5) = 0.
-            
-              K(ip,1) = 2
-              K(ip,2) = 21
-              K(ip,3) = ip
-              ip = ip + 1
+                P(ip,1) = ipgx
+                P(ip,2) = ipgy
+                P(ip,3) = ipgz
+                P(ip,4) = ipg
+                P(ip,5) = 0.
+              
+                K(ip,1) = 2
+                K(ip,2) = 21
+                K(ip,3) = ip
+                ip = ip + 1
               else
-              ip = ip + 1
-              P(ip,1) = inix
-              P(ip,2) = iniy
-              P(ip,3) = iniz
-              P(ip,4) = tot
-              P(ip,5) = 0.
-            
-              K(ip,1) = 2
-              K(ip,2) = 21
-              K(ip,3) = ip
+                ip = ip + 1
+                P(ip,1) = ipgx
+                P(ip,2) = ipgy
+                P(ip,3) = ipgz
+                P(ip,4) = ipg
+                P(ip,5) = 0.
+              
+                K(ip,1) = 2
+                K(ip,2) = 21
+                K(ip,3) = ip
               endif
               N = N + 1
             endif
@@ -141,8 +130,6 @@ c             th = acos(2*ranf(0)-1)
         endif
         ip = ip + 1
       enddo
-
-c      N = N + new
 
       end
 
