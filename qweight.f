@@ -13,7 +13,7 @@
 
       real cutoff,sca
 
-      cutoff =0.5
+      cutoff =0.3
 
       ip = 1
       do while (ip.le.N)
@@ -22,9 +22,9 @@ c      do ip =1,N
      &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
           call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
           QW_nb = QW_nb + 1
-          if (QW_w .gt. 0.) then
-            if (QW_w.gt.abs(sqrt(P(ip,4)**2 -P(ip,5)**2)-cutoff)) then
-              QW_w = abs(sqrt(P(ip,4)**2 -P(ip,5)**2)-cutoff)
+          if (QW_w .gt. 0. .and. P(ip,4)-P(ip,5)-cutoff .gt. 0.) then
+            if (QW_w.gt.P(ip,4)-P(ip,5)-cutoff) then
+              QW_w = P(ip,4) -P(ip,5)-cutoff
             endif
 c Initial parton kinematic
             ipi = dsqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
@@ -73,10 +73,12 @@ c           write(*,*) ptg,pmax
      &                                  - ipix*sin(ph)
             ippx = ipiz*sin(th)*sin(ph) + ipiy*cos(th)*sin(ph) 
      &                                  + ipix*cos(ph)
-            P(ip,1) = P(ip,1)/pmax*(pmax-QW_w)+ippx
-            P(ip,2) = P(ip,2)/pmax*(pmax-QW_w)+ippy
-            P(ip,3) = P(ip,3)/pmax*(pmax-QW_w)+ippz
+            P(ip,1) = sqrt((P(ip,4)-QW_w)**2-P(ip,5)**2)*ippx
+            P(ip,2) = sqrt((P(ip,4)-QW_w)**2-P(ip,5)**2)*ippy
+            P(ip,3) = sqrt((P(ip,4)-QW_w)**2-P(ip,5)**2)*ippz
             sca = sqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2+P(ip,5)**2)
+c           write(*,*) 'result of QW: Einit: ',P(ip,4),' Efinal: ',sca,
+c    &                 ' QW: ',QW_w
             P(ip,4) = sca
 c           write(*,*) 'Final parton'
 c           write(*,*) P(ip,1),P(ip,2),P(ip,3),P(ip,4)
