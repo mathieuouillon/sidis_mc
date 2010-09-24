@@ -23,15 +23,15 @@ CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics
       nkin = 1000
 ccc Number of events per kinematics
-      nevent = 1000000
+      nevent = 500000
 ccc Electron energy (GeV)
-      E0 = 11
+      E0 = 27.5
 ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
-      iTg = 4
+      iTg = 5
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
-      iColl = 1
+      iColl = 0
 c     real EColl ! energy of the nuclei (GeV/nucleon)
       EColl = 30.0
 
@@ -74,7 +74,7 @@ c     integer iDens !0= hard sphere, 1= Wood Saxon param
 c     iqg = 1 -> quark and gluons are quenched other -> only q
       iqg = 1
 c     iEg = 1 -> a gluon is added to satisfy momentum conservation
-      iEg = 1
+      iEg = 0
 
 c     integer iSim ! 0 = Turn off Pythia for tests
       iSim = 1
@@ -117,7 +117,7 @@ ccc Going in the nucleon rest frame
           if (PPe .lt. 4) goto 100
  200      continue
 ccc Parameters for Pythia
-          call PythiaConfigAll
+          call PythiaConfigDIS
 
 ccc Block fragmentation if QW will be applied
           if (iQuenching.ne.0) MSTJ(1) =0
