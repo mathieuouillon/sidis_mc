@@ -18,7 +18,7 @@
       ip = 1
       do while (ip.le.N)
 c      do ip =1,N
-        if((abs(K(ip,2)).lt.6 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
+        if((abs(K(ip,2)).lt.4 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
      &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
           call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
           QW_nb = QW_nb + 1
@@ -104,10 +104,10 @@ c Add gluon if requested
                 endif
               enddo
               if(K(ip-1,1).eq.2) then
-                P(ip,1) = ipgx
-                P(ip,2) = ipgy
-                P(ip,3) = ipgz
-                P(ip,4) = ipg
+                P(ip,1) = ipgx*SupFac
+                P(ip,2) = ipgy*SupFac
+                P(ip,3) = ipgz*SupFac
+                P(ip,4) = ipg*SupFac
                 P(ip,5) = 0.
               
                 K(ip,1) = 2
@@ -116,10 +116,10 @@ c Add gluon if requested
                 ip = ip + 1
               else
                 ip = ip + 1
-                P(ip,1) = ipgx
-                P(ip,2) = ipgy
-                P(ip,3) = ipgz
-                P(ip,4) = ipg
+                P(ip,1) = ipgx*SupFac
+                P(ip,2) = ipgy*SupFac
+                P(ip,3) = ipgz*SupFac
+                P(ip,4) = ipg*SupFac
                 P(ip,5) = 0.
               
                 K(ip,1) = 2
