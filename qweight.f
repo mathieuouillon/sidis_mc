@@ -40,16 +40,16 @@ c Calculate the gluon kinematic
 c           write(*,*) 'qweight give: (th, ph, w)'
 c           write(*,*) QW_th,ph,QW_w
 
-            ipg = QW_w
+            ipg = QW_w * SupFac
             ipgz = ipiz*cos(th) - ipiy*sin(th)
             ipgy = ipiz*sin(th)*cos(ph) + ipiy*cos(th)*cos(ph) 
      &                                  - ipix*sin(ph)
             ipgx = ipiz*sin(th)*sin(ph) + ipiy*cos(th)*sin(ph) 
      &                                  + ipix*cos(ph)
 
-            ipgx = ipgx * QW_w
-            ipgy = ipgy * QW_w
-            ipgz = ipgz * QW_w
+            ipgx = ipgx * ipg
+            ipgy = ipgy * ipg
+            ipgz = ipgz * ipg
   
 c           write(*,*) 'gluon'
 c           write(*,*) ipgx,ipgy,ipgz
@@ -104,10 +104,10 @@ c Add gluon if requested
                 endif
               enddo
               if(K(ip-1,1).eq.2) then
-                P(ip,1) = ipgx*SupFac
-                P(ip,2) = ipgy*SupFac
-                P(ip,3) = ipgz*SupFac
-                P(ip,4) = ipg*SupFac
+                P(ip,1) = ipgx
+                P(ip,2) = ipgy
+                P(ip,3) = ipgz
+                P(ip,4) = ipg
                 P(ip,5) = 0.
               
                 K(ip,1) = 2
@@ -116,10 +116,10 @@ c Add gluon if requested
                 ip = ip + 1
               else
                 ip = ip + 1
-                P(ip,1) = ipgx*SupFac
-                P(ip,2) = ipgy*SupFac
-                P(ip,3) = ipgz*SupFac
-                P(ip,4) = ipg*SupFac
+                P(ip,1) = ipgx
+                P(ip,2) = ipgy
+                P(ip,3) = ipgz
+                P(ip,4) = ipg
                 P(ip,5) = 0.
               
                 K(ip,1) = 2
@@ -156,12 +156,14 @@ c Add gluon if requested
       real randnum !random number to pick the QW
       integer id !id of the parton
       double precision ChiR !Chi sq R
+      real qhateff
 
       QW_w = 0.
       QW_L = 0.
       QW_wc = 0.
       QW_R  = 0.
       d = 0.
+      qhateff = qhat + ehat
 
 ccc Init for qweight
       if (id.eq.21) then
@@ -199,8 +201,8 @@ ccc integration to calculate wc and R
       enddo
 
       QW_L = QW_wc / QW_R
-      QW_wc = qhat/density_table(1) * QW_wc
-      QW_R = 2 * density_table(1) * QW_wc**2 / QW_R / qhat
+      QW_wc = qhateff/density_table(1) * QW_wc
+      QW_R = 2 * density_table(1) * QW_wc**2 / QW_R / qhateff
 
 ccccc Convert the units fm -> GeV-1
       QW_L = QW_L/.1973269
