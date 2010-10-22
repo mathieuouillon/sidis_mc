@@ -4,87 +4,103 @@
       include 'common.f'
 
       integer ip,iq,ir ! For do
-      real ipi,ipg
-      real ipix,ipiy,ipiz
-      real ipgx,ipgy,ipgz
-      real th,ph
-      real ptg,pmax
-      real ippx,ippy,ippz
 
+      real th,ph
+
+      real inix,iniy,iniz
+      real ipx,ipy,ipz
+      real ipg,ipgx,ipgy,ipgz
+      real tot,ipix,ipiy,ipiz
+      real ipt,iptx,ipty,iptz
+
+      real ipl,ptg,plg
       real cutoff,sca
 
-      cutoff =0.3
+      cutoff =0.5
 
       ip = 1
       do while (ip.le.N)
 c      do ip =1,N
         if((abs(K(ip,2)).lt.4 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
      &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
-          call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
+
+c       Stock init values
+          inix = P(ip,1)
+          iniy = P(ip,2)
+          iniz = P(ip,3)
+c       Normalized init values
+          tot = sqrt(inix**2+iniy**2+iniz**2)
+          ipix = inix/tot
+          ipiy = iniy/tot
+          ipiz = iniz/tot
+
+c       Compute weight
           QW_nb = QW_nb + 1
-          if (QW_w .gt. 0. .and. P(ip,4)-P(ip,5)-cutoff .gt. 0.) then
-            if (QW_w.gt.P(ip,4)-P(ip,5)-cutoff) then
-              QW_w = P(ip,4) -P(ip,5)-cutoff
+          call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
+
+          if (QW_w .gt. 0.) then
+
+c         Determine longitudinal and transverse momentum of final parton
+c            ipt = 8*QW_w/3/alphas/QW_L*SupFac**2
+            ipt = (QW_w*cos(QW_th)*SupFac)**2
+            ipl = (P(ip,4)-QW_w)**2-ipt
+            if (ipl.gt.0 .and. ipl+ipt.gt.cutoff**2) then
+              ipt = sqrt(ipt)
+              ipl = sqrt(ipl)
+            else if (ipl.lt.0) then
+              ipl = 0
+              if (ipt.gt.cutoff**2) then
+                ipt = sqrt(ipt)
+              else
+                ipt = cutoff
+              endif
+            else if (ipl+ipt.lt.cutoff**2) then
+              ipl = sqrt(cutoff**2 - ipt)
+              ipt = sqrt(ipt)
+            else
+              write(*,*) 'error in qweight routine'
             endif
-c Initial parton kinematic
-            ipi = dsqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
-            ipix = P(ip,1)/ipi
-            ipiy = P(ip,2)/ipi
-            ipiz = P(ip,3)/ipi
-c           write(*,*) 'Initial parton'
-c           write(*,*) P(ip,1),P(ip,2),P(ip,3),P(ip,4)
+
+c         Generate normalized transverse vector
+            ph = 4*asin(1.)*ranf(0)
+            iptx = (ipiz-ipiy)*cos(ph) - (ipix*ipiy + ipix*ipiz)*sin(ph)
+            ipty =    ipix*cos(ph) + (ipix**2+ipiz**2-ipiy*ipiz)*sin(ph)
+            iptz =  - ipix*cos(ph) + (ipix**2+ipiy**2-ipiy*ipiz)*sin(ph)
+
+c         Check perpendicularity
+            sca = ipix*iptx+ipiy*ipty+ipiz*iptz
+            if (abs(sca).gt.0.000001) write(*,*) 'problem tot = ',sca
+
+c         Generate new parton momenta
+            ipx = ipt*iptx+ipl*ipix
+            ipy = ipt*ipty+ipl*ipiy
+            ipz = ipt*iptz+ipl*ipiz
+
+c         Qhat summing
+            QW_qhat=QW_qhat + ( (ipx**2+ipy**2+ipz**2)
+     &                 - (ipx*P(ip,1)+ipy*P(ip,2)+ipz*P(ip,3))**2
+     &                   / (P(ip,1)**2+P(ip,2)**2+P(ip,3)**2) ) / QW_L
+
+c         Fill Pythia array
+            P(ip,1) = ipx
+            P(ip,2) = ipy
+            P(ip,3) = ipz
+            P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
 
 c Calculate the gluon kinematic
+            ipg = tot - P(ip,4)
             th = QW_th
-            ph = 2*pi*ranf(0)
-c           write(*,*) 'qweight give: (th, ph, w)'
-c           write(*,*) QW_th,ph,QW_w
-
-            ipg = QW_w * SupFac
-            ipgz = ipiz*cos(th) - ipiy*sin(th)
-            ipgy = ipiz*sin(th)*cos(ph) + ipiy*cos(th)*cos(ph) 
-     &                                  - ipix*sin(ph)
-            ipgx = ipiz*sin(th)*sin(ph) + ipiy*cos(th)*sin(ph) 
-     &                                  + ipix*cos(ph)
-
-            ipgx = ipgx * ipg
-            ipgy = ipgy * ipg
-            ipgz = ipgz * ipg
-  
-c           write(*,*) 'gluon'
-c           write(*,*) ipgx,ipgy,ipgz
-
-            ptg = ipgx*ipix + ipgy*ipiy + ipgz*ipiz
-            ptg = sqrt(QW_w**2-ptg**2)
-
-
-c Calculate Parton kinematic
-            pmax = sqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
-            if (ptg.gt.pmax) ptg = pmax
-
-c           write(*,*) 'Pt gluon, pmax '
-c           write(*,*) ptg,pmax
-
-            th = asin(ptg/pmax)
-            ph = -ph
-
-            ippz = ipiz*cos(th) - ipiy*sin(th)
-            ippy = ipiz*sin(th)*cos(ph) + ipiy*cos(th)*cos(ph) 
-     &                                  - ipix*sin(ph)
-            ippx = ipiz*sin(th)*sin(ph) + ipiy*cos(th)*sin(ph) 
-     &                                  + ipix*cos(ph)
-            P(ip,1) = sqrt((P(ip,4)-QW_w)**2-P(ip,5)**2)*ippx
-            P(ip,2) = sqrt((P(ip,4)-QW_w)**2-P(ip,5)**2)*ippy
-            P(ip,3) = sqrt((P(ip,4)-QW_w)**2-P(ip,5)**2)*ippz
-            sca = sqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2+P(ip,5)**2)
-c           write(*,*) 'result of QW: Einit: ',P(ip,4),' Efinal: ',sca,
-c    &                 ' QW: ',QW_w
-            P(ip,4) = sca
-c           write(*,*) 'Final parton'
-c           write(*,*) P(ip,1),P(ip,2),P(ip,3),P(ip,4)
-
-            QW_qhat = QW_qhat 
-     &              + (ipix*P(ip,1) + ipiy*P(ip,2) + ipiz*P(ip,3))/QW_L
+            if (ipt.lt.ipg) then
+              ptg = -ipt
+              plg = sqrt(ipg**2-ptg**2)
+            else 
+              ptg = ipg
+              plg = 0
+            endif
+            
+            ipgx = ptg*iptx+plg*ipix
+            ipgy = ptg*ipty+plg*ipiy
+            ipgz = ptg*iptz+plg*ipiz
 
 c Add gluon if requested
             if (iEg.eq.1) then
