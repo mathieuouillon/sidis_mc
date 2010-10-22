@@ -201,7 +201,7 @@ ccc normalize momentum
       x = x_inter
       y = y_inter
       z = z_inter
-      
+
 ccc integration to calculate wc and R
       radius = sqrt(x**2+y**2+z**2)
       do while (radius.lt.20)

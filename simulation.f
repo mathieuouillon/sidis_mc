@@ -20,9 +20,9 @@ ccccc Miscellaneous
 
       call TIMEX(T1)
 CCCCCC Begining of the simulation
-ccc Integer j,nkin ! number of kinematics
+ccc Integer j,nkin ! number of kinematics (??? is it still the case?)
       nkin = 1000
-ccc Number of events per kinematics
+ccc Number of events per kinematics 
       nevent = 5000
 ccc Electron energy (GeV)
       E0 = 27.5
@@ -53,10 +53,6 @@ c                 ! this option is only for 2H and 4He targets
 
 ccc CLAS12 Acceptance put 1 
       iAccept = 0
-
-ccc dummy
-      bosout = 'test.A00'
-      hbookout = 'helium.hbook'
 
 ccc Init for the quenching weights
 c     integer iQuenching ! 0 desactivate Quenching

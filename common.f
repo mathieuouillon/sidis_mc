@@ -12,8 +12,8 @@ ccccc Important variables for transformations
       real BB2,B2x,B2y,B2z ! Lorentz kinematics
       real Thi,Phi !angles for rotation
       real Beta,ECoM ! For calculation of the CoM energy
-      common/TransfoVar/ThFM,PhiFM,BB1,B1x,B1y,B1z,BB2,B2x,B2y,B2z,
-     &                  Thi,Phi,Beta,ECoM,Kf
+      common/TransfoVar/ThFM,PhiFM,Kf,BB1,B1x,B1y,B1z,BB2,B2x,B2y,B2z,
+     &                  Thi,Phi,Beta,ECoM
 
 ccccc Files names
       character*60 bosout,hbookout
@@ -56,7 +56,7 @@ ccccc Table for FM distribution
       real FM_table(1000),step_size_FM
       integer iZ, iA ! target Z and A
       integer FMnb
-      common/FMvar/FM_table,step_size_FM,FMnb,iA,iZ
+      common/FMvar/FM_table,step_size_FM,iZ,iA,FMnb
 
 ccccc Table for density distribution
       real density_table(2000),step_size_dens

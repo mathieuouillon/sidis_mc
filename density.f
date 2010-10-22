@@ -24,7 +24,6 @@ cccc Calculate position on cartesian axis
       x_inter = pos_radius * sin(pos_theta) * cos(pos_phi)
       y_inter = pos_radius * sin(pos_theta) * sin(pos_phi)
       z_inter = pos_radius * cos(pos_theta)
-      
 
       end
 
@@ -42,6 +41,7 @@ ccccc Some init
       QW_nb = 0
       QW_qhat = 0.
 
+      integral = 0.
       idist = iDens
       irho = 1
       step_size_dens = 0.01
@@ -55,7 +55,4 @@ ccccc calculate the quantity of mater in function of the radius
         quantity_table(i) = integral
       enddo
 
-
       end
-
-
