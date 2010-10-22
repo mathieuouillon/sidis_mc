@@ -4,25 +4,24 @@
       include 'common.f'
 
       integer ip,iq,ir ! For do
-      real ipx,ipy,ipz,E 
-      real ipl,ipt
-      real iplx,iply,iplz
-      real iptx,ipty,iptz
-      real ipix,ipiy,ipiz
+
       real th,ph
 
-      real cutoff
+      real inix,iniy,iniz
+      real ipx,ipy,ipz
+      real ipg,ipgx,ipgy,ipgz
+      real tot,ipix,ipiy,ipiz
+      real ipt,iptx,ipty,iptz
 
-      real inix,iniy,iniz,tot
-      integer new
+      real ipl,ptg,plg
+      real cutoff,sca
 
-      new = 0
       cutoff =0.5
 
       ip = 1
       do while (ip.le.N)
 c      do ip =1,N
-        if((abs(K(ip,2)).lt.6 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
+        if((abs(K(ip,2)).lt.4 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
      &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
 
 c       Stock init values
@@ -42,7 +41,8 @@ c       Compute weight
           if (QW_w .gt. 0.) then
 
 c         Determine longitudinal and transverse momentum of final parton
-            ipt = 8*QW_w/3/alphas/QW_L
+c            ipt = 8*QW_w/3/alphas/QW_L*SupFac**2
+            ipt = (QW_w*cos(QW_th)*SupFac)**2
             ipl = (P(ip,4)-QW_w)**2-ipt
             if (ipl.gt.0 .and. ipl+ipt.gt.cutoff**2) then
               ipt = sqrt(ipt)
@@ -54,6 +54,11 @@ c         Determine longitudinal and transverse momentum of final parton
               else
                 ipt = cutoff
               endif
+            else if (ipl+ipt.lt.cutoff**2) then
+              ipl = sqrt(cutoff**2 - ipt)
+              ipt = sqrt(ipt)
+            else
+              write(*,*) 'error in qweight routine'
             endif
 
 c         Generate normalized transverse vector
@@ -63,8 +68,8 @@ c         Generate normalized transverse vector
             iptz =  - ipix*cos(ph) + (ipix**2+ipiy**2-ipiy*ipiz)*sin(ph)
 
 c         Check perpendicularity
-            tot = ipix*iptx+ipiy*ipty+ipiz*iptz
-            if (abs(tot).gt.0.000001) write(*,*) 'problem tot = ',tot
+            sca = ipix*iptx+ipiy*ipty+ipiz*iptz
+            if (abs(sca).gt.0.000001) write(*,*) 'problem tot = ',sca
 
 c         Generate new parton momenta
             ipx = ipt*iptx+ipl*ipix
@@ -82,13 +87,23 @@ c         Fill Pythia array
             P(ip,3) = ipz
             P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
 
-c         Gluon generation
+c Calculate the gluon kinematic
+            ipg = tot - P(ip,4)
+            th = QW_th
+            if (ipt.lt.ipg) then
+              ptg = -ipt
+              plg = sqrt(ipg**2-ptg**2)
+            else 
+              ptg = ipg
+              plg = 0
+            endif
+            
+            ipgx = ptg*iptx+plg*ipix
+            ipgy = ptg*ipty+plg*ipiy
+            ipgz = ptg*iptz+plg*ipiz
+
+c Add gluon if requested
             if (iEg.eq.1) then
-              new = new + 1
-              inix = inix - P(ip,1)
-              iniy = iniy - P(ip,2)
-              iniz = iniz - P(ip,3)
-              tot = sqrt(inix**2+iniy**2+iniz**2)
               do iq=ip,N
                 ir = ip+N-iq
                 if (K(ip-1,1).eq.2 .or. ir.ne.ip) then
@@ -105,27 +120,27 @@ c         Gluon generation
                 endif
               enddo
               if(K(ip-1,1).eq.2) then
-              P(ip,1) = inix
-              P(ip,2) = iniy
-              P(ip,3) = iniz
-              P(ip,4) = tot
-              P(ip,5) = 0.
-            
-              K(ip,1) = 2
-              K(ip,2) = 21
-              K(ip,3) = ip
-              ip = ip + 1
+                P(ip,1) = ipgx
+                P(ip,2) = ipgy
+                P(ip,3) = ipgz
+                P(ip,4) = ipg
+                P(ip,5) = 0.
+              
+                K(ip,1) = 2
+                K(ip,2) = 21
+                K(ip,3) = ip
+                ip = ip + 1
               else
-              ip = ip + 1
-              P(ip,1) = inix
-              P(ip,2) = iniy
-              P(ip,3) = iniz
-              P(ip,4) = tot
-              P(ip,5) = 0.
-            
-              K(ip,1) = 2
-              K(ip,2) = 21
-              K(ip,3) = ip
+                ip = ip + 1
+                P(ip,1) = ipgx
+                P(ip,2) = ipgy
+                P(ip,3) = ipgz
+                P(ip,4) = ipg
+                P(ip,5) = 0.
+              
+                K(ip,1) = 2
+                K(ip,2) = 21
+                K(ip,3) = ip
               endif
               N = N + 1
             endif
@@ -133,8 +148,6 @@ c         Gluon generation
         endif
         ip = ip + 1
       enddo
-
-c      N = N + new
 
       end
 
@@ -158,12 +171,15 @@ c      N = N + new
       double precision total !Total of QW for normalization purpose
       real randnum !random number to pick the QW
       integer id !id of the parton
+      double precision ChiR !Chi sq R
+      real qhateff
 
       QW_w = 0.
       QW_L = 0.
       QW_wc = 0.
       QW_R  = 0.
       d = 0.
+      qhateff = qhat + ehat
 
 ccc Init for qweight
       if (id.eq.21) then
@@ -201,8 +217,8 @@ ccc integration to calculate wc and R
       enddo
 
       QW_L = QW_wc / QW_R
-      QW_wc = qhat/density_table(1) * QW_wc
-      QW_R = 2 * density_table(1) * QW_wc**2 / QW_R / qhat
+      QW_wc = qhateff/density_table(1) * QW_wc
+      QW_R = 2 * density_table(1) * QW_wc**2 / QW_R / qhateff
 
 ccccc Convert the units fm -> GeV-1
       QW_L = QW_L/.1973269
@@ -241,6 +257,35 @@ ccccc Pick randomely a quenching in the table
           QW_w = i * step_QW * QW_wc 
         endif
       endif
+
+ccccc Calculate the angle probability
+      if(QW_w .gt. 0) then
+        step_QW = 1./nb_step
+        yy = E/QW_wc
+        xx = QW_w/QW_wc 
+       
+        total = 0.
+        do i=1,nb_step
+          ChiR = (step_QW * i)**2 * QW_R
+          call qweight(ipart,ChiR,xx,yy,cont(i),disc)
+c Do not keep negative probabilities
+          if (cont(i).lt.0) cont(i) = 0
+          total = total + cont(i)*step_QW
+        enddo
+        do i=1,nb_step
+          cont(i) = cont(i) / total
+        enddo
+        randnum = ranf(0)
+        total = 0.
+        i = 1
+        do while (randnum.gt.total)
+          total = total + cont(i)*step_QW
+          i = i + 1
+        enddo
+        QW_chi = i * step_QW
+        QW_th = asin(QW_chi)
+      endif
+      if (isnan(QW_th)) QW_th = 3.14159/2
 
       end
 

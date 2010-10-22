@@ -109,6 +109,8 @@ c min invariant mass = sqrt(s)
       CKIN(65) = 0.85d0           ! min Q2
       CKIN(77) = 1.8d0            ! min W
 
+c DIS only
+      MSTP(14) = 26
 c Suppression of VMD (0:none)
       MSTP(20) = 0
 c Q2 definition override
@@ -198,7 +200,7 @@ c Handling of quark loops, number of allowed quarks D = 5 H = 4
 c master switch for decay  D = 2 H = 1
       MSTP(41) = 1 
 c Choice of the PDF D = H = 7
-c      MSTP(51) = 7 
+      MSTP(51) = 7 
 c Max number of quarks in pdf D = 5 H = 4
       MSTP(58) = 4 
 
@@ -432,6 +434,284 @@ c      PARP(165) = .33d0  ! reduce the min. mass of time-like parton
 
       end
 
+c------------------------------------------------------------------------------
+c Initialize the config values of LEPTO
+c------------------------------------------------------------------------------
+      subroutine PythiaConfigHERMES
+      implicit none
 
+ccccc Include all the common blocks
+      include 'common.f'
 
+C****************************************************************************
+C Latest pythia tune with fragmentation tune 2004_C
+C***************************************************************************** 
+C NEW: neglect error messages
+      MSTU(21)=1
+C
+C NON_DEFAULT VALUES OR VALUES WHICH CAN BE CHANGED FOR STUDIES
+C*****************************************************************************
+C Selects the typ of processes Pythia uses to generate events
+C MSEL 1)=2
+C
+C Q2 range over which electrons are assumed to radiate photons Pythia6 
+C default 1 MSTP 13)=2 better for photo-production
+      MSTP(13)=2
+C 
+C photon structure choice
+      MSTP(14)=30
+c DIS only
+      MSTP(14) = 26
+C
+C MSTP(15) regulates the pt_min treatment for anaomolous in respect to VMD
+C Default MSTP 15)=0 
+      MSTP(15)=0
+C
+C Variable to tell pythia in which variable the generation happens
+C MSTP(16)=1 --> generation in y
+C MSTP(16)=0 --> generation in pythia-x
+      MSTP(16)=1
+C
+C MSTP(17)=6 is the R-rho measured as by hermes MSTP 17=4 is default
+C check also PARP165/PARP166 if MSTP 17)=6
+      MSTP(17)=6
+C
+C scale for pt_min VMD/GVMD  MSTP 18)=3 by W^2
+C scale for pt_min VMD+GVMD to direct processes MSTP 18)=2  pt_min = PARP(15)
+      MSTP(18)=3
+C
+C choice of partonic cross section in process 99 and dampening factor
+      MSTP(19)=4
+C
+C An additional suppression of resolved (VMD or GVMD) c.s.
+C (W^2/(W^2 + Q_1^2 + Q_2^2))^MSTP(20) ---> MSTP 20)=3
+C if MSTP 20)=0 than the q^2 -slope in pyxtot.F is changed to 2.575
+      MSTP(20)=4
+C
+C Q^2 definition in hard scattering for 2 --> 2 processes
+C Q2 )= pT**2 + (P1**2 + P2**2 +m3**2 + m4**2)/2.
+      MSTP(32)=8
+C
+C handling of masses in quark loops
+      MSTP(38)=4
+C
+C proton parton distribution: genSet_PartonSet
+c     MSTP(51)=4046
+c     MSTP(52)=2
+C MSTP(51)=11
+C MSTP(52)=1
+C
+C pion parton distribution set
+      MSTP(53)=3
+C MSTP54)=1 internal ones from pythia MSTP54=2 pfdf-lib
+c     MSTP(54)=1
+C
+C photon parton distributions default MSTP 55)=5 SaS1D
+C MSTP(55)=5003  GRV
+c     MSTP(55)=5
+C choice of photon parton distributions according to pythia intern MSTP 56)=1
+C MSTP(56)=2  use PDFLIB
+c     MSTP(56)=1
+C 
+C Q2 dependence in PDFs default Pythia6 1, but 0 means PDFs are made Q2
+C independent and used at lower cut-off value Q^2_o
+      MSTP(57)=1
+C max # of quark flavours in PDFs (GMC: 58)=genSet_PyMaxFl)
+      MSTP(58)=4
+C
+C extension of the SaS real-photon distributions to off-shell photons,
+C especially for the anomalous component
+      MSTP(60)=7
+C
+C master switch QCD and QED ISR (D: 1)
+      MSTP(61)=0
+C master switch QCD and QED FSR (D: 1)
+      MSTP(71)=0
+C
+C master switch for multiple interactions
+C Default: 81)=1, 82=1
+      MSTP(81)=0
+      MSTP(82)=1
+C
+C shape of primordial k_t in hadron
+      MSTP(91)=1
+C energy sharing between two coloured beam remnants
+      MSTP(92)=4
+C shape of primordial k_t in photon
+      MSTP(93)=1
+C
+C structure of diffrative system Default:3
+      MSTP(101)=1
+C rho^0 decays according to angular distribution
+      MSTP(102)=1
+C Switch to turn off fragmentation completely than MSTP(111)=0
+      MSTP(111)=1
+C
+C Initialization of maxima,  Default MSTP(121))=0, MST(121)=1: multiply by PARP(121)
+      MSTP(121)=1
+C
+C************************************************************PARP settings
+C min CMS energy allowed for event as a whole (set for gamma-p automatically)
+      PARP(2)=7.
+C
+C maximum scale for photoproduction if using MSTP(13))=2
+      PARP(13)=1
+C
+C Suppression factor for GVMD compared to VMD
+      PARP(18)=0.17
+C
+C MSTP(18))=3 pTmin used there is parameterized as 
+C PARP(81)*(W/PARP(89))**PARP(90)
+C default: PARP(81))=1.9GeV, PARP(89)=1000GeV, PARP(90)=0.16
+      PARP(81)=1.9
+      PARP(89)=1000
+      PARP(90)=0.16
+C
+C intrinsic kT of initial state partons in hadron default pythia6 91)=1.
+      PARP(91)=0.40
+C upper cut on primordial kT spectrum default pythia6 93)=5 pythi5 93=2
+      PARP(93)=2.
+C
+C DEFAULT in Pythia5 PARP 99 )= 0.44 in Pythia6 99=1
+      PARP(99)=0.40
+C upper cut on primordial kT photon spectrum default pythia6 100)=5 
+C pythia5 100)=2
+      PARP(100)=5
+C
+C mass above the VM (rho, omega, phi) mass, where the single- and double 
+C diffractive spectrum starts (default: 0.28)
+      PARP(102)=0.5
+C mass above the VM (rho, omega, phi) mass, where the fragmentation of
+C diffractive states starts (below a two-body decay is forced (default: 1.)
+      PARP(103)=0.5
+C
+C minimum energy above threshold, where hadronic cross sections are defined
+      PARP(104)=0.3
+C
+C hadronic beam remnant has an energy of at least PARP(111) in the rest frame 
+C of the event default pythia5 111)=2
+      PARP(111)=0.
+C
+C Factor to multiply cross section maxima with
+      PARP(121)=2.
+C
+C PARP 161-164 are the coupling constant photon-VM for VMD model 
+C (default: 2.2 (rho), 23.6(omega), 18.4(phi), 11.5(J/psi)) 
+      PARP(161)=3.00
+      PARP(162)=24.6
+      PARP(163)=18.8
+      PARP(164)=11.5
+C
+C PARP 165/166 are linked to MSTP 17 as R_rho of HERMES is used
+C Fit to world data
+      PARP(165)=0.47679
+      PARP(166)=0.67597
+C values from the old He-3 paper for 2< W < 7GeV
+C PARP(165)=0.33
+C PARP(166)=0.61
+C values for only longitudinal rho's
+C PARP(165)=1000.
+C PARP(166)=1.
+C values for only transverse rho's
+C PARP(165)=0.
+C PARP(166)=0.67597
+C
+C******************************************************** PYTHIA/JETSET control switches
+C
+C  diquark suppression P(qq)/P(q)  default:0.1
+      PARJ(1)=0.029
+C
+C s quark suppression P(s)/P(u) default:0.3
+      PARJ(2)=0.283
+C
+C extra suppression of strange diquarks default:0.4 tuned by P. Kravtsov
+      PARJ(3)=1.2
+C
+C suppression of spin-1 diquarks over spin-0 default:0.05
+      PARJ(4)=0.05
+C
+C suppression of BMBbar to BBbar in popcorn model default: 0.5/0.5/0.5
+      PARJ(5)=0.5
+      PARJ(6)=0.5
+      PARJ(7)=0.5
+C
+C Vectormeson to pseudoscaler suppression default:0.5
+      PARJ(11)=0.5
+C
+C Vectormeson to pseudoscaler suppression for strangeness default:0.6
+      PARJ(12)=0.6
+C
+C width for px, py transverse momentum distributions for primary hadrons default:0.36
+      PARJ(21)=0.400
+C
+C fraction of non gaussian tails to the pt distribution times a factor to increase PARJ 21
+C default:0.01 / 2
+      PARJ(23)=0.01
+      PARJ(24)=2.0
+C
+C minimum allowable energy for color-singlet jet system default:1.0
+      PARJ(32)=1.0
+C
+C (* D: 0.8) minimum energy used to stop fragmenting a jet default:0.8
+      PARJ(33)=0.800
+C
+C a parameter for symmetric Lund fragmentation function default:0.3
+      PARJ(41)=1.94
+C
+C b parameter for symmetric Lund fragmentation function default:0.58
+      PARJ(42)=0.544
+C
+C a parameter for the symmetric Lund fragmentation function for diquarks
+C default:0.5
+      PARJ(45)=1.05
+C
+C Select the fragmentation modell 0: no fragmentation, 1: string, 2: independent
+      MSTJ(1)=1
+C
+C choice of the baryon production model: MSTJ 12)=2 Popcorn scheme
+      MSTJ(12)=1
+C
+C parton showering is turned of
+C MSTJ(41)=0
+C
+C maximum flavour that can be produced in shower by g->qq
+      MSTJ(45)=4
+C
+C nominal number of flavours assumed in alpha_s expression
+      MSTU(112)=4
+C minimum number of flavours that may be assumed in alpha_s expression
+      MSTU(113)=4
+C maximum number of flavours that may be assumed in alpha_s expression
+      MSTU(114)=4
+C
+C******************************************************** kinematical cuts
+C
+C range of m^ )= sqrt(s^)
+C (D: 2., -1.)
+      CKIN(1)=1.
+      CKIN(2)=-1.
+C range of p^_t (DIS )= Q^2)
+C (*) (D: 0., -1.) (GMC: 0, -1)
+      CKIN(3)=0.
+C CKIN( 3)=1.
+      CKIN(4)=-1.
+C p^_t,min for singular processes in limit p^_t -> 0
+      CKIN(5)=1.00
+C m_0 hard 2->2 process is classified singular for p^_t -> 0 if the mass
+C of at least one of the two outgoing partons is below m_0
+      CKIN(6)=1.00
+C range for W^2 in DIS processes (W^2 )= Q^2(1-x)/x, neglecting M^2 and ISR!)
+C (*) (D: 4.,-1) before (10. -1)
+      CKIN(39)=4.
+      CKIN(40)=-1.
+C range for Q^2 
+      CKIN(65)=1.
+      CKIN(66)=100.
+C CKIN(65)=0.1
+C CKIN(66)=0.01
+C allowed range for W, i.e. either the photon-hadron or photon-photon invariant mass
+      CKIN(77)=2.0
+      CKIN(78)=-1.
+
+      end
 

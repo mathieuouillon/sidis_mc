@@ -48,6 +48,7 @@ void branching(){
         t2->Branch("Qw_r"      , &quenwei_.QW_R        , "Qw_r/F"               );
         t2->Branch("Qw_l"      , &quenwei_.QW_L        , "Qw_l/F"               );
         t2->Branch("Qw_w"      , &quenwei_.QW_w        , "Qw_w/F"               );
+        t2->Branch("Qw_th"     , &quenwei_.QW_th       , "Qw_th/F"              );
         t2->Branch("Q2"        , &nt_.Q22              , "Q2/F"                 );
         t2->Branch("W"         , &nt_.W                , "W/F"                  );
         t2->Branch("Gamnu"     , &nt_.Nu               , "Gamnu/F"              );

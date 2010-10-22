@@ -65,16 +65,8 @@ C.. Booking the hbook
         endif
 
         if (k(ip,2).eq.111 .or. abs(k(ip,2)).eq.211
-     &       .or. k(ip,2).eq.113 .or. k(ip,2).eq.100443
      &       .or. k(ip,2).eq.221 .or. k(ip,2).eq.223
-     &       .or. k(ip,2).eq.331 .or. k(ip,2).eq.333
      &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
-     &       .or. k(ip,2).eq.130 .or. k(ip,2).eq.3122
-     &       .or. k(ip,2).eq.3222 .or. k(ip,2).eq.3212
-     &       .or. k(ip,2).eq.3322 .or. k(ip,2).eq.3312
-     &       .or. k(ip,2).eq.3334 .or. abs(k(ip,2)).eq.411
-     &       .or. k(ip,2).eq.421 .or. k(ip,2).eq.443
-     &       .or. abs(k(ip,2)).eq.521 .or .k(ip,2).eq.511 
      &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
      &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)) then
 
@@ -133,9 +125,12 @@ c               write(*,*) p(ip,4),p(ip,5),Ekin,theta
      &         + p(TrkGS,2)*p(ip,2) + p(TrkGS,3)*p(ip,3) 
      &         + z_part(Nb_part)*Nu**2)**2 / (Nu**2+Q22))
 
-          Xf_part(Nb_part) = (p(TrkGS,1)*p(ip,1)
+          Xf_part(Nb_part) = 2 / W *
+     &               (W**2/4 -p(TrkGS,4)*p(ip,4)+p(TrkGS,1)*p(ip,1)
      &                       +p(TrkGS,2)*p(ip,2)+p(TrkGS,3)*p(ip,3))
-     &                 / W
+     &              / sqrt(W**2/4 + Q22)
+
+c         write(*,*) Xf_part(Nb_part)
 
         endif
       enddo      

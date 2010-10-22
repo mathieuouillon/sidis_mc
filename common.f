@@ -71,8 +71,8 @@ ccccc Interaction position
 
 ccccc Quenching Weight variables
       integer QW_nb
-      real QW_wc,QW_R,QW_L,QW_w,QW_qhat
-      common/QuenWei/QW_nb,QW_wc,QW_R,QW_L,QW_w,QW_qhat
+      real QW_wc,QW_R,QW_L,QW_w,QW_qhat,QW_chi,QW_th
+      common/QuenWei/QW_nb,QW_wc,QW_R,QW_L,QW_w,QW_qhat,QW_chi,QW_th
 
 ccccc AA routine variables
       double precision alphas
@@ -93,10 +93,10 @@ c Position of the interaction in CLAS for GSIM
 c Flags and config values
       integer iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent 
       integer nkin,nucleon,specId,iColl,iqg,iEg
-      real rFM,E0,qhat,EColl,FMlimit
+      real rFM,E0,qhat,ehat,EColl,FMlimit,SupFac
       common/flags/iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent,
-     &             nkin,nucleon,specId,rFM,E0,qhat,iColl,EColl,FMlimit,
-     &             iqg,iEg
+     &             nkin,nucleon,specId,rFM,E0,qhat,ehat,iColl,EColl,
+     &             FMlimit,iqg,iEg,SupFac
 
 
 c Tables
