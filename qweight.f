@@ -24,71 +24,65 @@
 c      do ip =1,N
         if((abs(K(ip,2)).lt.6 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
      &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
+
+c       Stock init values
           inix = P(ip,1)
           iniy = P(ip,2)
           iniz = P(ip,3)
-          call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
+c       Normalized init values
+          tot = sqrt(inix**2+iniy**2+iniz**2)
+          ipix = inix/tot
+          ipiy = iniy/tot
+          ipiz = iniz/tot
+
+c       Compute weight
           QW_nb = QW_nb + 1
+          call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
+
           if (QW_w .gt. 0.) then
-            if (QW_w.lt.sqrt(P(ip,4)**2 -P(ip,5)**2)-cutoff) then
-              ipt = sqrt(8*QW_w/3/alphas/QW_L)
-              ipl = dsqrt(P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
-              iplx = P(ip,1)/ipl
-              iply = P(ip,2)/ipl
-              iplz = P(ip,3)/ipl
-              iptz = 0.
-              if (iplz .ne. 1) then
-                 ipiz = ranf(0)*4*asin(1.)
-                 ipix = cos(iptz)
-                 ipiy = sin(iptz)
-                 ipiz = 0
-                 iptx = -ipix*iplx*iplz/sqrt(1-iplz**2)
-     &                  -ipiy*iply/sqrt(1-iplz**2)
-                 ipty = -ipix*iply*iplz/sqrt(1-iplz**2)
-     &                  -ipiy*iplx/sqrt(1-iplz**2)
-                 iptz = ipix*sqrt(1-iplz**2)
+
+c         Determine longitudinal and transverse momentum of final parton
+            ipt = 8*QW_w/3/alphas/QW_L
+            ipl = (P(ip,4)-QW_w)**2-ipt
+            if (ipl.gt.0 .and. ipl+ipt.gt.cutoff**2) then
+              ipt = sqrt(ipt)
+              ipl = sqrt(ipl)
+            else if (ipl.lt.0) then
+              ipl = 0
+              if (ipt.gt.cutoff**2) then
+                ipt = sqrt(ipt)
               else
-                ipty = ranf(0)
-                iptx = sqrt(1-ipty**2)
-                iptz = 0.
+                ipt = cutoff
               endif
-
-              ipl = ipl - QW_w
-              if (ipt.ge.ipl) then
-                th = acos(2*ranf(0)-1)
-                ph = 2*pi*ranf(0)
-                ipx = sin(th)*cos(ph)*ipl
-                ipy = sin(th)*sin(ph)*ipl
-                ipz = cos(th)*ipl
-
-              else
-                ipl = sqrt(ipl**2 - ipt**2)
-                ipx = ipt*iptx+ipl*iplx
-                ipy = ipt*ipty+ipl*iply
-                ipz = ipt*iptz+ipl*iplz
-              endif
-              QW_qhat=QW_qhat + ( (ipx**2+ipy**2+ipz**2)
-     &                   - (ipx*P(ip,1)+ipy*P(ip,2)+ipz*P(ip,3))**2
-     &                     / (P(ip,1)**2+P(ip,2)**2+P(ip,3)**2) ) / QW_L
-              P(ip,1) = ipx
-              P(ip,2) = ipy
-              P(ip,3) = ipz
-              P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
-            else
-              th = acos(2*ranf(0)-1)
-              ph = 2*pi*ranf(0)
-
-              QW_qhat = QW_qhat + ( cutoff**2 * (1 
-     &                   - (sin(th)*(cos(ph)*P(ip,1)+sin(ph)*P(ip,2))
-     &                      +cos(th)*P(ip,3))**2
-     &                   / (P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)) ) / QW_L
-
-              P(ip,1) = sin(th)*cos(ph)*cutoff
-              P(ip,2) = sin(th)*sin(ph)*cutoff
-              P(ip,3) = cos(th)*cutoff
-              P(ip,4) =sqrt(P(ip,5)**2+P(ip,1)**2+P(ip,2)**2+P(ip,3)**2)
             endif
 
+c         Generate normalized transverse vector
+            ph = 4*asin(1.)*ranf(0)
+            iptx = (ipiz-ipiy)*cos(ph) - (ipix*ipiy + ipix*ipiz)*sin(ph)
+            ipty =    ipix*cos(ph) + (ipix**2+ipiz**2-ipiy*ipiz)*sin(ph)
+            iptz =  - ipix*cos(ph) + (ipix**2+ipiy**2-ipiy*ipiz)*sin(ph)
+
+c         Check perpendicularity
+            tot = ipix*iptx+ipiy*ipty+ipiz*iptz
+            if (abs(tot).gt.0.000001) write(*,*) 'problem tot = ',tot
+
+c         Generate new parton momenta
+            ipx = ipt*iptx+ipl*ipix
+            ipy = ipt*ipty+ipl*ipiy
+            ipz = ipt*iptz+ipl*ipiz
+
+c         Qhat summing
+            QW_qhat=QW_qhat + ( (ipx**2+ipy**2+ipz**2)
+     &                 - (ipx*P(ip,1)+ipy*P(ip,2)+ipz*P(ip,3))**2
+     &                   / (P(ip,1)**2+P(ip,2)**2+P(ip,3)**2) ) / QW_L
+
+c         Fill Pythia array
+            P(ip,1) = ipx
+            P(ip,2) = ipy
+            P(ip,3) = ipz
+            P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
+
+c         Gluon generation
             if (iEg.eq.1) then
               new = new + 1
               inix = inix - P(ip,1)
