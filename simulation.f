@@ -25,9 +25,10 @@ ccc Integer j,nkin ! number of kinematics (??? is it still the case?)
 ccc Number of events per kinematics 
       nevent = 5000
 ccc Electron energy (GeV)
-      E0 = 27.5
-ccc Target type ! 0 proton, 1 deut, 2 C, 3 Al, 4 Fe, 5 Sn, 6 Pb, 7 He4
-      iTg = 5
+      E0 = 11
+ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
+ccc               6-> 7Li, 7-> C, 8-> Al, 9-> Fe, 10-> Sn, 11-> Pb
+      iTg = 4
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -44,19 +45,19 @@ c     4 = hard sphere with values from [1],
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 0
+      iFM = 3
       FMlimit = 1
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
 c                 ! this option is only for 2H and 4He targets
-      iNS = 0
+      iNS = 1
 
 ccc CLAS12 Acceptance put 1 
-      iAccept = 0
+      iAccept = 1
 
 ccc Init for the quenching weights
 c     integer iQuenching ! 0 desactivate Quenching
-      iQuenching = 1
+      iQuenching = 0
 c     integer iqw 1 SW, 2 Arleo
       iqw = 1
       alphas = 1d0/3d0
@@ -92,7 +93,6 @@ ccc Initialize
         call GenNucDens
       endif
       call InitRandom
-c      call InitHbook
       if (iAccept.eq.1) call readtables
 c      call CLASBOSINIT('MCEVENT')
 
@@ -104,6 +104,13 @@ c        if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
      &   (ievent.eq.0.or.i.eq.nkin.or.ievent.eq.int(nevent*iZ/iA))) then
           i = 0
  100      continue
+ccc Determine target: 1 for proton, 0 neutron
+          if(ievent.lt.(nevent*iZ/iA)) then
+            nucleon = 1
+          else
+            nucleon = 0
+          endif
+
 ccc Randomize Theta Phi and Kf
           if(rFM.ne.0.and.iFM.ne.0) call FMParam
 
@@ -125,11 +132,9 @@ ccc Block fragmentation if QW will be applied
           BeamE = PPe
           if(ievent.lt.(nevent*iZ/iA)) then
             call pyinit('FIXT','gamma/e-','p+',BeamE)
-            nucleon = 1
           else
             write(*,*) 'X sec 99 = ', XSEC(99,1)
             call pyinit('FIXT','gamma/e-','n0',BeamE)
-            nucleon = 0
           endif
           if (XSEC(99,1).eq.0) then
             call pyrest
@@ -150,8 +155,6 @@ c        if(iSim.ne.0) CALL pylist
 ccc Come back in target frame
         if(iFM.ne.0) call LorentzFMBack(1)
 
-        if (iNS.eq.1 .and. (iTg.eq.1 .or. iTg.eq.7)) call CreateSpec
-
 ccc Energy loss of the partons
         if (iQuenching.ne.0.and.iTg.gt.1) then
           call InterPos
@@ -166,6 +169,8 @@ c          if(iSim.ne.0) CALL pylist(1)
           MSTJ(1) =0
         endif
 
+        if (iNS.eq.1 .and. (iTg.eq.1 .or. iTg.eq.4)) call CreateSpec
+
 ccc Go back in lab frame
         if(iColl.ne.0) call LorentzFMBack(2)
 
@@ -176,13 +181,10 @@ ccc Book the ntuple
         call fillroot()
         ievent = ievent+ 1
         i = i+ 1
-c          call hfnt(33)
 c          call CLASBOSFILL(iTg)
       enddo
 
-ccc Close the hbook file
-c      call hrout(33,icycle,' ')
-c      call hrend('out')
+ccc Close the file
 c      call CLASBOSEND('MCEVENT')
 
       write(*,*) 'X sec 99 = ', XSEC(99,1)
@@ -286,9 +288,9 @@ c------------------------------------------------------------------------------
         specId = 2212
       else if (iTg .eq. 1 .and. nucleon .eq. 1) then
         specId = 2112
-      else if (iTg .eq. 7 .and. nucleon .eq. 0) then
+      else if (iTg .eq. 4 .and. nucleon .eq. 0) then
         specId = 10203
-      else if (iTg .eq. 7 .and. nucleon .eq. 1) then
+      else if (iTg .eq. 4 .and. nucleon .eq. 1) then
         specId = 10103
       endif
  

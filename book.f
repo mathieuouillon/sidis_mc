@@ -68,7 +68,8 @@ C.. Booking the hbook
      &       .or. k(ip,2).eq.221 .or. k(ip,2).eq.223
      &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
      &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
-     &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)) then
+     &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)
+     &       .or. k(ip,2).gt.10000) then
 
 
           Nb_part           = Nb_part + 1

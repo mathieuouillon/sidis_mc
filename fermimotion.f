@@ -13,34 +13,51 @@ ccc Fill rFM, iZ and iA in function of the Target
             rFM = 0
             iZ = 1
             iA = 1
+!I(RD) extrapolate rFM values between 6Li and 2H
           case (1) 
             rFM = 0.07
             iZ = 1
             iA = 2
           case (2) 
+            rFM = 0.1
+            iZ = 1
+            iA = 3
+          case (3) 
+            rFM = 0.1
+            iZ = 2
+            iA = 3
+          case (4) 
+            rFM = 0.120 
+            iZ = 2
+            iA = 4
+          case (5) 
+            rFM = 0.17
+            iZ = 3
+            iA = 6
+          case (6) 
+            rFM = 0.17
+            iZ = 3
+            iA = 7
+          case (7) 
             rFM = 0.221
             iZ = 6
             iA = 12
-          case (3) 
+          case (8) 
             rFM = 0.235
             iZ = 13
             iA = 27
-          case (4) 
+          case (9) 
             rFM = 0.260
             iZ = 26
             iA = 56
-          case (5) 
+          case (10) 
             rFM = 0.260
             iZ = 50
             iA = 120
-          case (6) 
+          case (11) 
             rFM = 0.265
             iZ = 82
             iA = 208
-          case (7) 
-            rFM = 0.120 !no source for this, I(RD) extrapolate between 6Li and 2H
-            iZ = 2
-            iA = 4
           case default 
             rFM = 0
             iZ = 1
