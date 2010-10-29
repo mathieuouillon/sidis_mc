@@ -21,14 +21,14 @@ ccccc Miscellaneous
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics (??? is it still the case?)
-      nkin = 1000
+      nkin = 100
 ccc Number of events per kinematics 
-      nevent = 5000
+      nevent = 2000000
 ccc Electron energy (GeV)
       E0 = 11
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
 ccc               6-> 7Li, 7-> C, 8-> Al, 9-> Fe, 10-> Sn, 11-> Pb
-      iTg = 4
+      iTg = 3
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -42,10 +42,11 @@ c     1 = like 4 plus a tail from [2] (deut, C, Al, Fe, Sn, Pb, 4He)
 c     2 = Accardi SVG (7Li, C, O, Ne, Al, Ar, Ca, Ni, Cu, Zr, Sn, Pb)
 c     3 = Accardi CS (2H, 3He, 4He, C, O, Ca, Fe, Pb)
 c     4 = hard sphere with values from [1], 
+c     5 = R. Wiringa private communication
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 3
+      iFM = 5
       FMlimit = 1
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
@@ -169,7 +170,7 @@ c          if(iSim.ne.0) CALL pylist(1)
           MSTJ(1) =0
         endif
 
-        if (iNS.eq.1 .and. (iTg.eq.1 .or. iTg.eq.4)) call CreateSpec
+        if (iNS.eq.1 .and. (iTg.ge.1 .or. iTg.le.4)) call CreateSpec
 
 ccc Go back in lab frame
         if(iColl.ne.0) call LorentzFMBack(2)
@@ -288,6 +289,14 @@ c------------------------------------------------------------------------------
         specId = 2212
       else if (iTg .eq. 1 .and. nucleon .eq. 1) then
         specId = 2112
+      else if (iTg .eq. 2 .and. nucleon .eq. 0) then
+        specId = 10102
+      else if (iTg .eq. 2 .and. nucleon .eq. 1) then
+        specId = 10002
+      else if (iTg .eq. 3 .and. nucleon .eq. 0) then
+        specId = 10202
+      else if (iTg .eq. 3 .and. nucleon .eq. 1) then
+        specId = 10102
       else if (iTg .eq. 4 .and. nucleon .eq. 0) then
         specId = 10203
       else if (iTg .eq. 4 .and. nucleon .eq. 1) then
@@ -305,6 +314,12 @@ c------------------------------------------------------------------------------
         p(N,5) = .938272
       else if (k(N,2) .eq. 2112) then
         p(N,5) = .939566
+      else if (k(N,2) .eq. 10002) then
+        p(N,5) = 1.87913
+      else if (k(N,2) .eq. 10102) then
+        p(N,5) = 1.876124
+      else if (k(N,2) .eq. 10202) then
+        p(N,5) = 1.87654
       else if (k(N,2) .eq. 10203) then
         p(N,5) = 2.809356
       else if (k(N,2) .eq. 10103) then
