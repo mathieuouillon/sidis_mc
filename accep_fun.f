@@ -2,7 +2,7 @@ c+++++++++++++++++++++++++++++++++++++++++++++++
       subroutine accep_fun(id,torcur,p,thetad,phi0,weight,d_phi)
 cOK
       implicit none
-      include "read_par_clas12g.inc"
+      include "includes/read_par_clas12g.inc"
       integer id
       real torcur,p,thetad,phi0,weight,d_phi
       real phis

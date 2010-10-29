@@ -1,8 +1,8 @@
 C***********************************************************************
       SUBROUTINE CLASBOSFILL(iTg)
 C***********************************************************************
-      include "bcs.inc"
-      include "names.inc"
+      include "includes/bcs.inc"
+      include "includes/names.inc"
       include "common.f"
 c
 c
@@ -235,7 +235,7 @@ C***********************************************************************
       SUBROUTINE CLASBOSEND(recname)
 C***********************************************************************
       implicit none
-      include "bcs.inc"
+      include "includes/bcs.inc"
       character*8 recname
       integer ierr
       call fwbos(iw,33,'0',ierr)
@@ -256,8 +256,8 @@ C***********************************************************************
       
       character*8 recname
       character*132 ddl_file
-      include "bcs.inc"
-      include "names.inc"
+      include "includes/bcs.inc"
+      include "includes/names.inc"
 c
 c       Open BOS input & output files
 c
@@ -336,10 +336,10 @@ c_begin_inc
 c  include files :
 c  ---------------------
 c BOS common block  uncomment the next line for BOS include file
-      include "bcs.inc"
-      include "bnkfmt.inc"
+      include "includes/bcs.inc"
+      include "includes/bnkfmt.inc"
 c                           CLAS control module
-      include "clasmdl.inc"
+      include "includes/clasmdl.inc"
 c_end_inc
 c
 c_begin_var

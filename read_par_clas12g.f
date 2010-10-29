@@ -2,7 +2,7 @@
 c==   Read parameters from data base
       implicit none
       CHARACTER*30 parfile 
-      include "read_par_clas12g.inc"
+      include "includes/read_par_clas12g.inc"
 
       PRINT *,'|==========> Cofiguration file: ',parfile
       OPEN(11,FILE=parfile,STATUS='old') ! Control par.file

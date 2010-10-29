@@ -55,7 +55,7 @@ c common block containing track_type; defined in sub. tracktype_
       real p_ic_erg(4), p_ic_ang(4)
       data p_ic_erg / 0.02997, -0.007688, 0.001068, -4.636e-05 /
       data p_ic_ang / 0.0572505, -0.0144679, 0.00204576, -9.26138e-05  /
-      include "read_par_clas12g.inc"
+      include "includes/read_par_clas12g.inc"
 c
 c  since our acceptance functions care about sagitta and not momentum, per se,
 c  we will form a "normalized momentum", pnorm

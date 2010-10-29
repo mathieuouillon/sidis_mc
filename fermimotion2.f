@@ -335,7 +335,8 @@
       if (firsttime) then
          firsttime = .false.
          nin = nextunit()
-         open(nin,file='fermimotion2.SVG.tbl',status='old')
+         open(nin,file='datafiles/fmacc/fermimotion2.SVG.tbl',
+     &        status='old')
 *       ... skips headers
          do i = 1, 7 
             read(nin,*) string
@@ -613,7 +614,8 @@
       if (firsttime) then
          firsttime = .false.
          nin = nextunit()
-         open(nin,file='fermimotion2.CS.tbl',status='old')
+         open(nin,file='datafiles/fmacc/fermimotion2.CS.tbl',
+     &        status='old')
 *       ... skips headers
          do i = 1, 9
             read(nin,*) string

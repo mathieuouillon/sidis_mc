@@ -156,7 +156,7 @@ c Dummy
       integer i
 
 c Read tables
-      open(8,file='AlphaInHe',status='old')
+      open(8,file='datafiles/eloss/AlphaInHe',status='old')
       do i=1,8 
          read(8,*)
       enddo
@@ -168,7 +168,7 @@ c Read tables
 
       close(8)
 
-      open(8,file='AlphaInKapton',status='old')
+      open(8,file='datafiles/eloss/AlphaInKapton',status='old')
       do i=1,8 
          read(8,*)
       enddo
@@ -180,7 +180,7 @@ c Read tables
 
       close(8)
 
-      open(8,file='AlphaInNeon',status='old')
+      open(8,file='datafiles/eloss/AlphaInNeon',status='old')
       do i=1,8 
          read(8,*)
       enddo
@@ -192,7 +192,7 @@ c Read tables
 
       close(8)
 
-      open(8,file='ProtonInHe',status='old')
+      open(8,file='datafiles/eloss/ProtonInHe',status='old')
       do i=1,8 
          read(8,*)
       enddo
@@ -204,7 +204,7 @@ c Read tables
 
       close(8)
 
-      open(8,file='ProtonInKapton',status='old')
+      open(8,file='datafiles/eloss/ProtonInKapton',status='old')
       do i=1,8 
          read(8,*)
       enddo
@@ -216,7 +216,7 @@ c Read tables
 
       close(8)
 
-      open(8,file='ProtonInNeon',status='old')
+      open(8,file='datafiles/eloss/ProtonInNeon',status='old')
       do i=1,8 
          read(8,*)
       enddo

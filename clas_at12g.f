@@ -26,7 +26,7 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ckm New version of clas_at12g with reading parameters from data file
 c___________________________________________________________________
       implicit none
-      include "read_par_clas12g.inc"
+      include "includes/read_par_clas12g.inc"
       real p,thetad,phis,torcur,d_phi,weight
       real pout,thout,phiout,beta
       integer ic,id
@@ -219,7 +219,7 @@ c  common block keeping the logical values of the track type;
       real charge,torcur,thetad
       logical inbend,outbend,neutral,fwd,central
       common/track_type/inbend,outbend,neutral,fwd,central
-      include "read_par_clas12g.inc"
+      include "includes/read_par_clas12g.inc"
 c  initialize logicals to false
       inbend=.false.
       outbend=.false.

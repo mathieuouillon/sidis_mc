@@ -753,9 +753,11 @@ C-------------------------------------------------------------------
 *
 
       if (nint(alphas*3d0).eq.1) then
-         OPEN(UNIT=20,FILE='cont03.all',STATUS='OLD',ERR=90)
+         OPEN(UNIT=20,FILE='datafiles/qweight/cont03.all',
+     &        STATUS='OLD',ERR=90)
       else if (nint(alphas*2d0).eq.1) then
-         OPEN(UNIT=20,FILE='cont05.all',STATUS='OLD',ERR=90)
+         OPEN(UNIT=20,FILE='datafiles/qweight/cont05.all',
+     &        STATUS='OLD',ERR=90)
       else
          print*, 'Error (initmult): alphas =/= 1/3 or 1/2'
          stop
@@ -791,9 +793,11 @@ C-------------------------------------------------------------------
       close(20)
 *
       if (nint(alphas*3d0).eq.1) then
-         OPEN(UNIT=21,FILE='disc03.all',STATUS='OLD',ERR=90)
+         OPEN(UNIT=21,FILE='datafiles/qweight/disc03.all',
+     &        STATUS='OLD',ERR=90)
       else if (nint(alphas*2d0).eq.1) then
-         OPEN(UNIT=21,FILE='disc05.all',STATUS='OLD',ERR=90)
+         OPEN(UNIT=21,FILE='datafiles/qweight/disc05.all',
+     &        STATUS='OLD',ERR=90)
       else
          print*, 'Error (initmult): alphas =/= 1/3 or 1/2'
          stop
@@ -943,7 +947,8 @@ C-------------------------------------------------------------------
       COMMON /dataglulin/    xxg, dag, cag, rrrg
 *
       if (nint(alphas*3d0).eq.1) then
-         OPEN(UNIT=20,FILE='contlin03.all',STATUS='OLD',ERR=90)
+         OPEN(UNIT=20,FILE='datafiles/qweight/contlin03.all',
+     &        STATUS='OLD',ERR=90)
       else if (nint(alphas*2d0).eq.1) then
 *         OPEN(UNIT=20,FILE='contlin05.all',STATUS='OLD',ERR=90)
          print*, 'Error (initlin): alphas=0.5 not yet implemented'
@@ -983,7 +988,8 @@ C-------------------------------------------------------------------
       close(20)
 *
       if (nint(alphas*3d0).eq.1) then
-         OPEN(UNIT=21,FILE='disclin03.all',STATUS='OLD',ERR=91)
+         OPEN(UNIT=21,FILE='datafiles/qweight/disclin03.all',
+     &        STATUS='OLD',ERR=91)
       else if (nint(alphas*2d0).eq.1) then
 *         OPEN(UNIT=21,FILE='disclin05.all',STATUS='OLD',ERR=91)
          print*, 'Error (initlin): alphas=0.5 not yet implemented'
