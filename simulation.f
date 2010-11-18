@@ -8,7 +8,7 @@ c------------------------------------------------------------------------------
 
 ccccc Include all the common blocks
       include 'common.f'
-      include 'names.inc'
+c     include 'include/names.inc'
 
 ccccc Miscellaneous
       integer icycle ! for hbook
@@ -23,12 +23,12 @@ CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics (??? is it still the case?)
       nkin = 100
 ccc Number of events per kinematics 
-      nevent = 2000000
+      nevent = 10000
 ccc Electron energy (GeV)
       E0 = 11
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
 ccc               6-> 7Li, 7-> C, 8-> Al, 9-> Fe, 10-> Sn, 11-> Pb
-      iTg = 3
+      iTg = 1
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic

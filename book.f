@@ -34,7 +34,7 @@ ccccc function
 ccccc dummy
       real Ekin,Theta
 ccccc Nucleon Momentum
-      real pp
+      real pp,pt
 ccccc gamma beta
       real ga,be
 ccccc Initial kinematics
@@ -69,23 +69,46 @@ C.. Booking the hbook
      &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
      &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
      &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)
-     &       .or. k(ip,2).gt.10000) then
+     &       .or. (abs(k(ip,2)).eq.11 .and. k(ip,1).eq.1)
+     &       .or.k(ip,2).gt.10000) then
 
 
           Nb_part           = Nb_part + 1
           acc_part(Nb_part) = 0
           if(iAccept.eq.1) then
             if(abs(k(ip,2)).eq.11.or.abs(k(ip,2)).eq.211.or.
-     &         abs(k(ip,2)).eq.321.or.abs(k(ip,2)).eq.2212.or.
-     &         k(ip,2).eq.2112.or.k(ip,2).eq.22) then
+     &         abs(k(ip,2)).eq.321.or.k(ip,2).eq.22) then
                acc_part(Nb_part) = 
      &               clas12_accept(k(ip,2),p(ip,1),p(ip,2),p(ip,3))
-            else if( k(ip,2).eq.10203 .or. k(ip,2).eq.10103 ) then
-               Ekin = (p(ip,4) - p(ip,5))*1000
-               theta = acos(p(ip,3)/
-     &                sqrt(p(ip,1)**2+p(ip,2)**2+p(ip,3)**2))
+            else if( k(ip,2).gt.2000 ) then
+               acc_part(Nb_part) = 1
+               pp = sqrt(P(ip,1)**2 + P(ip,2)**2 + P(ip,3)**2)
+               pt = sqrt(P(ip,1)**2 + P(ip,2)**2)
+               if ( k(ip,2).eq.2212 .and. 
+     &           (pt.lt..036 .or. pp.lt..040 .or. pp.gt..240)) then
+                 acc_part(Nb_part) = 0
+               else if ( k(ip,2).eq.10102 .and. 
+     &           (pt.lt..036 .or. pp.lt..060 .or. pp.gt..410)) then
+                 acc_part(Nb_part) = 0
+               else if ( k(ip,2).eq.10103 .and. 
+     &           (pt.lt..036 .or. pp.lt..080 .or. pp.gt..550)) then
+                 acc_part(Nb_part) = 0
+               else if ( k(ip,2).eq.10203 .and. 
+     &           (pt.lt..072 .or. pp.lt..130 .or. pp.gt..600)) then
+                 acc_part(Nb_part) = 0
+               else if ( k(ip,2).eq.10204 .and. 
+     &           (pt.lt..072 .or. pp.lt..150 .or. pp.gt..600)) then
+                 acc_part(Nb_part) = 0
+               else 
+                 acc_part(Nb_part) = 0
+               endif
+
+ccc old RTPC routine
+c              Ekin = (p(ip,4) - p(ip,5))*1000
+c              theta = acos(p(ip,3)/
+c    &                sqrt(p(ip,1)**2+p(ip,2)**2+p(ip,3)**2))
 c               write(*,*) p(ip,4),p(ip,5),Ekin,theta
-               acc_part(Nb_part) = RTPC_accept(k(ip,2),Ekin,theta)
+c              acc_part(Nb_part) = RTPC_accept(k(ip,2),Ekin,theta)
             endif
           endif
 
@@ -126,10 +149,18 @@ c               write(*,*) p(ip,4),p(ip,5),Ekin,theta
      &         + p(TrkGS,2)*p(ip,2) + p(TrkGS,3)*p(ip,3) 
      &         + z_part(Nb_part)*Nu**2)**2 / (Nu**2+Q22))
 
-          Xf_part(Nb_part) = 2 / W *
-     &               (W**2/4 -p(TrkGS,4)*p(ip,4)+p(TrkGS,1)*p(ip,1)
-     &                       +p(TrkGS,2)*p(ip,2)+p(TrkGS,3)*p(ip,3))
-     &              / sqrt(W**2/4 + Q22)
+          Xf_part(Nb_part) = 
+     &             ( z_part(Nb_part)*P(2,5)*Nu**2
+     &               - z_part(Nb_part)*Q22*Nu
+     &               - (P(2,5)+Nu)*
+     &                     (p(TrkGS,4)*p(ip,4)-p(TrkGS,1)*p(ip,1)
+     &                     -p(TrkGS,2)*p(ip,2)-p(TrkGS,3)*p(ip,3)) )
+     &             / sqrt(W**2/4 - p(ip,5)**2) / W
+     &             / sqrt(Nu**2 + Q22)
+          Als(Nb_part) = ( P(ip,4) - ( z_part(Nb_part)*Nu**2
+     &               - ( p(TrkGS,4)*p(ip,4)-p(TrkGS,1)*p(ip,1)
+     &                  -p(TrkGS,2)*p(ip,2)-p(TrkGS,3)*p(ip,3) ) )
+     &               / sqrt(W**2/4 + Q22) ) / P(ip,5)
 
 c         write(*,*) Xf_part(Nb_part)
 

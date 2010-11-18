@@ -32,7 +32,7 @@ c=================================================
          kin2 = real(k2)
          kin3 = real(k3)
 
-         cl_conf = 'datafiles/clasfm/conf0.dat'
+         cl_conf = 'datafiles/clasfm/conf5.dat'
          
          hp = sqrt(kin1**2 + kin2**2 + kin3**2)
          thetad = PolarTheta(kin1,kin2,kin3)

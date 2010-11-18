@@ -34,7 +34,7 @@ extern "C" {
       float p_part[100],px_part[100],py_part[100],pz_part[100];
       float E_part[100],m_part[100],z_part[100],th_part[100];
       float tt_part[100],Pts_part[100],phih_part[100],phi_part[100];
-      float vx_part[100],Xf_part[100];
+      float vx_part[100],Xf_part[100],Als[100];
   }part_;
 
 // Interaction position
