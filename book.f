@@ -99,8 +99,6 @@ C.. Booking the hbook
                else if ( k(ip,2).eq.10204 .and. 
      &           (pt.lt..072 .or. pp.lt..150 .or. pp.gt..600)) then
                  acc_part(Nb_part) = 0
-               else 
-                 acc_part(Nb_part) = 0
                endif
 
 ccc old RTPC routine
