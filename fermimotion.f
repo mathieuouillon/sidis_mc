@@ -58,6 +58,10 @@ ccc Fill rFM, iZ and iA in function of the Target
             rFM = 0.265
             iZ = 82
             iA = 208
+          case (12) 
+            rFM = 0.260
+            iZ = 54
+            iA = 132
           case default 
             rFM = 0
             iZ = 1

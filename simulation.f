@@ -23,18 +23,18 @@ CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics (??? is it still the case?)
       nkin = 100
 ccc Number of events per kinematics 
-      nevent = 10000
+      nevent = 10000000
 ccc Electron energy (GeV)
-      E0 = 11
+      E0 = 27.5
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
 ccc               6-> 7Li, 7-> C, 8-> Al, 9-> Fe, 10-> Sn, 11-> Pb
-      iTg = 1
+      iTg = 12
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
       iColl = 0
 c     real EColl ! energy of the nuclei (GeV/nucleon)
-      EColl = 30.0
+      EColl = 38.0
 
 ccc Fermimotion flag 
 c     0 = no FM
@@ -46,19 +46,19 @@ c     5 = R. Wiringa private communication
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 5
+      iFM = 0
       FMlimit = 1
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
 c                 ! this option is only for 2H and 4He targets
-      iNS = 1
+      iNS = 0
 
 ccc CLAS12 Acceptance put 1 
-      iAccept = 1
+      iAccept = 0
 
 ccc Init for the quenching weights
 c     integer iQuenching ! 0 desactivate Quenching
-      iQuenching = 0
+      iQuenching = 1
 c     integer iqw 1 SW, 2 Arleo
       iqw = 1
       alphas = 1d0/3d0
@@ -66,9 +66,9 @@ c     integer iqw 1 SW, 2 Arleo
       ncor = 0
       sfthrd = 1
 c     real qhat !Transport coefficient (GeV^2.fm^-1)
-      qhat = 0.05
+      qhat = 0.45
 c     drag coefficient
-      ehat = 0.5
+      ehat = 0.0
 c     integer iDens !0= hard sphere, 1= Wood Saxon param
       iDens = 1
 c     iqg = 1 -> quark and gluons are quenched other -> only q
@@ -77,6 +77,7 @@ c     iEg = 1 -> a gluon is added to satisfy energy conservation
       iEg = 0
 c     Suppretion factor
       SupFac= qhat /(qhat+ehat)
+      SupFac= 1.
 
 c     integer iSim ! 0 = Turn off Pythia for tests
       iSim = 1
@@ -102,7 +103,8 @@ c      call CLASBOSINIT('MCEVENT')
 ccc Initialize the simulation
 c        if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
         if(iSim.ne.0.and.
-     &   (ievent.eq.0.or.i.eq.nkin.or.ievent.eq.int(nevent*iZ/iA))) then
+     &   (ievent.eq.0.or.i.eq.nkin.or.ievent.eq.int(nevent*iZ/iA)
+     &    .or. mod(ievent,1000000).eq.0)) then
           i = 0
  100      continue
 ccc Determine target: 1 for proton, 0 neutron

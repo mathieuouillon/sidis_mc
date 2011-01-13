@@ -16,7 +16,7 @@
       real ipl,ptg,plg
       real cutoff,sca
 
-      cutoff =0.5
+      cutoff =0.4
 
       ip = 1
       do while (ip.le.N)
@@ -44,15 +44,18 @@ c         Determine longitudinal and transverse momentum of final parton
 c            ipt = 8*QW_w/3/alphas/QW_L*SupFac**2
             ipt = (QW_w*cos(QW_th)*SupFac)**2
             ipl = (P(ip,4)-QW_w)**2-ipt
+            if(P(ip,4)-QW_w.lt.0) ipl = 0
+c            write(*,*) P(ip,4),QW_w,QW_th,ipt,ipl
             if (ipl.gt.0 .and. ipl+ipt.gt.cutoff**2) then
               ipt = sqrt(ipt)
               ipl = sqrt(ipl)
-            else if (ipl.lt.0) then
+            else if (ipl.le.0) then
               ipl = 0
-              if (ipt.gt.cutoff**2) then
-                ipt = sqrt(ipt)
-              else
-                ipt = cutoff
+              ipt = P(ip,4)-QW_w
+              if (ipt.lt.cutoff) then
+                th = ranf(0)
+                ipl = sqrt(th)*cutoff
+                ipt = sqrt(1-th)*cutoff
               endif
             else if (ipl+ipt.lt.cutoff**2) then
               ipl = sqrt(cutoff**2 - ipt)
@@ -60,6 +63,7 @@ c            ipt = 8*QW_w/3/alphas/QW_L*SupFac**2
             else
               write(*,*) 'error in qweight routine'
             endif
+c            write(*,*) P(ip,4),QW_w,QW_th,ipt,ipl
 
 c         Generate normalized transverse vector
             ph = 4*asin(1.)*ranf(0)
