@@ -41,8 +41,15 @@ c       Compute weight
           if (QW_w .gt. 0.) then
 
 c         Determine longitudinal and transverse momentum of final parton
-c            ipt = 8*QW_w/3/alphas/QW_L*SupFac**2
-            ipt = (QW_w*cos(QW_th)*SupFac)**2
+            if(iPtF.eq.0) then
+              ipt = 0
+            else if(iPtF.eq.1) then
+              ipt = qhat*QW_L
+            else if(iPtF.eq.2) then
+              ipt = 8*QW_w/3/alphas/QW_L*SupFac**2
+            else if(iPtF.eq.3) then
+              ipt = (QW_w*cos(QW_th)*SupFac)**2
+            endif
             ipl = (P(ip,4)-QW_w)**2-ipt
             if(P(ip,4)-QW_w.lt.0) ipl = 0
 c            write(*,*) P(ip,4),QW_w,QW_th,ipt,ipl
@@ -57,13 +64,12 @@ c            write(*,*) P(ip,4),QW_w,QW_th,ipt,ipl
                 ipl = sqrt(th)*cutoff
                 ipt = sqrt(1-th)*cutoff
               endif
-            else if (ipl+ipt.lt.cutoff**2) then
+            else if (ipl+ipt.le.cutoff**2) then
               ipl = sqrt(cutoff**2 - ipt)
               ipt = sqrt(ipt)
             else
               write(*,*) 'error in qweight routine'
             endif
-c            write(*,*) P(ip,4),QW_w,QW_th,ipt,ipl
 
 c         Generate normalized transverse vector
             ph = 4*asin(1.)*ranf(0)
@@ -91,23 +97,25 @@ c         Fill Pythia array
             P(ip,3) = ipz
             P(ip,4) = sqrt(P(ip,5)**2+ipx**2+ipy**2+ipz**2)
 
-c Calculate the gluon kinematic
-            ipg = tot - P(ip,4)
-            th = QW_th
-            if (ipt.lt.ipg) then
-              ptg = -ipt
-              plg = sqrt(ipg**2-ptg**2)
-            else 
-              ptg = ipg
-              plg = 0
-            endif
-            
-            ipgx = ptg*iptx+plg*ipix
-            ipgy = ptg*ipty+plg*ipiy
-            ipgz = ptg*iptz+plg*ipiz
-
 c Add gluon if requested
             if (iEg.eq.1) then
+
+c Calculate the gluon kinematic
+              ipg = tot - P(ip,4)
+              th = QW_th
+              if (ipt.lt.ipg) then
+                ptg = -ipt
+                plg = sqrt(ipg**2-ptg**2)
+              else 
+                ptg = ipg
+                plg = 0
+              endif
+              
+              ipgx = ptg*iptx+plg*ipix
+              ipgy = ptg*ipty+plg*ipiy
+              ipgz = ptg*iptz+plg*ipiz
+
+c Add the gluon in PYTHIA list
               do iq=ip,N
                 ir = ip+N-iq
                 if (K(ip-1,1).eq.2 .or. ir.ne.ip) then
@@ -225,7 +233,7 @@ ccc integration to calculate wc and R
       QW_R = 2 * density_table(1) * QW_wc**2 / QW_R / qhateff
 
 ccccc Convert the units fm -> GeV-1
-      QW_L = QW_L/.1973269
+c      QW_L = QW_L/.1973269
 ccccc Convert the units GeV2.fm -> GeV
       QW_wc = QW_wc/.1973269
 ccccc Convert the units GeV2.fm2 -> no unit

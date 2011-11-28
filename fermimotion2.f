@@ -2,8 +2,20 @@
       implicit none
 
       integer i,irho
+      integer itz,ita
       double precision rhofermi,mom,proba,ptot,step
       include 'common.f'
+
+      itz = iZ
+      ita = iA
+
+      if(iTg.eq.12 .and. iFM.eq.3) then
+        itz = 8
+        ita = 16
+      else if(iFM .eq. 3 .and. (iTg.eq.13 .or. iTg.eq.14)) then
+        itz = 26
+        ita = 56
+      endif
 
       FMnb = 1000
       step_size_FM = FMlimit/FMnb
@@ -12,7 +24,7 @@
       ptot = 0.
 
       do i=1,FMnb
-       proba = 3.14159265*mom*mom*rhofermi(iZ,iA,mom,irho)*step_size_FM
+       proba = 3.1415926*mom*mom*rhofermi(itz,ita,mom,irho)*step_size_FM
        ptot = ptot + proba
        FM_table(i) = ptot
        mom = mom + step_size_FM

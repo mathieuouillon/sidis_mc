@@ -24,7 +24,7 @@ c To avoid random crash of init:
 c     CKIN(1) = 2
 c     CKIN(3) = 0
 c Q2 Limits
-      CKIN(65) = .9 
+      CKIN(65) = 1. 
       CKIN(66) = -1 
 c W limit
       CKIN(77) = 1.90 
@@ -59,25 +59,25 @@ c DIS only
       MSTP(14) = 26
 
 c Kind of possible multiple interaction (needed to avoid bugs) D = 4 H =1
-      MSTP(82) = 1 
+      MSTP(82) = 0
 
 c Lowest CM energy D = 10 H = 3
-      PARP(2) = 2 ! Modify because of the FM
+      PARP(2) = 2
 
 c remaining energy below witch the fragmentation is stopped D = 0.8
-      PARJ(33) = 0.3 
+      PARJ(33) = 0.3
 
 c Lower limit for sqrt(s)
-      CKIN(1) = 1. 
+      CKIN(1) = 2. 
 
-c To avoid random crash of init:
+c To avoid crash of init during long simulation:
       CKIN(1) = 2
       CKIN(3) = 0
 c Q2 Limits
-      CKIN(65) = .9 
+      CKIN(65) = 1 
       CKIN(66) = -1 
 c W limit
-      CKIN(77) = 1.90 
+      CKIN(77) = 2. 
       CKIN(78) = -1. 
 
       end
@@ -97,7 +97,7 @@ c MSEL = 0 Tout les process doivent etre activer individuellement
 c MSEL = 1 in our case call MSTP(14)
 c MSEL = 2 include 1 + elastic (hadronic) + diffractive (hadronic) 
 c                    + low Pt process
-      MSEL = 2
+c     MSEL = 2
 
 ccc MSUB(ISUB) = 0 : the subprocess is excluded.
 ccc MSUB(ISUB) = 1 : the subprocess is included.

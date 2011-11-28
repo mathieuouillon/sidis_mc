@@ -92,11 +92,11 @@ c Position of the interaction in CLAS for GSIM
 
 c Flags and config values
       integer iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent 
-      integer nkin,nucleon,specId,iColl,iqg,iEg
+      integer nkin,nucleon,specId,iColl,iqg,iEg,iPtF
       real rFM,E0,qhat,ehat,EColl,FMlimit,SupFac
       common/flags/iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent,
      &             nkin,nucleon,specId,rFM,E0,qhat,ehat,iColl,EColl,
-     &             FMlimit,iqg,iEg,SupFac
+     &             FMlimit,iqg,iEg,SupFac,iPtF
 
 
 c Tables

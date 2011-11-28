@@ -1,7 +1,7 @@
 NAME = simulation
 
-FFLAGS  =  -w -g
-CPPFLAGS  =  -g -O2
+FFLAGS  =  -O3 -w -g
+CPPFLAGS  =  -g -O3
 
 ROOTLIBS = $(shell root-config --libs)
 CPPFLAGS += $(shell root-config --cflags)
@@ -25,7 +25,7 @@ OBJ=    simulation.o fermimotion.o pythia-6.4.22.o \
 	g++ $(CPPFLAGS) -c $*.cc
 
 go: ${OBJ}
-	g++ $(CPPFLAGS) -o $(NAME) $(OBJ)  -lgfortran -L/cern/pro/lib -lpawlib -lpacklib $(ROOTLIBS)
+	g++ $(CPPFLAGS) -o $(NAME) $(OBJ)  -lgfortran -L$(CERN_ROOT)/lib -lpawlib -lpacklib $(ROOTLIBS)
 #	gfortran  $(FFLAGS) -o $(NAME) $(OBJ)  -L$(CERN_ROOT)/lib -lpawlib -lpacklib \
                                                -L$(CLAS_LIB) -lbosio -lbos -lfpack -lc_bos_io -lrecutl
 

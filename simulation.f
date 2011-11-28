@@ -21,20 +21,21 @@ ccccc Miscellaneous
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics (??? is it still the case?)
-      nkin = 100
+      nkin = 10000
 ccc Number of events per kinematics 
       nevent = 10000000
 ccc Electron energy (GeV)
       E0 = 27.5
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
 ccc               6-> 7Li, 7-> C, 8-> Al, 9-> Fe, 10-> Sn, 11-> Pb
-      iTg = 12
+ccc               12-> Ne, 13-> Kr, 14-> Xe
+      iTg = 11
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
       iColl = 0
 c     real EColl ! energy of the nuclei (GeV/nucleon)
-      EColl = 38.0
+      EColl = 38.
 
 ccc Fermimotion flag 
 c     0 = no FM
@@ -46,7 +47,7 @@ c     5 = R. Wiringa private communication
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 0
+      iFM = 3
       FMlimit = 1
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
@@ -66,20 +67,22 @@ c     integer iqw 1 SW, 2 Arleo
       ncor = 0
       sfthrd = 1
 c     real qhat !Transport coefficient (GeV^2.fm^-1)
-      qhat = 0.45
+      qhat = 0.40
 c     drag coefficient
       ehat = 0.0
 c     integer iDens !0= hard sphere, 1= Wood Saxon param
       iDens = 1
 c     iqg = 1 -> quark and gluons are quenched other -> only q
-      iqg = 0
+      iqg = 1
 c     iEg = 1 -> a gluon is added to satisfy energy conservation
       iEg = 0
+c     iPtF = 0 -> no Pt; 1 -> from qhat; 2 -> BDMPS; 3 -> gluon angle from SW
+      iPtF = 3
 c     Suppretion factor
       SupFac= qhat /(qhat+ehat)
-      SupFac= 1.
+c      SupFac= 1.
 
-c     integer iSim ! 0 = Turn off Pythia for tests
+c     integer iSim ! 0 -> Turn off Pythia for tests
       iSim = 1
 
 ccc To save time with useless Pythia initialization
@@ -98,13 +101,13 @@ ccc Initialize
       if (iAccept.eq.1) call readtables
 c      call CLASBOSINIT('MCEVENT')
 
+ccc Main Loop
       do while (ievent.lt.nevent)
 
 ccc Initialize the simulation
-c        if(iSim.ne.0) write(*,*) 'Momentum of the electron: ',PPe
         if(iSim.ne.0.and.
      &   (ievent.eq.0.or.i.eq.nkin.or.ievent.eq.int(nevent*iZ/iA)
-     &    .or. mod(ievent,1000000).eq.0)) then
+     &    .or. mod(ievent,500000).eq.0)) then
           i = 0
  100      continue
 ccc Determine target: 1 for proton, 0 neutron
@@ -124,14 +127,16 @@ ccc Going in the nucleon rest frame
           if(iColl.ne.0) call LorentzFM(2)
           if(iFM.ne.0) call LorentzFM(1)
 
+ccc Security for low energies
           if (PPe .lt. 4) goto 100
  200      continue
 ccc Parameters for Pythia
           call PythiaConfigDIS
 
-ccc Block fragmentation if QW will be applied
+ccc Stop fragmentation for QW to be applied
           if (iQuenching.ne.0) MSTJ(1) =0
 
+ccc PYTHIA init
           BeamE = PPe
           if(ievent.lt.(nevent*iZ/iA)) then
             call pyinit('FIXT','gamma/e-','p+',BeamE)
@@ -148,7 +153,7 @@ ccc Block fragmentation if QW will be applied
 ccc Counter
         if (MOD(ievent,10000).eq.0) write(*,*) ievent,'events proceded'
 
-ccc Some initialization
+ccc Initialization of the kinematic variables
         call InitKin2Book
 
 ccc Event generation
@@ -160,11 +165,11 @@ ccc Come back in target frame
 
 ccc Energy loss of the partons
         if (iQuenching.ne.0.and.iTg.gt.1) then
-          call InterPos
-          call ApplyQW
+          call InterPos ! Pick the position of the interaction in the nuclei
+          call ApplyQW  ! Compute QW
         endif
 
-ccc Fragmentation
+ccc Fragmentation (if needed)
         if (iQuenching.ne.0) then
           MSTJ(1) =1
           if(iSim.ne.0) call PYEXEC
@@ -174,10 +179,10 @@ c          if(iSim.ne.0) CALL pylist(1)
 
         if (iNS.eq.1 .and. (iTg.ge.1 .or. iTg.le.4)) call CreateSpec
 
-ccc Go back in lab frame
+ccc Go back in lab frame (for collider mode)
         if(iColl.ne.0) call LorentzFMBack(2)
 
-ccc Compute of physical values for the hbook
+ccc Compute of physical values for output
         call ComputV
 
 ccc Book the ntuple

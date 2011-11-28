@@ -62,15 +62,27 @@ C.. Booking the hbook
      &                                 -p(ip,2)**2-p(ip,1)**2)
           TrkGS = ip
           phi_ele = atan2(p(ip,2),p(ip,1))*57.2958 +210
+
+c         W = (P(2,4)*P(ip,4) - P(2,3)*P(ip,3)
+c    &         - P(2,2)*P(ip,2) - P(2,1)*P(ip,1))/P(2,5)
+
         endif
 
-        if (k(ip,2).eq.111 .or. abs(k(ip,2)).eq.211
-     &       .or. k(ip,2).eq.221 .or. k(ip,2).eq.223
+c       if (k(ip,2).eq.111 .or. abs(k(ip,2)).eq.211
+c    &       .or. k(ip,2).eq.221 .or. k(ip,2).eq.223
+c    &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
+c    &       .or. abs(k(ip,2)).eq.411 .or. k(ip,2).eq.421
+c    &       .or. k(ip,2).eq.441 .or. k(ip,2).eq.443
+c    &       .or. abs(k(ip,2)).eq.521 .or. k(ip,2).eq.511
+c    &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
+c    &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)
+c    &       .or. (abs(k(ip,2)).eq.11 .and. k(ip,1).eq.1)
+c    &       .or. k(ip,2).gt.10000) then
+
+        if(abs(k(ip,2)).eq.211.or.(k(ip,2).eq.11.and.k(ip,1).eq.1)
      &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
      &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
-     &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)
-     &       .or. (abs(k(ip,2)).eq.11 .and. k(ip,1).eq.1)
-     &       .or.k(ip,2).gt.10000) then
+     &    ) then
 
 
           Nb_part           = Nb_part + 1
@@ -161,6 +173,13 @@ c              acc_part(Nb_part) = RTPC_accept(k(ip,2),Ekin,theta)
      &               / sqrt(W**2/4 + Q22) ) / P(ip,5)
 
 c         write(*,*) Xf_part(Nb_part)
+c        Xf_part(Nb_part) = (th_part(Nb_part)*W)**2-m_part(Nb_part)**2
+c    &      -((- p(TrkGS,4)*p(ip,4) + p(TrkGS,1)*p(ip,1) 
+c    &         + p(TrkGS,2)*p(ip,2) + p(TrkGS,3)*p(ip,3) 
+c    &         + th_part(Nb_part)*W**2)**2 / (W**2+Q22))
+
+c        Als(Nb_part) = (Xf_part(Nb_part)-Pts_part(Nb_part))
+c    &                 /Xf_part(Nb_part)
 
         endif
       enddo      
