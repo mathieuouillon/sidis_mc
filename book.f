@@ -29,8 +29,6 @@ ccccc for calculation of Phih
       real A1,A2,A3,AA
       real B1,B2,B3,BB
       real phi_ele
-ccccc function
-      integer clas12_accept,RTPC_accept
 ccccc dummy
       real Ekin,Theta
 ccccc Nucleon Momentum
@@ -87,40 +85,6 @@ c    &       .or. k(ip,2).gt.10000) then
 
           Nb_part           = Nb_part + 1
           acc_part(Nb_part) = 0
-          if(iAccept.eq.1) then
-            if(abs(k(ip,2)).eq.11.or.abs(k(ip,2)).eq.211.or.
-     &         abs(k(ip,2)).eq.321.or.k(ip,2).eq.22) then
-               acc_part(Nb_part) = 
-     &               clas12_accept(k(ip,2),p(ip,1),p(ip,2),p(ip,3))
-            else if( k(ip,2).gt.2000 ) then
-               acc_part(Nb_part) = 1
-               pp = sqrt(P(ip,1)**2 + P(ip,2)**2 + P(ip,3)**2)
-               pt = sqrt(P(ip,1)**2 + P(ip,2)**2)
-               if ( k(ip,2).eq.2212 .and. 
-     &           (pt.lt..036 .or. pp.lt..040 .or. pp.gt..240)) then
-                 acc_part(Nb_part) = 0
-               else if ( k(ip,2).eq.10102 .and. 
-     &           (pt.lt..036 .or. pp.lt..060 .or. pp.gt..410)) then
-                 acc_part(Nb_part) = 0
-               else if ( k(ip,2).eq.10103 .and. 
-     &           (pt.lt..036 .or. pp.lt..080 .or. pp.gt..550)) then
-                 acc_part(Nb_part) = 0
-               else if ( k(ip,2).eq.10203 .and. 
-     &           (pt.lt..072 .or. pp.lt..130 .or. pp.gt..600)) then
-                 acc_part(Nb_part) = 0
-               else if ( k(ip,2).eq.10204 .and. 
-     &           (pt.lt..072 .or. pp.lt..150 .or. pp.gt..600)) then
-                 acc_part(Nb_part) = 0
-               endif
-
-ccc old RTPC routine
-c              Ekin = (p(ip,4) - p(ip,5))*1000
-c              theta = acos(p(ip,3)/
-c    &                sqrt(p(ip,1)**2+p(ip,2)**2+p(ip,3)**2))
-c               write(*,*) p(ip,4),p(ip,5),Ekin,theta
-c              acc_part(Nb_part) = RTPC_accept(k(ip,2),Ekin,theta)
-            endif
-          endif
 
           id_part(Nb_part)  = k(ip,2)
           id_mother(Nb_part)= k(k(ip,3),2)

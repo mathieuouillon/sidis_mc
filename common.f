@@ -91,10 +91,10 @@ c Position of the interaction in CLAS for GSIM
       data pi/3.1415926535/
 
 c Flags and config values
-      integer iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent 
+      integer iTg,iFM,iDens,iQuenching,iSim,nevent 
       integer nkin,nucleon,specId,iColl,iqg,iEg,iPtF
       real rFM,E0,qhat,ehat,EColl,FMlimit,SupFac
-      common/flags/iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent,
+      common/flags/iTg,iFM,iDens,iQuenching,iSim,nevent,
      &             nkin,nucleon,specId,rFM,E0,qhat,ehat,iColl,EColl,
      &             FMlimit,iqg,iEg,SupFac,iPtF
 
