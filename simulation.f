@@ -23,7 +23,7 @@ CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of kinematics (??? is it still the case?)
       nkin = 10000
 ccc Number of events per kinematics 
-      nevent = 100000000
+      nevent = 1
 ccc Electron energy (GeV)
       E0 = 27.5
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
@@ -70,7 +70,7 @@ c     iqg = 1 -> quark and gluons are quenched other -> only q
 c     iEg = 1 -> a gluon is added to satisfy energy conservation
       iEg = 0
 c     iPtF = 0 -> no Pt; 1 -> from qhat; 2 -> BDMPS; 3 -> gluon angle from SW
-      iPtF = 3
+      iPtF = 0
 c     Suppretion factor
       SupFac= qhat /(qhat+ehat)
 c      SupFac= 1.
@@ -150,7 +150,7 @@ ccc Initialization of the kinematic variables
 
 ccc Event generation
         if(iSim.ne.0) CALL pyevnt
-c        if(iSim.ne.0) CALL pylist
+c        if(iSim.ne.0) CALL pylist(1)
 
 ccc Come back in target frame
         if(iFM.ne.0) call LorentzFMBack(1)
