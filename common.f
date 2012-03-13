@@ -60,8 +60,9 @@ ccccc Table for FM distribution
 
 ccccc Table for density distribution
       real density_table(2000),step_size_dens
-      real quantity_table(2000)
-      common/Density/density_table,step_size_dens,quantity_table
+      real quantity_table(2000),init_dens
+      common/Density/density_table,step_size_dens,quantity_table,
+     &               init_dens
 
 ccccc Interaction position
       real x_inter,y_inter,z_inter

@@ -21,7 +21,7 @@
       ip = 1
       do while (ip.le.N)
 c      do ip =1,N
-        if((abs(K(ip,2)).lt.4 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
+        if((abs(K(ip,2)).le.5 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
      &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
 
 c       Stock init values
