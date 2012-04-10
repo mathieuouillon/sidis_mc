@@ -25,8 +25,8 @@ OBJ=    simulation.o fermimotion.o pythia-6.4.22.o \
 	g++ $(CPPFLAGS) -c $*.cc
 
 go: ${OBJ}
-	g++ $(CPPFLAGS) -o $(NAME) $(OBJ)  -lgfortran -L$(CERN_ROOT)/lib -lpawlib -lpacklib $(ROOTLIBS)
-#	gfortran  $(FFLAGS) -o $(NAME) $(OBJ)  -L$(CERN_ROOT)/lib -lpawlib -lpacklib \
+	g++ $(CPPFLAGS) -o $(NAME) $(OBJ)  -lgfortran -L$(CERN_ROOT)/lib -lpawlib -lpacklib -lkernlib $(ROOTLIBS)
+#	gfortran  $(FFLAGS) -o $(NAME) $(OBJ)  -L$(CERN_ROOT)/lib -lpawlib -lpacklib -lkernlib \
                                                -L$(CLAS_LIB) -lbosio -lbos -lfpack -lc_bos_io -lrecutl
 
 clean:
