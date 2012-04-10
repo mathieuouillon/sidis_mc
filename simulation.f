@@ -20,7 +20,7 @@ ccccc Miscellaneous
 
       call TIMEX(T1)
 CCCCCC Begining of the simulation
-ccc Integer j,nkin ! number of kinematics (??? is it still the case?)
+ccc Integer j,nkin ! number of events per kinematics
       nkin = 10000
 ccc Number of events per kinematics 
       nevent = 10000000
@@ -60,7 +60,7 @@ c     integer iqw 1 SW, 2 Arleo
       ncor = 0
       sfthrd = 1
 c     real qhat !Transport coefficient (GeV^2.fm^-1)
-      qhat = 0.40
+      qhat = 0.33
 c     drag coefficient
       ehat = 0.0
 c     integer iDens !0= hard sphere, 1= Wood Saxon param
