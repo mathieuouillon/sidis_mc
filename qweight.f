@@ -52,10 +52,10 @@ c       Determine calculated transverse momentum of final parton
             endif
 c         Implement ELoss and Pt
             if(P(ip,4)-QW_w.lt.cutoff) then
-              th = ranf(0)
-              ipl = sqrt(th)*cutoff
-              ipt = sqrt(1-th)*cutoff
-            else
+              th = ranf(0)*2*3.14159265-3.14159265
+              ipl = cos(th)*cutoff
+              ipt = sin(th)*cutoff
+            else if(P(ip,4)-QW_w.ge.cutoff) then
               iptot = (P(ip,4)-QW_w)**2
               if(iptot.gt.ipt) then
                 ipl = iptot-ipt

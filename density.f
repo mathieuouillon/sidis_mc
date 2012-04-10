@@ -11,14 +11,14 @@ ccccc Randomize the radius and angles
       pos_theta = acos(2*ranf(0)-1)
       pos_phi = 2*pi*ranf(0)
 
-      r = 0.
+      r = init_dens
       i = 1.
 
       do while (pos_radius.ge.quantity_table(i))
         r = r + step_size_dens
         i = i + 1
       enddo
-      pos_radius = r + ranf(0)*step_size_dens
+      pos_radius = r + (ranf(0)-0.5)*step_size_dens
 
 cccc Calculate position on cartesian axis
       x_inter = pos_radius * sin(pos_theta) * cos(pos_phi)
@@ -45,14 +45,15 @@ ccccc Some init
       idist = iDens
       irho = 1
       step_size_dens = 0.01
-      r = 0.005
+      init_dens = 0.005
+      r = init_dens
 
       do i=1,2000
         density_table(i) = nucdens(r,iZ,iA,idist,irho)
-        r = r + step_size_dens
 ccccc calculate the quantity of mater in function of the radius
-        integral = integral + density_table(i)*r**3
+        integral = integral + 4*PI*density_table(i)*r**2*step_size_dens
         quantity_table(i) = integral
+        r = r + step_size_dens
       enddo
 
       end

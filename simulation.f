@@ -67,7 +67,7 @@ c     integer iqw 1 SW, 2 Arleo
       ncor = 0
       sfthrd = 1
 c     real qhat !Transport coefficient (GeV^2.fm^-1)
-      qhat = 0.40
+      qhat = 0.33
 c     drag coefficient
       ehat = 0.0
 c     integer iDens !0= hard sphere, 1= Wood Saxon param
