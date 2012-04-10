@@ -13,7 +13,7 @@
       real tot,ipix,ipiy,ipiz
       real ipt,iptx,ipty,iptz
 
-      real ipl,ptg,plg
+      real iptot,ipl,ptg,plg
       real cutoff,sca
 
       cutoff =0.4
@@ -40,7 +40,7 @@ c       Compute weight
 
           if (QW_w .gt. 0.) then
 
-c         Determine longitudinal and transverse momentum of final parton
+c       Determine calculated transverse momentum of final parton
             if(iPtF.eq.0) then
               ipt = 0
             else if(iPtF.eq.1) then
@@ -50,25 +50,21 @@ c         Determine longitudinal and transverse momentum of final parton
             else if(iPtF.eq.3) then
               ipt = (QW_w*cos(QW_th)*SupFac)**2
             endif
-            ipl = (P(ip,4)-QW_w)**2-ipt
-            if(P(ip,4)-QW_w.lt.0) ipl = 0
-c            write(*,*) P(ip,4),QW_w,QW_th,ipt,ipl
-            if (ipl.gt.0 .and. ipl+ipt.gt.cutoff**2) then
-              ipt = sqrt(ipt)
-              ipl = sqrt(ipl)
-            else if (ipl.le.0) then
-              ipl = 0
-              ipt = P(ip,4)-QW_w
-              if (ipt.lt.cutoff) then
-                th = ranf(0)
-                ipl = sqrt(th)*cutoff
-                ipt = sqrt(1-th)*cutoff
-              endif
-            else if (ipl+ipt.le.cutoff**2) then
-              ipl = sqrt(cutoff**2 - ipt)
-              ipt = sqrt(ipt)
+c         Implement ELoss and Pt
+            if(P(ip,4)-QW_w.lt.cutoff) then
+              th = ranf(0)
+              ipl = sqrt(th)*cutoff
+              ipt = sqrt(1-th)*cutoff
             else
-              write(*,*) 'error in qweight routine'
+              iptot = (P(ip,4)-QW_w)**2
+              if(iptot.gt.ipt) then
+                ipl = iptot-ipt
+                ipt = sqrt(ipt)
+                ipl = sqrt(ipl)
+              else
+                ipl = 0
+                ipt = sqrt(iptot)
+              endif
             endif
 
 c         Generate normalized transverse vector
@@ -76,7 +72,11 @@ c         Generate normalized transverse vector
             iptx = (ipiz-ipiy)*cos(ph) - (ipix*ipiy + ipix*ipiz)*sin(ph)
             ipty =    ipix*cos(ph) + (ipix**2+ipiz**2-ipiy*ipiz)*sin(ph)
             iptz =  - ipix*cos(ph) + (ipix**2+ipiy**2-ipiy*ipiz)*sin(ph)
-
+            tot = sqrt(iptx**2+ipty**2+iptz**2)
+            iptx = iptx/tot
+            ipty = ipty/tot
+            iptz = iptz/tot
+ 
 c         Check perpendicularity
             sca = ipix*iptx+ipiy*ipty+ipiz*iptz
             if (abs(sca).gt.0.000001) write(*,*) 'problem tot = ',sca

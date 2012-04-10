@@ -158,7 +158,7 @@ ccc Initialization of the kinematic variables
 
 ccc Event generation
         if(iSim.ne.0) CALL pyevnt
-c        if(iSim.ne.0) CALL pylist
+c        if(iSim.ne.0) CALL pylist(1)
 
 ccc Come back in target frame
         if(iFM.ne.0) call LorentzFMBack(1)
