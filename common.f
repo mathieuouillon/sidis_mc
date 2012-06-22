@@ -99,14 +99,8 @@ c Flags and config values
      &             nkin,nucleon,specId,rFM,E0,qhat,ehat,iColl,EColl,
      &             FMlimit,iqg,iEg,SupFac,iPtF
 
-
-c Tables
-      real ProtonHe(4,121)
-      real ProtonKa(4,121)
-      real ProtonNe(4,121)
-      real AlphaHe(4,121)
-      real AlphaKa(4,121)
-      real AlphaNe(4,121)
-      common/tables/AlphaHe,AlphaKa,AlphaNe,
-     &           ProtonHe,ProtonKa,ProtonNe
+c Recoil acceptance
+      real pro_acc(25,25),deu_acc(25,25),tri_acc(25,25)
+      real he3_acc(25,25),he4_acc(25,25)
+      common/recoil/ pro_acc,deu_acc,tri_acc,he3_acc,he4_acc
 

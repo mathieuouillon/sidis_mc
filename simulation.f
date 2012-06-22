@@ -5,7 +5,6 @@ c TO DO LIST:
 c   Implement some radiative effect
 c   Have alpha s changing with Q2 in QW
 c------------------------------------------------------------------------------
-
 ccccc Include all the common blocks
       include 'common.f'
 c     include 'include/names.inc'
@@ -16,11 +15,10 @@ ccccc Miscellaneous
       double precision BeamE !Input value for pythia
       integer ip ! For do
       integer i
- 
 
       call TIMEX(T1)
 CCCCCC Begining of the simulation
-ccc Integer j,nkin ! number of kinematics (??? is it still the case?)
+ccc Integer j,nkin ! number of events per kinematics
       nkin = 10000
 ccc Number of events per kinematics 
       nevent = 10000000
@@ -98,7 +96,7 @@ ccc Initialize
         call GenNucDens
       endif
       call InitRandom
-      if (iAccept.eq.1) call readtables
+      if (iAccept.eq.1) call init_recoil
 c      call CLASBOSINIT('MCEVENT')
 
 ccc Main Loop
@@ -183,6 +181,7 @@ ccc Go back in lab frame (for collider mode)
         if(iColl.ne.0) call LorentzFMBack(2)
 
 ccc Compute of physical values for output
+c        if(iSim.ne.0) CALL pylist(1)
         call ComputV
 
 ccc Book the ntuple

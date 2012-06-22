@@ -79,48 +79,16 @@ c    &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)
 c    &       .or. (abs(k(ip,2)).eq.11 .and. k(ip,1).eq.1)
 c    &       .or. k(ip,2).gt.10000) then
 
+c        if((k(ip,2).eq.11.and.k(ip,1).eq.1)
         if(abs(k(ip,2)).eq.211.or.(k(ip,2).eq.11.and.k(ip,1).eq.1)
      &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
      &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
+     &       .or. (abs(k(ip,2)).gt.10000 .and. k(ip,1).eq.1)
      &    ) then
 
 
           Nb_part           = Nb_part + 1
           acc_part(Nb_part) = 0
-          if(iAccept.eq.1) then
-            if(abs(k(ip,2)).eq.11.or.abs(k(ip,2)).eq.211.or.
-     &         abs(k(ip,2)).eq.321.or.k(ip,2).eq.22) then
-               acc_part(Nb_part) = 
-     &               clas12_accept(k(ip,2),p(ip,1),p(ip,2),p(ip,3))
-            else if( k(ip,2).gt.2000 ) then
-               acc_part(Nb_part) = 1
-               pp = sqrt(P(ip,1)**2 + P(ip,2)**2 + P(ip,3)**2)
-               pt = sqrt(P(ip,1)**2 + P(ip,2)**2)
-               if ( k(ip,2).eq.2212 .and. 
-     &           (pt.lt..036 .or. pp.lt..040 .or. pp.gt..240)) then
-                 acc_part(Nb_part) = 0
-               else if ( k(ip,2).eq.10102 .and. 
-     &           (pt.lt..036 .or. pp.lt..060 .or. pp.gt..410)) then
-                 acc_part(Nb_part) = 0
-               else if ( k(ip,2).eq.10103 .and. 
-     &           (pt.lt..036 .or. pp.lt..080 .or. pp.gt..550)) then
-                 acc_part(Nb_part) = 0
-               else if ( k(ip,2).eq.10203 .and. 
-     &           (pt.lt..072 .or. pp.lt..130 .or. pp.gt..600)) then
-                 acc_part(Nb_part) = 0
-               else if ( k(ip,2).eq.10204 .and. 
-     &           (pt.lt..072 .or. pp.lt..150 .or. pp.gt..600)) then
-                 acc_part(Nb_part) = 0
-               endif
-
-ccc old RTPC routine
-c              Ekin = (p(ip,4) - p(ip,5))*1000
-c              theta = acos(p(ip,3)/
-c    &                sqrt(p(ip,1)**2+p(ip,2)**2+p(ip,3)**2))
-c               write(*,*) p(ip,4),p(ip,5),Ekin,theta
-c              acc_part(Nb_part) = RTPC_accept(k(ip,2),Ekin,theta)
-            endif
-          endif
 
           id_part(Nb_part)  = k(ip,2)
           id_mother(Nb_part)= k(k(ip,3),2)
@@ -171,16 +139,44 @@ c              acc_part(Nb_part) = RTPC_accept(k(ip,2),Ekin,theta)
      &               - ( p(TrkGS,4)*p(ip,4)-p(TrkGS,1)*p(ip,1)
      &                  -p(TrkGS,2)*p(ip,2)-p(TrkGS,3)*p(ip,3) ) )
      &               / sqrt(W**2/4 + Q22) ) / P(ip,5)
-
-c         write(*,*) Xf_part(Nb_part)
-c        Xf_part(Nb_part) = (th_part(Nb_part)*W)**2-m_part(Nb_part)**2
-c    &      -((- p(TrkGS,4)*p(ip,4) + p(TrkGS,1)*p(ip,1) 
-c    &         + p(TrkGS,2)*p(ip,2) + p(TrkGS,3)*p(ip,3) 
-c    &         + th_part(Nb_part)*W**2)**2 / (W**2+Q22))
-
-c        Als(Nb_part) = (Xf_part(Nb_part)-Pts_part(Nb_part))
-c    &                 /Xf_part(Nb_part)
-
+          acc_part(Nb_part) = 1
+          if(iAccept.eq.1) then
+            acc_part(Nb_part) = 0
+            if(abs(k(ip,2)).eq.11.or.abs(k(ip,2)).eq.211.or.
+     &         abs(k(ip,2)).eq.321.or.k(ip,2).eq.22.or.
+     &         k(ip,2).eq.2112) then
+               acc_part(Nb_part) = 
+     &              clas12_accept(k(ip,2),p(ip,1),p(ip,2),p(ip,3))
+            else if(k(ip,2).gt.2200 .and. p_part(Nb_part).lt.0.5
+     &              .and. th_part(Nb_part).lt.180) then
+              
+              if( k(ip,2).eq.2212 ) then
+                 if(ranf(0) .lt. pro_acc(int(p_part(Nb_part)/.02)+1,
+     &                                   int(th_part(Nb_part)/7.2)+1))
+     &               acc_part(Nb_part) = 1
+              else if( k(ip,2).eq.10002) then
+                 acc_part(Nb_part) = 0
+              else if( k(ip,2).eq.10102) then
+                 if(ranf(0) .lt. deu_acc(int(p_part(Nb_part)/.02)+1,
+     &                                   int(th_part(Nb_part)/7.2)+1))
+     &               acc_part(Nb_part) = 1
+              else if( k(ip,2).eq.10103) then
+                 if(ranf(0) .lt. tri_acc(int(p_part(Nb_part)/.02)+1,
+     &                                   int(th_part(Nb_part)/7.2)+1))
+     &               acc_part(Nb_part) = 1
+              else if( k(ip,2).eq.10202) then
+                 acc_part(Nb_part) = 0
+              else if( k(ip,2).eq.10203) then
+                 if(ranf(0) .lt. he3_acc(int(p_part(Nb_part)/.02)+1,
+     &                                   int(th_part(Nb_part)/7.2)+1))
+     &               acc_part(Nb_part) = 1
+              else if( k(ip,2).eq.10204) then
+                 if(ranf(0) .lt. he4_acc(int(p_part(Nb_part)/.02)+1,
+     &                                   int(th_part(Nb_part)/7.2)+1))
+     &               acc_part(Nb_part) = 1
+              endif
+            endif
+          endif
         endif
       enddo      
 
@@ -253,3 +249,42 @@ ccccc Include all the common blocks
 
       end
 
+      subroutine init_recoil
+      implicit none
+
+      integer i,j
+      real a,b,c,d,e
+
+ccccc Include all the common blocks
+      include 'common.f'
+
+      write(*,*) 'Init recoil acceptance routine'
+
+      open (unit = 21, file = "datafiles/recoil_acc/acc_proton.dat")
+      open (unit = 22, file = "datafiles/recoil_acc/acc_deuteron.dat")
+      open (unit = 23, file = "datafiles/recoil_acc/acc_trition.dat")
+      open (unit = 24, file = "datafiles/recoil_acc/acc_helion.dat")
+      open (unit = 25, file = "datafiles/recoil_acc/acc_alpha.dat")
+      
+      do i=1,25
+        do j=1,25
+          read (21,*) a,b,c,d,e
+          pro_acc(i,j) = e
+          read (22,*) a,b,c,d,e
+          deu_acc(i,j) = e
+          read (23,*) a,b,c,d,e
+          tri_acc(i,j) = e
+          read (24,*) a,b,c,d,e
+          he3_acc(i,j) = e
+          read (25,*) a,b,c,d,e
+          he4_acc(i,j) = e
+        enddo
+      enddo
+
+      close(21)
+      close(22)
+      close(23)
+      close(24)
+      close(25)
+
+      end
