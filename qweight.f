@@ -21,30 +21,26 @@
       ip = 1
       do while (ip.le.N)
 c      do ip =1,N
-        if((abs(K(ip,2)).le.5 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
+        if((abs(K(ip,2)).lt.4 .or. (K(ip,2).eq.21 .and. iqg.eq.1))
      &       .and.K(ip,1).lt.9.and.P(ip,4).gt.cutoff) then
 
 c       Stock init values
           inix = P(ip,1)
           iniy = P(ip,2)
           iniz = P(ip,3)
-
 c       Normalized init values
           tot = sqrt(inix**2+iniy**2+iniz**2)
           ipix = inix/tot
           ipiy = iniy/tot
           ipiz = iniz/tot
 
-c          write(*,*) 'Init parton ',tot,ipix,ipiy,ipiz
-
 c       Compute weight
           QW_nb = QW_nb + 1
           call QWComput(P(ip,1),P(ip,2),P(ip,3),P(ip,4),K(ip,2))
-c          write(*,*) 'Quenching',QW_w
 
           if (QW_w .gt. 0.) then
-  
-c         Determine calculated transverse momentum of final parton
+
+c       Determine calculated transverse momentum of final parton
             if(iPtF.eq.0) then
               ipt = 0
             else if(iPtF.eq.1) then
@@ -54,30 +50,22 @@ c         Determine calculated transverse momentum of final parton
             else if(iPtF.eq.3) then
               ipt = (QW_w*cos(QW_th)*SupFac)**2
             endif
-
-c            write(*,*) "Pt ",ipt
-
 c         Implement ELoss and Pt
             if(P(ip,4)-QW_w.lt.cutoff) then
               th = ranf(0)*2*3.14159265-3.14159265
               ipl = cos(th)*cutoff
               ipt = sin(th)*cutoff
-c              write(*,*) 'Intermediate 1 ', ipt,ipl
             else if(P(ip,4)-QW_w.ge.cutoff) then
               iptot = (P(ip,4)-QW_w)**2
               if(iptot.gt.ipt) then
                 ipl = iptot-ipt
                 ipt = sqrt(ipt)
                 ipl = sqrt(ipl)
-c                write(*,*) 'Intermediate 2 ', ipt,ipl
               else
                 ipl = 0
                 ipt = sqrt(iptot)
-c                write(*,*) 'Intermediate 3 ', ipt,ipl
               endif
             endif
-
-c            write(*,*) 'Output ', ipt,ipl
 
 c         Generate normalized transverse vector
             ph = 4*asin(1.)*ranf(0)
@@ -88,7 +76,7 @@ c         Generate normalized transverse vector
             iptx = iptx/tot
             ipty = ipty/tot
             iptz = iptz/tot
-
+ 
 c         Check perpendicularity
             sca = ipix*iptx+ipiy*ipty+ipiz*iptz
             if (abs(sca).gt.0.000001) write(*,*) 'problem tot = ',sca

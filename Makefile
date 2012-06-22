@@ -10,12 +10,14 @@ CPPFLAGS += $(shell root-config --cflags)
 SRC=    simulation.f fermimotion.f pythia-6.4.22.f \
         pythiaconfig.f book.f transfo.f \
         fermimotion2.f nucdens.f density.f qweight.f \
-        main.cc
+        accep_fun.f clas_at12g.f clas12_accept.f read_par_clas12g.f \
+        smear_fun.f main.cc
 
 OBJ=    simulation.o fermimotion.o pythia-6.4.22.o \
         pythiaconfig.o book.o transfo.o \
         fermimotion2.o nucdens.o density.o qweight.o \
-        main.o
+        accep_fun.o clas_at12g.o clas12_accept.o read_par_clas12g.o \
+        smear_fun.o main.o
 
 .f.o:
 	gfortran -c $(FFLAGS) -o $@ $*.f
@@ -23,13 +25,14 @@ OBJ=    simulation.o fermimotion.o pythia-6.4.22.o \
 	g++ $(CPPFLAGS) -c $*.cc
 
 go: ${OBJ}
-	g++ $(CPPFLAGS) -o $(NAME) $(OBJ)  -lgfortran -L$(CERN_ROOT)/lib -lpawlib -lpacklib -lkernlib $(ROOTLIBS)
-#	gfortran  $(FFLAGS) -o $(NAME) $(OBJ)  -L$(CERN_ROOT)/lib -lpawlib -lpacklib -lkernlib\
+	g++ $(CPPFLAGS) -o $(NAME) $(OBJ)  -lgfortran -L$(CERN_ROOT)/lib -lmathlib -lpawlib -lpacklib -lkernlib $(ROOTLIBS)
+#	gfortran  $(FFLAGS) -o $(NAME) $(OBJ)  -L$(CERN_ROOT)/lib -lpawlib -lpacklib -lkernlib \
                                                -L$(CLAS_LIB) -lbosio -lbos -lfpack -lc_bos_io -lrecutl
 
 clean:
 	rm -f $(NAME) simulation.o fermimotion.o pythiaconfig.o book.o \
         fermimotion2.o nucdens.o density.o qweight.o transfo.o \
-        fort.9 last.kumac last.kumacold paw.metafile \
+        accep_fun.o clas_at12g.o clas12_accept.o read_par_clas12g.o \
+        smear_fun.o eloss.o fort.9 last.kumac last.kumacold paw.metafile \
 	main.o root.o
 

@@ -5,7 +5,6 @@ c TO DO LIST:
 c   Implement some radiative effect
 c   Have alpha s changing with Q2 in QW
 c------------------------------------------------------------------------------
-
 ccccc Include all the common blocks
       include 'common.f'
 c     include 'include/names.inc'
@@ -16,7 +15,6 @@ ccccc Miscellaneous
       double precision BeamE !Input value for pythia
       integer ip ! For do
       integer i
- 
 
       call TIMEX(T1)
 CCCCCC Begining of the simulation
@@ -29,7 +27,7 @@ ccc Electron energy (GeV)
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
 ccc               6-> 7Li, 7-> C, 8-> Al, 9-> Fe, 10-> Sn, 11-> Pb
 ccc               12-> Ne, 13-> Kr, 14-> Xe
-      iTg = 14
+      iTg = 11
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -49,6 +47,13 @@ c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
       iFM = 3
       FMlimit = 1
+
+ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
+c                 ! this option is only for 2H and 4He targets
+      iNS = 0
+
+ccc CLAS12 Acceptance put 1 
+      iAccept = 0
 
 ccc Init for the quenching weights
 c     integer iQuenching ! 0 desactivate Quenching
@@ -91,6 +96,7 @@ ccc Initialize
         call GenNucDens
       endif
       call InitRandom
+      if (iAccept.eq.1) call init_recoil
 c      call CLASBOSINIT('MCEVENT')
 
 ccc Main Loop
@@ -169,10 +175,13 @@ c          if(iSim.ne.0) CALL pylist(1)
           MSTJ(1) =0
         endif
 
+        if (iNS.eq.1 .and. (iTg.ge.1 .or. iTg.le.4)) call CreateSpec
+
 ccc Go back in lab frame (for collider mode)
         if(iColl.ne.0) call LorentzFMBack(2)
 
 ccc Compute of physical values for output
+c        if(iSim.ne.0) CALL pylist(1)
         call ComputV
 
 ccc Book the ntuple
