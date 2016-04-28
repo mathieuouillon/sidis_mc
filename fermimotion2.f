@@ -407,7 +407,7 @@
 *
 *  A. COMMENTARY
 *
-*     Returns the "hard tai" of nucleon Fermi momentum distribution in a 
+*     Returns the "hard tail" of nucleon Fermi momentum distribution in a 
 *     nucleus (iZ,iA), and its height, slope and normalization. 
 *
 *       rhofermi [fm^3]   = (dp) Fermi momentum distribution 

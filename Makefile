@@ -11,13 +11,13 @@ SRC=    simulation.f fermimotion.f pythia-6.4.22.f \
         pythiaconfig.f book.f transfo.f \
         fermimotion2.f nucdens.f density.f qweight.f \
         accep_fun.f clas_at12g.f clas12_accept.f read_par_clas12g.f \
-        smear_fun.f main.cc
+        smear_fun.f ALERT_fastMC.cc main.cc
 
 OBJ=    simulation.o fermimotion.o pythia-6.4.22.o \
         pythiaconfig.o book.o transfo.o \
         fermimotion2.o nucdens.o density.o qweight.o \
         accep_fun.o clas_at12g.o clas12_accept.o read_par_clas12g.o \
-        smear_fun.o main.o
+        smear_fun.o ALERT_fastMC.o main.o
 
 .f.o:
 	gfortran -c $(FFLAGS) -o $@ $*.f
@@ -34,5 +34,5 @@ clean:
         fermimotion2.o nucdens.o density.o qweight.o transfo.o \
         accep_fun.o clas_at12g.o clas12_accept.o read_par_clas12g.o \
         smear_fun.o eloss.o fort.9 last.kumac last.kumacold paw.metafile \
-	main.o root.o
+	ALERT_fastMC.o main.o root.o
 

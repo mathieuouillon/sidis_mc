@@ -1,0 +1,59 @@
+This is a Fast Monte Carlo for A Low Energy Recoil Tracker 
+
+Author: Gabriel Charles
+Institut de Physique Nucleaire d'Orsay, University Paris Sud
+charlesg@ipno.in2p3.fr
+
+There is no particle identification for now, so the code is returning the same pid as the one given in input, like if the particle identification was 100% efficient.
+
+Here is the list of  particles that can be input in the fastMC with their pdg code
+   - proton 2212
+   - alpha: 1000020040
+   - deuteron: 1000010020
+   - triton: 1000010030
+   - helium 3: 1000020030
+
+This fast MC relies on the gaussian fit of the resolution for different variables as a function of theta and the initial kinetic energy. When a particle with a certain kinetic energy and theta is given to the program, it returns the reconstructed values obtained by smearing the value with a gaussian of mean value the value and sigma the one obtained from the Geant4 simulation.
+For some bins in energy and theta, the gaussian did not fit very well (correction is on going) so please do not generate in only one bin in energy and theta
+For theta the bining is Pi/100.
+For the energy the bining depends on the particle, the energy range in which particles have been generated and the number of bins are given below:
+Protons:                       [2;40] MeV, 152 bins
+Alphas:                        [4;25] MeV, 152 bins
+Tritons, deutons and helium 3: [2;25] MeV, 184 bins
+
+An example on how to use the propagation function is provided in ALERT_fastMC.C:main(), one can find below explanations on how to understand it.
+
+An object MyParticle has been created, it has 8 arguments that should be set before propagating the particle and 5 arguments that are obtained by the propagation.
+The 8 arguments that must be filled before propagation are:
+   - Pid: the particle number following pdg (see above)
+   - Mom: the initial momentum of the particle
+   - VertexX: the X position of the vertex
+   - VertexY: the Y position of the vertex
+   - VertexZ: the Z position of the vertex
+   - VertexMomX: the projection of the initial direction of the particle over X
+   - VertexMomY: the projection of the initial direction of the particle over Y
+   - VertexMomZ: the projection of the initial direction of the particle over Z
+The following conditions must be respected TMath::Sqrt(vertex_px*vertex_px+vertex_py*vertex_py+vertex_pz*vertex_pz) = 1
+The momentum of the particle in MeV/c
+
+The 5 arguments of MyParticle filled during the propagation are:
+pT: the transverse momentum
+Theta
+Phi
+VertexZ_recon, which is the z vertex position obtained after reconstruction
+isRecon, that tells if the particle has been reconstructed or not
+
+To set an arguement do:
+MyParticle pc; // to create a new particle
+pc.Mom = 100.; // to set the value of the initial momentum
+pc.VertexMomX/Y/Z/... // to set all the required parameters
+MyParticle propagated = Propagate(pc); // to propagate the particle and store propagate values in a new particle
+cout << propagated.pT << endl; // would display the transverse momentum reconstructed after propagation
+// Note that initial values are NOT passed to the propagated particle.
+
+To compile the code and then execute it, do:
+g++ -o ALERT_fastMC.exe ALERT_fastMC.C
+./ALERT_fastMC.exe
+
+
+

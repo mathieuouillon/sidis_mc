@@ -40,6 +40,8 @@ ccccc gamma beta
 ccccc Initial kinematics
       real eip
       real nip,nie
+ccccc C func
+      integer alertaccept
 
       eip = P(1,4)
       nip = 0
@@ -85,7 +87,6 @@ c        if((k(ip,2).eq.11.and.k(ip,1).eq.1)
      &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
      &       .or. (abs(k(ip,2)).gt.10000 .and. k(ip,1).eq.1)
      &    ) then
-
 
           Nb_part           = Nb_part + 1
           acc_part(Nb_part) = 0
@@ -140,6 +141,7 @@ c        if((k(ip,2).eq.11.and.k(ip,1).eq.1)
      &                  -p(TrkGS,2)*p(ip,2)-p(TrkGS,3)*p(ip,3) ) )
      &               / sqrt(W**2/4 + Q22) ) / P(ip,5)
           acc_part(Nb_part) = 1
+
           if(iAccept.eq.1) then
             acc_part(Nb_part) = 0
             if(abs(k(ip,2)).eq.11.or.abs(k(ip,2)).eq.211.or.
@@ -149,103 +151,41 @@ c        if((k(ip,2).eq.11.and.k(ip,1).eq.1)
      &              clas12_accept(k(ip,2),p(ip,1),p(ip,2),p(ip,3))
             else if(k(ip,2).gt.2200 .and. p_part(Nb_part).lt.0.5
      &              .and. th_part(Nb_part).lt.180) then
-              
-              if( k(ip,2).eq.2212 ) then
-                 if(ranf(0) .lt. pro_acc(int(p_part(Nb_part)/.02)+1,
-     &                                   int(th_part(Nb_part)/7.2)+1))
-     &               acc_part(Nb_part) = 1
-              else if( k(ip,2).eq.10002) then
-                 acc_part(Nb_part) = 0
-              else if( k(ip,2).eq.10102) then
-                 if(ranf(0) .lt. deu_acc(int(p_part(Nb_part)/.02)+1,
-     &                                   int(th_part(Nb_part)/7.2)+1))
-     &               acc_part(Nb_part) = 1
-              else if( k(ip,2).eq.10103) then
-                 if(ranf(0) .lt. tri_acc(int(p_part(Nb_part)/.02)+1,
-     &                                   int(th_part(Nb_part)/7.2)+1))
-     &               acc_part(Nb_part) = 1
-              else if( k(ip,2).eq.10202) then
-                 acc_part(Nb_part) = 0
-              else if( k(ip,2).eq.10203) then
-                 if(ranf(0) .lt. he3_acc(int(p_part(Nb_part)/.02)+1,
-     &                                   int(th_part(Nb_part)/7.2)+1))
-     &               acc_part(Nb_part) = 1
-              else if( k(ip,2).eq.10204) then
-                 if(ranf(0) .lt. he4_acc(int(p_part(Nb_part)/.02)+1,
-     &                                   int(th_part(Nb_part)/7.2)+1))
-     &               acc_part(Nb_part) = 1
+              if(iAlert.eq.1) then
+                   acc_part(Nb_part) = 
+     &             alertaccept(k(ip,2),p_part(Nb_part),th_part(Nb_part))
+              else if(iAlert.eq.0) then
+                if( k(ip,2).eq.2212 ) then
+                   if(ranf(0) .lt. pro_acc(int(p_part(Nb_part)/.02)+1,
+     &                                     int(th_part(Nb_part)/7.2)+1))
+     &                 acc_part(Nb_part) = 1
+                else if( k(ip,2).eq.10002) then
+                   acc_part(Nb_part) = 0
+                else if( k(ip,2).eq.10102) then
+                   if(ranf(0) .lt. deu_acc(int(p_part(Nb_part)/.02)+1,
+     &                                     int(th_part(Nb_part)/7.2)+1))
+     &                 acc_part(Nb_part) = 1
+                else if( k(ip,2).eq.10103) then
+                   if(ranf(0) .lt. tri_acc(int(p_part(Nb_part)/.02)+1,
+     &                                     int(th_part(Nb_part)/7.2)+1))
+     &                 acc_part(Nb_part) = 1
+                else if( k(ip,2).eq.10202) then
+                   acc_part(Nb_part) = 0
+                else if( k(ip,2).eq.10203) then
+                   if(ranf(0) .lt. he3_acc(int(p_part(Nb_part)/.02)+1,
+     &                                     int(th_part(Nb_part)/7.2)+1))
+     &                 acc_part(Nb_part) = 1
+                else if( k(ip,2).eq.10204) then
+                   if(ranf(0) .lt. he4_acc(int(p_part(Nb_part)/.02)+1,
+     &                                     int(th_part(Nb_part)/7.2)+1))
+     &                 acc_part(Nb_part) = 1
+                endif
               endif
             endif
           endif
+
         endif
       enddo      
-
-      end
-
-c------------------------------------------------------------------------------
-c Variables to book in the ntuple
-c------------------------------------------------------------------------------
-      subroutine InitHbook
-      implicit none
-
-ccccc Paw variables
-      integer nwpawc,hdoof
-      parameter (nwpawc=20000000)
-      integer LREC,ISTAT
-      common/pawc/hdoof(30000000)
-ccccc Include all the common blocks
-      include 'common.f'
-
-
-      LREC=  8190
-
-      call hlimit(nwpawc)
-
-      call hropen(10,'out',hbookout,'N',LREC,ISTAT)
-      call HBNT(33,'out',' ')
-    
-      call HBNAME(33,'kinemati',ievent,'ievent')
-      call HBNAME(33,'kinemati',EEe,'EEe')
-      call HBNAME(33,'kinemati',PPn,'PPn')
-
-      call HBNAME(33,'TransVar',PhiFM,'PhiFM')
-      call HBNAME(33,'TransVar',ThFM ,'ThFM ')
-      call HBNAME(33,'TransVar',Kf   ,'Pf  ')
-      call HBNAME(33,'TransVar',ECoM ,'ECoM ')
-
-      call HBNAME(33,'Position',x_inter ,'x_inter ')
-      call HBNAME(33,'Position',y_inter ,'y_inter ')
-      call HBNAME(33,'Position',z_inter ,'z_inter ')
-
-      if (iQW .ne. 0) then
-        call HBNAME(33,'QWeight',QW_wc ,'QW_wc')
-        call HBNAME(33,'QWeight',QW_R  ,'QW_R ')
-        call HBNAME(33,'QWeight',QW_L  ,'QW_L ')
-        call HBNAME(33,'QWeight',QW_w  ,'QW_w ')
-      endif
-
-      call HBNAME(33,'EvntInfo',Q22  ,'Q2   ')
-      call HBNAME(33,'EvntInfo',W    ,'W    ')
-      call HBNAME(33,'EvntInfo',Nu   ,'GamNu')
-      call HBNAME(33,'EvntInfo',XBj  ,'XBj  ')
-      call HBNAME(33,'EvntInfo',y_ele,'y    ')
-    
-      call HBNAME(33,'PartInfo',Nb_part  ,'Nb_part[0,99]      ')
-      call HBNAME(33,'PartInfo',id_part  ,'Npart_id(Nb_part)  ')
-      call HBNAME(33,'PartInfo',id_mother,'Nmother_id(Nb_part)')
-      call HBNAME(33,'PartInfo',acc_part ,'Naccept(Nb_part)   ')
-      call HBNAME(33,'PartInfo',p_part   ,'part_P(Nb_part)    ')
-      call HBNAME(33,'PartInfo',px_part  ,'part_Px(Nb_part)   ')
-      call HBNAME(33,'PartInfo',py_part  ,'part_Py(Nb_part)   ')
-      call HBNAME(33,'PartInfo',pz_part  ,'part_Pz(Nb_part)   ')
-      call HBNAME(33,'PartInfo',E_part   ,'part_E(Nb_part)    ')
-      call HBNAME(33,'PartInfo',m_part   ,'part_m(Nb_part)    ')
-      call HBNAME(33,'PartInfo',z_part   ,'part_z(Nb_part)    ')
-      call HBNAME(33,'PartInfo',th_part  ,'part_th(Nb_part)   ')
-      call HBNAME(33,'PartInfo',phi_part ,'part_phi(Nb_part)  ')
-      call HBNAME(33,'PartInfo',phih_part,'part_phih(Nb_part) ')
-      call HBNAME(33,'PartInfo',tt_part  ,'part_tt(Nb_part)   ')
-      call HBNAME(33,'PartInfo',Pts_part ,'part_Pts(Nb_part)  ')
 
       end
 

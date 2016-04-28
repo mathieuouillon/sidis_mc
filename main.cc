@@ -71,6 +71,6 @@ void branching(){
         t2->Branch("part_tt"   , part_.tt_part         , "part_tt[Nb_part]/F"   );
         t2->Branch("part_pts"  , part_.Pts_part        , "part_pts[Nb_part]/F"  );
         t2->Branch("part_xf"   , part_.Xf_part         , "part_xf[Nb_part]/F"   );
-        t2->Branch("part_as"   , part_.Als          , "part_as[Nb_part]/F"   );
+        t2->Branch("part_as"   , part_.Als             , "part_as[Nb_part]/F"   );
 
         return; }

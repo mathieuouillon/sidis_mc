@@ -10,7 +10,6 @@ ccccc Include all the common blocks
 c     include 'include/names.inc'
 
 ccccc Miscellaneous
-      integer icycle ! for hbook
       real T1,T2 ! For time of computation
       double precision BeamE !Input value for pythia
       integer ip ! For do
@@ -19,21 +18,21 @@ ccccc Miscellaneous
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of events per kinematics
-      nkin = 10000
+      nkin = 100
 ccc Number of events per kinematics 
-      nevent = 10000000
+      nevent = 20000000
 ccc Electron energy (GeV)
-      E0 = 27.5
+      E0 = 11.0
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
 ccc               6-> 7Li, 7-> C, 8-> Al, 9-> Fe, 10-> Sn, 11-> Pb
 ccc               12-> Ne, 13-> Kr, 14-> Xe
-      iTg = 1
+      iTg = 4
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
       iColl = 0
 c     real EColl ! energy of the nuclei (GeV/nucleon)
-      EColl = 38.
+      EColl = 0.
 
 ccc Fermimotion flag 
 c     0 = no FM
@@ -46,21 +45,23 @@ c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
       iFM = 3
-      FMlimit = 1
+      FMlimit = 0.5
 
 ccc Isospin sym
       iIso = 1
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
 c                 ! this option is only for 2H and 4He targets
-      iNS = 0
+      iNS = 1
 
 ccc CLAS12 Acceptance put 1 
-      iAccept = 0
+      iAccept = 1
+ccc ALERT accept put 1
+      iAlert = 1
 
 ccc Init for the quenching weights
 c     integer iQuenching ! 0 desactivate Quenching
-      iQuenching = 1
+      iQuenching = 0
 c     integer iqw 1 SW, 2 Arleo
       iqw = 1
       alphas = 1d0/3d0
@@ -68,7 +69,7 @@ c     integer iqw 1 SW, 2 Arleo
       ncor = 0
       sfthrd = 1
 c     real qhat !Transport coefficient (GeV^2.fm^-1)
-      qhat = 0.33
+      qhat = 0.1
 c     drag coefficient
       ehat = 0.0
 c     integer iDens !0= hard sphere, 1= Wood Saxon param
@@ -100,15 +101,15 @@ ccc Initialize
       endif
       call InitRandom
       if (iAccept.eq.1) call init_recoil
+      if (iAlert.eq.1) call initalert
 c      call CLASBOSINIT('MCEVENT')
 
 ccc Main Loop
       do while (ievent.lt.nevent)
 
 ccc Initialize the simulation
-        if(iSim.ne.0.and.
-     &   (ievent.eq.0.or.i.eq.nkin.or.ievent.eq.int(nevent*iZ/iA)
-     &    .or. mod(ievent,500000).eq.0)) then
+        if(ievent.eq.0.or.i.eq.nkin.or.ievent.eq.int(nevent*iZ/iA)
+     &    .or. mod(ievent,500000).eq.0) then
           i = 0
  100      continue
 ccc Determine target: 1 for proton, 0 neutron
@@ -141,12 +142,12 @@ ccc PYTHIA init
           BeamE = PPe
           if((iIso.eq.0.and.ievent.lt.(nevent*iZ/iA))
      &         .or.(iIso.eq.1.and.ievent.lt.(nevent*.5))) then
-            call pyinit('FIXT','gamma/e-','p+',BeamE)
+            if(iSim.ne.0) call pyinit('FIXT','gamma/e-','p+',BeamE)
           else
-            write(*,*) 'X sec 99 = ', XSEC(99,1)
-            call pyinit('FIXT','gamma/e-','n0',BeamE)
+            if(iSim.ne.0) write(*,*) 'X sec 99 = ', XSEC(99,1)
+            if(iSim.ne.0) call pyinit('FIXT','gamma/e-','n0',BeamE)
           endif
-          if (XSEC(99,1).eq.0) then
+          if (iSim.ne.0 .and. XSEC(99,1).eq.0) then
             call pyrest
             goto 200
           endif
@@ -161,6 +162,7 @@ ccc Initialization of the kinematic variables
 ccc Event generation
         if(iSim.ne.0) CALL pyevnt
 c        if(iSim.ne.0) CALL pylist(1)
+c        write(*,*) 'test'
 
 ccc Come back in target frame
         if(iFM.ne.0) call LorentzFMBack(1)
@@ -174,8 +176,8 @@ ccc Energy loss of the partons
 ccc Fragmentation (if needed)
         if (iQuenching.ne.0) then
           MSTJ(1) =1
-          if(iSim.ne.0) call PYEXEC
 c          if(iSim.ne.0) CALL pylist(1)
+          if(iSim.ne.0) call PYEXEC
           MSTJ(1) =0
         endif
 
