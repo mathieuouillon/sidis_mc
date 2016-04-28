@@ -1,3 +1,4 @@
+#test
 NAME = simulation
 
 FFLAGS  =  -O3 -w -g
