@@ -13,14 +13,14 @@ ccccc Miscellaneous
       real T1,T2 ! For time of computation
       double precision BeamE !Input value for pythia
       integer ip ! For do
-      integer i
+      integer i,l
 
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of events per kinematics
-      nkin = 100
+      nkin = 10
 ccc Number of events per kinematics 
-      nevent = 20000000
+      nevent = 2000
 ccc Electron energy (GeV)
       E0 = 11.0
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
@@ -45,9 +45,9 @@ c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
       iFM = 3
-      FMlimit = 0.5
+      FMlimit = 1.0
 
-ccc Isospin sym
+ccc Isospin sym respected (0) or split at half (1)
       iIso = 1
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
@@ -55,34 +55,36 @@ c                 ! this option is only for 2H and 4He targets
       iNS = 1
 
 ccc CLAS12 Acceptance put 1 
-      iAccept = 1
+      iAccept = 0
 ccc ALERT accept put 1
-      iAlert = 1
+      iAlert = 0
+ccc Lund File
+      iLund = 1
 
 ccc Init for the quenching weights
 c     integer iQuenching ! 0 desactivate Quenching
       iQuenching = 0
-c     integer iqw 1 SW, 2 Arleo
-      iqw = 1
-      alphas = 1d0/3d0
-      scor = 1
-      ncor = 0
-      sfthrd = 1
-c     real qhat !Transport coefficient (GeV^2.fm^-1)
-      qhat = 0.1
-c     drag coefficient
-      ehat = 0.0
-c     integer iDens !0= hard sphere, 1= Wood Saxon param
-      iDens = 1
-c     iqg = 1 -> quark and gluons are quenched other -> only q
-      iqg = 1
-c     iEg = 1 -> a gluon is added to satisfy energy conservation
-      iEg = 0
-c     iPtF = 0 -> no Pt; 1 -> from qhat; 2 -> BDMPS; 3 -> gluon angle from SW
-      iPtF = 3
-c     Suppretion factor
-      SupFac= qhat /(qhat+ehat)
-c      SupFac= 1.
+c        integer iqw 1 SW, 2 Arleo
+         iqw = 1
+         alphas = 1d0/3d0
+         scor = 1
+         ncor = 0
+         sfthrd = 1
+c        real qhat !Transport coefficient (GeV^2.fm^-1)
+         qhat = 0.1
+c        drag coefficient
+         ehat = 0.0
+c        integer iDens !0= hard sphere, 1= Wood Saxon param
+         iDens = 1
+c        iqg = 1 -> quark and gluons are quenched other -> only q
+         iqg = 1
+c        iEg = 1 -> a gluon is added to satisfy energy conservation
+         iEg = 0
+c        iPtF = 0 -> no Pt; 1 -> from qhat; 2 -> BDMPS; 3 -> gluon angle from SW
+         iPtF = 3
+c        Suppretion factor
+         SupFac= qhat /(qhat+ehat)
+c         SupFac= 1.
 
 c     integer iSim ! 0 -> Turn off Pythia for tests
       iSim = 1
@@ -102,6 +104,7 @@ ccc Initialize
       call InitRandom
       if (iAccept.eq.1) call init_recoil
       if (iAlert.eq.1) call initalert
+      if (iLund.eq.1) OPEN (UNIT=59,FILE='lund.txt')
 c      call CLASBOSINIT('MCEVENT')
 
 ccc Main Loop
@@ -191,6 +194,14 @@ c        if(iSim.ne.0) CALL pylist(1)
         call ComputV
 
 ccc Book the ntuple
+        if (iLund.eq.1) then
+           write(59,*) Nb_part,iA,iZ,0,0,XBj,y_ele,W,Q22,Nu
+           do l=1,Nb_part,1
+              write(59,*) l,ch_part(l),1,id_part(l),id_mother(l),0,
+     &                    px_part(l),py_part(l),pz_part(l),E_part(l),
+     &                    m_part(l),0,0,0
+           end do
+        endif
         call fillroot()
         ievent = ievent+ 1
         i = i+ 1
@@ -199,6 +210,8 @@ c          call CLASBOSFILL(iTg)
 
 ccc Close the file
 c      call CLASBOSEND('MCEVENT')
+      if (iLund.eq.1) CLOSE (59)
+
 
       write(*,*) 'X sec 99 = ', XSEC(99,1)
       write(*,*) 'q hat = ', QW_qhat/QW_nb
@@ -302,17 +315,17 @@ c------------------------------------------------------------------------------
       else if (iTg .eq. 1 .and. nucleon .eq. 1) then
         specId = 2112
       else if (iTg .eq. 2 .and. nucleon .eq. 0) then
-        specId = 10102
+        specId = 1000010020
       else if (iTg .eq. 2 .and. nucleon .eq. 1) then
-        specId = 10002
+        specId = 1000000020
       else if (iTg .eq. 3 .and. nucleon .eq. 0) then
-        specId = 10202
+        specId = 1000020020
       else if (iTg .eq. 3 .and. nucleon .eq. 1) then
-        specId = 10102
+        specId = 1000010020
       else if (iTg .eq. 4 .and. nucleon .eq. 0) then
-        specId = 10203
+        specId = 1000020030
       else if (iTg .eq. 4 .and. nucleon .eq. 1) then
-        specId = 10103
+        specId = 1000010030
       endif
  
       k(N,1) = 1
@@ -326,15 +339,15 @@ c------------------------------------------------------------------------------
         p(N,5) = .938272
       else if (k(N,2) .eq. 2112) then
         p(N,5) = .939566
-      else if (k(N,2) .eq. 10002) then
+      else if (k(N,2) .eq. 1000000020) then
         p(N,5) = 1.87913
-      else if (k(N,2) .eq. 10102) then
+      else if (k(N,2) .eq. 1000010020) then
         p(N,5) = 1.876124
-      else if (k(N,2) .eq. 10202) then
+      else if (k(N,2) .eq. 1000020020) then
         p(N,5) = 1.87654
-      else if (k(N,2) .eq. 10203) then
+      else if (k(N,2) .eq. 1000020030) then
         p(N,5) = 2.809356
-      else if (k(N,2) .eq. 10103) then
+      else if (k(N,2) .eq. 1000010030) then
         p(N,5) = 2.809356
       endif
       P(N,4) = sqrt(P(N,1)**2+P(N,2)**2+P(N,3)**2+P(N,5)**2)

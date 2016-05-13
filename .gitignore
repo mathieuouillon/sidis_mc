@@ -1,3 +1,8 @@
 pythia-6.4.22.elke.f
 sc-root.C
 script0
+*.o
+*.swp
+default.root
+lund.txt
+simulation

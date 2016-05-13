@@ -43,11 +43,12 @@ ccccc Events information
 ccccc Recoiled Particles
       integer TrkGS
       integer Nb_part,id_part(100),id_mother(100),acc_part(100)
+      integer ch_part(100)
       real p_part(100),px_part(100),py_part(100),pz_part(100)
       real E_part(100),m_part(100),z_part(100),th_part(100)
       real tt_part(100),Pts_part(100),phih_part(100),phi_part(100)
       real vx_part(100),Xf_part(100),Als(100)
-      common/part/TrkGS,Nb_part,id_part,id_mother,acc_part,
+      common/part/TrkGS,Nb_part,id_part,id_mother,acc_part,ch_part,
      &      p_part,px_part,py_part,pz_part,E_part,m_part,
      &      z_part,th_part,tt_part,Pts_part,phih_part,phi_part,
      &      vx_part,Xf_part,Als
@@ -94,8 +95,10 @@ c Position of the interaction in CLAS for GSIM
 c Flags and config values
       integer iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent 
       integer nkin,nucleon,specId,iColl,iqg,iEg,iPtF,iIso,iAlert
+      integer iLund
       real rFM,E0,qhat,ehat,EColl,FMlimit,SupFac
-      common/flags/iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent,
+      common/flags/iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,iLund,
+     &             nevent,
      &             nkin,nucleon,specId,rFM,E0,qhat,ehat,iColl,EColl,
      &             FMlimit,iqg,iEg,SupFac,iPtF,iIso,iAlert
 

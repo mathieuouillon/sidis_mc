@@ -85,11 +85,24 @@ c        if((k(ip,2).eq.11.and.k(ip,1).eq.1)
         if(abs(k(ip,2)).eq.211.or.(k(ip,2).eq.11.and.k(ip,1).eq.1)
      &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
      &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
+     &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)
      &       .or. (abs(k(ip,2)).gt.10000 .and. k(ip,1).eq.1)
      &    ) then
 
           Nb_part           = Nb_part + 1
           acc_part(Nb_part) = 0
+          ch_part(Nb_part)  = 0
+          if(k(ip,2).eq.11 .or.
+     &       k(ip,2).eq.-211 .or.
+     &       k(ip,2).eq.-321 .or.
+     &       k(ip,2).eq.-2212 ) ch_part(Nb_part)  = -1
+          if(k(ip,2).eq.211 .or.
+     &       k(ip,2).eq.321 .or.
+     &       k(ip,2).eq.1000010030 .or.
+     &       k(ip,2).eq.1000010020 .or.
+     &       k(ip,2).eq.2212 ) ch_part(Nb_part)  = 1
+          if(k(ip,2).eq.1000020030) ch_part(Nb_part)  = 2
+          
 
           id_part(Nb_part)  = k(ip,2)
           id_mother(Nb_part)= k(k(ip,3),2)

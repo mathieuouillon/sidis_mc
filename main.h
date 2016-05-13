@@ -30,7 +30,7 @@ extern "C" {
 // Recoiled Particles
   extern struct {
       int TrkGS;
-      int Nb_part,id_part[100],id_mother[100],acc_part[100];
+      int Nb_part,id_part[100],id_mother[100],acc_part[100],ch_part[100];
       float p_part[100],px_part[100],py_part[100],pz_part[100];
       float E_part[100],m_part[100],z_part[100],th_part[100];
       float tt_part[100],Pts_part[100],phih_part[100],phi_part[100];
