@@ -109,6 +109,11 @@ c Read table from RW
       integer i,j
       character*100 str
 
+      a=0
+      b=0
+      c=0
+      d=0
+      e=0
       write(*,*) 'Enter GenRWtable'
 
       ERROR = 0
@@ -188,7 +193,7 @@ c Read table from RW
           sum_n = sum_n + d
           sum_p = sum_p + b
         enddo
-      else if((iZ.eq.2 .and. iA.eq.4) .or. (iZ.eq.3 .and. iA.eq.6)) then
+      else if(iZ.eq.3 .and. iA.eq.6) then
         do while (a.lt.FMlimit/0.1973269602)
           i = i+1
           read(8,*) a,b,c
@@ -198,14 +203,25 @@ c Read table from RW
           sum_n = sum_n + b
           sum_p = sum_p + b
         enddo
+      else if(iZ.eq.2 .and. iA.eq.4) then
+        do while (a.lt.FMlimit/0.1973269602)
+          i = i+1
+          read(8,*) a,b,c,d,e
+          write(*,*) a,b,c,d,e
+          FM_n(i) = b*(a+0.05)**2
+          FM_p(i) = b*(a+0.05)**2
+          sum_n = sum_n + FM_n(i)
+          sum_p = sum_p + FM_p(i)
+          FM_i(i) = d/b
+        enddo
       else
         write(*,*) 'ERROR'
         close (8)
         stop
       endif
               
-      step_size_FM = FMlimit / (i-1)
-      write(*,*) 'step ',step_size_FM
+      step_size_FM = FMlimit / i
+      write(*,*) 'step ',step_size_FM, sum_n
 
       do j=1,i
         FM_n(j) = FM_n(j) / sum_n
@@ -215,7 +231,7 @@ c Read table from RW
       do j=2,i
         FM_n(j) = FM_n(j-1) + FM_n(j)
         FM_p(j) = FM_p(j-1) + FM_p(j)
-        write(*,*) j,FM_n(j),FM_p(j)
+        write(*,*) j,FM_n(j),FM_p(j),FM_i(j)
       enddo
 
       write(*,*) 'Exit GenRWtable'
@@ -237,6 +253,8 @@ ccccc Important variables for simulation
       integer i
 ccccc Include all the common blocks
       include 'common.f'
+
+      FMintact = 1
 
 ccc Generate Theta and Phi of the particle's fermi momentum
       ThFM = acos(2*ranf(0)-1)
@@ -292,6 +310,8 @@ ccc Fermi Momentum from R. Wiringa
         endif
 
         Kf =  (i - rand(0)) * step_size_FM
+        FMintact=FM_i(i)
+
         if (Kf.gt.FMlimit) then
           write(*,*) 'warning ',i,step_size_FM
           stop

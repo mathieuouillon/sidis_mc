@@ -55,9 +55,11 @@ ccccc Recoiled Particles
 
 ccccc Table for FM distribution
       real FM_table(1000),step_size_FM,FM_n(1000),FM_p(1000)
+      real FM_i(1000), FMintact
       integer iZ, iA ! target Z and A
       integer FMnb
-      common/FMvar/FM_table,step_size_FM,FM_n,FM_p,iZ,iA,FMnb
+      common/FMvar/FM_table,step_size_FM,FM_n,FM_p,FM_i,FMintact,iZ,iA,
+     &             FMnb
 
 ccccc Table for density distribution
       real density_table(2000),step_size_dens

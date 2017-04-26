@@ -81,11 +81,11 @@ c    &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)
 c    &       .or. (abs(k(ip,2)).eq.11 .and. k(ip,1).eq.1)
 c    &       .or. k(ip,2).gt.10000) then
 
-c        if((k(ip,2).eq.11.and.k(ip,1).eq.1)
-        if(abs(k(ip,2)).eq.211.or.(k(ip,2).eq.11.and.k(ip,1).eq.1)
-     &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
-     &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
-     &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)
+        if((k(ip,2).eq.11.and.k(ip,1).eq.1)
+c        if(abs(k(ip,2)).eq.211.or.(k(ip,2).eq.11.and.k(ip,1).eq.1)
+c     &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
+c     &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
+c     &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)
      &       .or. (abs(k(ip,2)).gt.10000 .and. k(ip,1).eq.1)
      &    ) then
 

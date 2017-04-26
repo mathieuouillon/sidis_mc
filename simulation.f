@@ -18,9 +18,9 @@ ccccc Miscellaneous
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of events per kinematics
-      nkin = 10
+      nkin = 1
 ccc Number of events per kinematics 
-      nevent = 2000
+      nevent = 10000
 ccc Electron energy (GeV)
       E0 = 11.0
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
@@ -40,12 +40,12 @@ c     1 = like 4 plus a tail from [2] (deut, C, Al, Fe, Sn, Pb, 4He)
 c     2 = Accardi SVG (7Li, C, O, Ne, Al, Ar, Ca, Ni, Cu, Zr, Sn, Pb)
 c     3 = Accardi CS (2H, 3He, 4He, C, O, Ca, Fe, Pb)
 c     4 = hard sphere with values from [1], 
-c     5 = R. Wiringa private communication
+c     5 = R. Wiringa et al. PRC 89, 024305 (2014)
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 3
-      FMlimit = 1.0
+      iFM = 5
+      FMlimit = 0.5
 
 ccc Isospin sym respected (0) or split at half (1)
       iIso = 1
@@ -308,8 +308,10 @@ c------------------------------------------------------------------------------
       implicit none
 
       include 'common.f'
+c Decide if there is a spectator (RW model only) 
+      if(rand(0).gt.FMintact) return
 
-      N = N+1
+c Decide the kind of spectator
       if (iTg .eq. 1 .and. nucleon .eq. 0) then
         specId = 2212
       else if (iTg .eq. 1 .and. nucleon .eq. 1) then
@@ -327,7 +329,10 @@ c------------------------------------------------------------------------------
       else if (iTg .eq. 4 .and. nucleon .eq. 1) then
         specId = 1000010030
       endif
- 
+
+c Add Spectator
+      N = N+1
+
       k(N,1) = 1
       k(N,2) = specId
       k(N,3) = 2
