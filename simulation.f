@@ -18,15 +18,15 @@ ccccc Miscellaneous
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of events per kinematics
-      nkin = 1
+      nkin = 1000
 ccc Number of events per kinematics 
       nevent = 10000
 ccc Electron energy (GeV)
-      E0 = 11.0
+      E0 = 27.0
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
 ccc               6-> 7Li, 7-> C, 8-> Al, 9-> Fe, 10-> Sn, 11-> Pb
 ccc               12-> Ne, 13-> Kr, 14-> Xe
-      iTg = 4
+      iTg = 14
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -44,7 +44,7 @@ c     5 = R. Wiringa et al. PRC 89, 024305 (2014)
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 5
+      iFM = 2
       FMlimit = 0.5
 
 ccc Isospin sym respected (0) or split at half (1)
@@ -52,18 +52,18 @@ ccc Isospin sym respected (0) or split at half (1)
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
 c                 ! this option is only for 2H and 4He targets
-      iNS = 1
+      iNS = 0
 
 ccc CLAS12 Acceptance put 1 
       iAccept = 0
 ccc ALERT accept put 1
       iAlert = 0
 ccc Lund File
-      iLund = 1
+      iLund = 0
 
 ccc Init for the quenching weights
 c     integer iQuenching ! 0 desactivate Quenching
-      iQuenching = 0
+      iQuenching = 1
 c        integer iqw 1 SW, 2 Arleo
          iqw = 1
          alphas = 1d0/3d0
@@ -71,7 +71,7 @@ c        integer iqw 1 SW, 2 Arleo
          ncor = 0
          sfthrd = 1
 c        real qhat !Transport coefficient (GeV^2.fm^-1)
-         qhat = 0.1
+         qhat = 0.36
 c        drag coefficient
          ehat = 0.0
 c        integer iDens !0= hard sphere, 1= Wood Saxon param
