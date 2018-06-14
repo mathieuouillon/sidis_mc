@@ -22,6 +22,8 @@ int main(int argc, char * argv[])
         branching();
         i = simulation_();
         t2->Write();
+        delete t2;
+        delete f;
         return 0;
 }
 
