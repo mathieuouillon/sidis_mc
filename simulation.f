@@ -20,7 +20,7 @@ CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of events per kinematics
       nkin = 1000
 ccc Number of events per kinematics 
-      nevent = 10000
+      nevent = 1000000
 ccc Electron energy (GeV)
       E0 = 27.0
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
