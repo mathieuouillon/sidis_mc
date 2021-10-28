@@ -7,13 +7,13 @@ ROOTLIBS = $(shell root-config --libs)
 CPPFLAGS += $(shell root-config --cflags)
 
 # add BOS.f for BOS file output
-SRC=    simulation.f fermimotion.f pythia-6.4.22.f \
+SRC=    simulation.f fermimotion.f pythia6428.f \
         pythiaconfig.f book.f transfo.f \
         fermimotion2.f nucdens.f density.f qweight.f \
         accep_fun.f clas_at12g.f clas12_accept.f read_par_clas12g.f \
         smear_fun.f ALERT_fastMC.cc main.cc
 
-OBJ=    simulation.o fermimotion.o pythia-6.4.22.o \
+OBJ=    simulation.o fermimotion.o pythia6428.o \
         pythiaconfig.o book.o transfo.o \
         fermimotion2.o nucdens.o density.o qweight.o \
         accep_fun.o clas_at12g.o clas12_accept.o read_par_clas12g.o \

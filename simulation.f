@@ -18,15 +18,15 @@ ccccc Miscellaneous
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of events per kinematics
-      nkin = 1000
+      nkin = 1
 ccc Number of events per kinematics 
-      nevent = 1000000
+      nevent = 100000
 ccc Electron energy (GeV)
-      E0 = 27.0
+      E0 = 11.0
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
 ccc               6-> 7Li, 7-> C, 8-> Al, 9-> Fe, 10-> Sn, 11-> Pb
 ccc               12-> Ne, 13-> Kr, 14-> Xe
-      iTg = 14
+      iTg = 0
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -44,15 +44,15 @@ c     5 = R. Wiringa et al. PRC 89, 024305 (2014)
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 2
+      iFM = 0
       FMlimit = 0.5
 
 ccc Isospin sym respected (0) or split at half (1)
-      iIso = 1
+      iIso = 0
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
 c                 ! this option is only for 2H and 4He targets
-      iNS = 0
+      iNS = 1
 
 ccc CLAS12 Acceptance put 1 
       iAccept = 0
@@ -63,7 +63,7 @@ ccc Lund File
 
 ccc Init for the quenching weights
 c     integer iQuenching ! 0 desactivate Quenching
-      iQuenching = 1
+      iQuenching = 0
 c        integer iqw 1 SW, 2 Arleo
          iqw = 1
          alphas = 1d0/3d0
@@ -71,7 +71,7 @@ c        integer iqw 1 SW, 2 Arleo
          ncor = 0
          sfthrd = 1
 c        real qhat !Transport coefficient (GeV^2.fm^-1)
-         qhat = 0.36
+         qhat = 0.34
 c        drag coefficient
          ehat = 0.0
 c        integer iDens !0= hard sphere, 1= Wood Saxon param
@@ -134,7 +134,7 @@ ccc Going in the nucleon rest frame
 
 ccc Security for low energies
           if (PPe .lt. 4) goto 100
- 200      continue
+c 200      continue
 ccc Parameters for Pythia
           call PythiaConfigDIS
 
@@ -150,10 +150,10 @@ ccc PYTHIA init
             if(iSim.ne.0) write(*,*) 'X sec 99 = ', XSEC(99,1)
             if(iSim.ne.0) call pyinit('FIXT','gamma/e-','n0',BeamE)
           endif
-          if (iSim.ne.0 .and. XSEC(99,1).eq.0) then
-            call pyrest
-            goto 200
-          endif
+c          if (iSim.ne.0 .and. XSEC(99,1).eq.0) then
+c            call pyrest
+c            goto 200
+c          endif
         endif
 
 ccc Counter
