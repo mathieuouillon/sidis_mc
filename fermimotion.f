@@ -299,18 +299,18 @@ ccc Fermi Momentum from R. Wiringa
       else if (iFM.eq.5) then
         Rd = ranf(0)
         i = 1
-        if(nucleon.eq.0) then
+        if(nucleon.eq.2112) then
           do while (FM_n(i).lt.Rd)
             i= i + 1
           enddo
-        else if(nucleon.eq.1) then
+        else if(nucleon.eq.2212) then
           do while (FM_p(i).lt.Rd)
             i= i + 1
           enddo
         endif
 
         Kf =  (i - rand(0)) * step_size_FM
-        FMintact=FM_i(i)
+        if(iTg .ne. 1) FMintact=FM_i(i)
 
         if (Kf.gt.FMlimit) then
           write(*,*) 'warning ',i,step_size_FM

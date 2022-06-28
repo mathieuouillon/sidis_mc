@@ -119,6 +119,7 @@ c        if((k(ip,2).eq.11.and.k(ip,1).eq.1)
           if(phi_part(Nb_part).lt.0) 
      &    phi_part(Nb_part) = phi_part(Nb_part) + 360
 
+c TODO update and make frame independent for collider kinematics
           A1 = sin(phi_ele)
           A2 = -cos(phi_ele)
           A3 = 0

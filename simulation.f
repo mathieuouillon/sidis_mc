@@ -18,15 +18,15 @@ ccccc Miscellaneous
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of events per kinematics
-      nkin = 1
-ccc Number of events per kinematics 
-      nevent = 100000
+      nkin = 20000
+ccc Number of events 
+      nevent = 1000000
 ccc Electron energy (GeV)
       E0 = 11.0
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
 ccc               6-> 7Li, 7-> C, 8-> Al, 9-> Fe, 10-> Sn, 11-> Pb
 ccc               12-> Ne, 13-> Kr, 14-> Xe
-      iTg = 0
+      iTg = 1 
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -44,7 +44,7 @@ c     5 = R. Wiringa et al. PRC 89, 024305 (2014)
 c     All FM distributions are limited to 1 GeV nucleons
 c     [1] E. J. Moniz et al. PRL 26, 445 (1971)
 c     [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)
-      iFM = 0
+      iFM = 5
       FMlimit = 0.5
 
 ccc Isospin sym respected (0) or split at half (1)
@@ -55,11 +55,11 @@ c                 ! this option is only for 2H and 4He targets
       iNS = 1
 
 ccc CLAS12 Acceptance put 1 
-      iAccept = 0
+      iAccept = 1
 ccc ALERT accept put 1
       iAlert = 0
 ccc Lund File
-      iLund = 0
+      iLund = 1
 
 ccc Init for the quenching weights
 c     integer iQuenching ! 0 desactivate Quenching
@@ -117,9 +117,9 @@ ccc Initialize the simulation
  100      continue
 ccc Determine target: 1 for proton, 0 neutron
           if(ievent.lt.(nevent*iZ/iA)) then
-            nucleon = 1
+            nucleon = 2212
           else
-            nucleon = 0
+            nucleon = 2112
           endif
 
 ccc Randomize Theta Phi and Kf
@@ -195,7 +195,7 @@ c        if(iSim.ne.0) CALL pylist(1)
 
 ccc Book the ntuple
         if (iLund.eq.1) then
-           write(59,*) Nb_part,iA,iZ,0,0,XBj,y_ele,W,Q22,Nu
+           write(59,*) Nb_part,iA,iZ,0,0,11,E0,nucleon,1,1.
            do l=1,Nb_part,1
               write(59,*) l,ch_part(l),1,id_part(l),id_mother(l),0,
      &                    px_part(l),py_part(l),pz_part(l),E_part(l),
@@ -312,21 +312,21 @@ c Decide if there is a spectator (RW model only)
       if(rand(0).gt.FMintact) return
 
 c Decide the kind of spectator
-      if (iTg .eq. 1 .and. nucleon .eq. 0) then
+      if (iTg .eq. 1 .and. nucleon .eq. 2112) then
         specId = 2212
-      else if (iTg .eq. 1 .and. nucleon .eq. 1) then
+      else if (iTg .eq. 1 .and. nucleon .eq. 2212) then
         specId = 2112
-      else if (iTg .eq. 2 .and. nucleon .eq. 0) then
+      else if (iTg .eq. 2 .and. nucleon .eq. 2112) then
         specId = 1000010020
-      else if (iTg .eq. 2 .and. nucleon .eq. 1) then
+      else if (iTg .eq. 2 .and. nucleon .eq. 2212) then
         specId = 1000000020
-      else if (iTg .eq. 3 .and. nucleon .eq. 0) then
+      else if (iTg .eq. 3 .and. nucleon .eq. 2112) then
         specId = 1000020020
-      else if (iTg .eq. 3 .and. nucleon .eq. 1) then
+      else if (iTg .eq. 3 .and. nucleon .eq. 2212) then
         specId = 1000010020
-      else if (iTg .eq. 4 .and. nucleon .eq. 0) then
+      else if (iTg .eq. 4 .and. nucleon .eq. 2112) then
         specId = 1000020030
-      else if (iTg .eq. 4 .and. nucleon .eq. 1) then
+      else if (iTg .eq. 4 .and. nucleon .eq. 2212) then
         specId = 1000010030
       endif
 
