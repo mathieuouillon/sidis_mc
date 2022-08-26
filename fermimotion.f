@@ -59,7 +59,7 @@ ccc Fill rFM, iZ and iA in function of the Target
             iZ = 82
             iA = 208
           case (12) 
-            rFM = 0.260
+            rFM = 0.228
             iZ = 10
             iA = 20
           case (13) 
