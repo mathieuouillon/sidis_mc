@@ -46,7 +46,7 @@ c       Determine calculated transverse momentum of final parton
             else if(iPtF.eq.1) then
               ipt = qhat*QW_L
             else if(iPtF.eq.2) then
-              ipt = 8*QW_w/3/alphas/QW_L*SupFac**2
+              ipt = 4*QW_w/3/alphas/QW_L*SupFac**2
             else if(iPtF.eq.3) then
               ipt = (QW_w*sin(QW_th)*SupFac)**2
             endif
