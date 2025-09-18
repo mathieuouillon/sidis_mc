@@ -120,33 +120,33 @@ c Read table from RW
       select case(iA)
         case(2)
           if(iZ.eq.1) then
-            open(8,file='datafiles/fmrw/h2.momentum',status='old')
+            open(8,file='../datafiles/fmrw/h2.momentum',status='old')
           else 
             ERROR = 1
           endif
         case(3)
           if(iZ.eq.1) then
-            open(8,file='datafiles/fmrw/h3.momentum',status='old')
+            open(8,file='../datafiles/fmrw/h3.momentum',status='old')
           else if(iZ.eq.2) then
-            open(8,file='datafiles/fmrw/he3.momentum',status='old')
+            open(8,file='../datafiles/fmrw/he3.momentum',status='old')
           else 
             ERROR = 1
           endif
         case(4)
           if(iZ.eq.2) then
-            open(8,file='datafiles/fmrw/he4.momentum',status='old')
+            open(8,file='../datafiles/fmrw/he4.momentum',status='old')
           else 
             ERROR = 1
           endif
         case(6)
           if(iZ.eq.3) then
-            open(8,file='datafiles/fmrw/lad.momentum',status='old')
+            open(8,file='../datafiles/fmrw/lad.momentum',status='old')
           else
             ERROR = 1
           endif
         case(7)
           if(iZ.eq.3) then
-            open(8,file='datafiles/fmrw/lat.momentum',status='old')
+            open(8,file='../datafiles/fmrw/lat.momentum',status='old')
           else 
             ERROR = 1
           endif
