@@ -40,8 +40,7 @@ kernlib_dep = meson.get_compiler('cpp').find_library('kernlib',
 
 # Source files
 fortran_sources = [
-  'simulation.f',
-#  'common.f',
+  'simulation.f90',
   'fermimotion.f',
   'pythia6428.f',
   'pythiaconfig.f',
@@ -60,7 +59,7 @@ fortran_sources = [
 
 cpp_sources = [
   'ALERT_fastMC.cc',
-  'main.cc'
+ # 'main.cc'
 ]
 
 # All dependencies
