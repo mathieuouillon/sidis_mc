@@ -109,3 +109,4 @@ c Recoil acceptance
       real he3_acc(25,25),he4_acc(25,25)
       common/recoil/ pro_acc,deu_acc,tri_acc,he3_acc,he4_acc
 
+      real vz

@@ -1,3 +1,4 @@
+
       integer function simulation()
       implicit none
 c------------------------------------------------------------------------------
@@ -15,18 +16,20 @@ ccccc Miscellaneous
       integer ip ! For do
       integer i,l
 
+
       call TIMEX(T1)
 CCCCCC Begining of the simulation
 ccc Integer j,nkin ! number of events per kinematics
       nkin = 20000
 ccc Number of events 
-      nevent = 1000000
+      nevent = 10000
 ccc Electron energy (GeV)
-      E0 = 11.0
+      E0 = 10.5
 ccc Target type ! 0-> p, 1-> 2H, 2-> 3H, 3-> 3He, 4-> 4He, 5-> 6Li, 
 ccc               6-> 7Li, 7-> C, 8-> Al, 9-> Fe, 10-> Sn, 11-> Pb
 ccc               12-> Ne, 13-> Kr, 14-> Xe
-      iTg = 1 
+ccc               15-> Cu       
+      iTg = 1
 
 ccc Collider options
 c     integer iColl !1 = activate collider kinematic
@@ -52,10 +55,10 @@ ccc Isospin sym respected (0) or split at half (1)
 
 ccc Integer iNS ! 0 = no nuclear spectator, 1 = nuclear spectator
 c                 ! this option is only for 2H and 4He targets
-      iNS = 1
+      iNS = 0
 
 ccc CLAS12 Acceptance put 1 
-      iAccept = 1
+      iAccept = 0
 ccc ALERT accept put 1
       iAlert = 0
 ccc Lund File
@@ -63,7 +66,7 @@ ccc Lund File
 
 ccc Init for the quenching weights
 c     integer iQuenching ! 0 desactivate Quenching
-      iQuenching = 0
+      iQuenching =1 
 c        integer iqw 1 SW, 2 Arleo
          iqw = 1
          alphas = 1d0/3d0
@@ -97,14 +100,14 @@ ccc To save time with useless Pythia initialization
 ccc Initialize
       ievent = 0
       call InitNucl
-      if(rFM.ne.0) then
+            if(rFM.ne.0) then
         call InitFM
         call GenNucDens
       endif
       call InitRandom
       if (iAccept.eq.1) call init_recoil
       if (iAlert.eq.1) call initalert
-      if (iLund.eq.1) OPEN (UNIT=59,FILE='lund.txt')
+      if (iLund.eq.1) OPEN (UNIT=59,FILE='10k_D.txt')
 c      call CLASBOSINIT('MCEVENT')
 
 ccc Main Loop
@@ -194,12 +197,14 @@ c        if(iSim.ne.0) CALL pylist(1)
         call ComputV
 
 ccc Book the ntuple
+c        real :: vz
+       call CalculateVzPosition(iTg, vz)
         if (iLund.eq.1) then
            write(59,*) Nb_part,iA,iZ,0,0,11,E0,nucleon,1,1.
            do l=1,Nb_part,1
               write(59,*) l,ch_part(l),1,id_part(l),id_mother(l),0,
      &                    px_part(l),py_part(l),pz_part(l),E_part(l),
-     &                    m_part(l),0,0,0
+     &                    m_part(l),0,0,vz !affecting vz value
            end do
         endif
         call fillroot()
@@ -219,8 +224,55 @@ c      call CLASBOSEND('MCEVENT')
       call TIMEX(T2)
 
       write(*,*) nevent,'events in ',T2-T1,'s'
-   
+
       end
+
+c--------------------------
+c Set target vertex z for Lund (RG-D; 2024)
+c-------------------------- 
+
+        subroutine CalculateVzPosition(iTg, vz)
+        implicit none
+        integer, intent(in) :: iTg !input
+        real, intent(out) :: vz !output
+        real :: first_pos, second_pos
+        real :: Tg_pos
+        real :: Tg_length
+        real :: random_nb
+        !no matter target, pos can only be one of two 
+        first_pos = -2.5
+        second_pos =-7.5
+c        iTg_length = 2 
+        random_nb  = rand() !choose a velue in [0;1]
+        vz = 0.0 !default value for vz (can b used  in default case but here in case of error)
+        select case (iTg)
+        case(10)
+        !case for Sn
+        Tg_pos = -2.5
+        Tg_length = 0.018
+        case(15) !not implemented yet
+        !case for Cu
+        Tg_pos = -7.5
+        Tg_length = 0.009
+        case(7)
+        !case for CxC
+        Tg_length = 0.2
+        if (random_nb<0.5) then
+               Tg_pos = -2.5
+        else
+               Tg_pos = -7.5
+        endif
+        case(1)
+        !case for LD2
+        Tg_pos = -5.0
+        Tg_length = 5
+        case default
+                !Do nothing
+        end select
+        vz = Tg_pos + Tg_length*(rand() -0.5)
+
+
+        end subroutine CalculateVzPosition
 
 c------------------------------------------------------------------------------
 c Initialize random number
@@ -329,7 +381,7 @@ c Decide the kind of spectator
       else if (iTg .eq. 4 .and. nucleon .eq. 2212) then
         specId = 1000010030
       endif
-
+      
 c Add Spectator
       N = N+1
 
@@ -362,6 +414,7 @@ c      write(*,*) P(N,1),P(N,2),P(N,3),P(N,4),P(N,5)
 
       end
 
+
       subroutine LorentzFM(i)
       implicit none
 
@@ -376,7 +429,7 @@ c      write(*,*) P(N,1),P(N,2),P(N,3),P(N,4),P(N,5)
 
         call TL(EEe,PPe,Pex,Pey,Pez,BB1,B1x,B1y,B1z)
         call TL(EEn,PPn,Pnx,Pny,Pnz,BB1,B1x,B1y,B1z)
-      
+
 ccc Rotate around y
         Thi = -atan2(Pex,Pez)
         call InitRotY(Thi)
@@ -398,8 +451,8 @@ ccc Rotate around z
       implicit none
 
       include 'common.f'
-      real Mom1,Mom2,Mom3,Mom4 
-      real PPP 
+      real Mom1,Mom2,Mom3,Mom4
+      real PPP
       integer ip,i
 
 ccc Rotate around z
@@ -408,7 +461,7 @@ ccc Rotate around y
       if (i.eq.1) call FinalRotY(-Thi)
 
 ccc Lorentz boost of all the particles
-      do ip=1,N 
+      do ip=1,N
         Mom1 = p(ip,1)
         Mom2 = p(ip,2)
         Mom3 = p(ip,3)
@@ -424,4 +477,7 @@ ccc Lorentz boost of all the particles
       enddo
 
       end
+
+
+
 
