@@ -1,12 +1,12 @@
-ccccc Generate the interaction position
+!ccccc Generate the interaction position
       subroutine InterPos
       implicit none
-      include 'common.f'
+      include 'common.f90'
 
       real r
       integer i
 
-ccccc Randomize the radius and angles
+!ccccc Randomize the radius and angles
       pos_radius = ranf(0)*quantity_table(2000)
       pos_theta = acos(2*ranf(0)-1)
       pos_phi = 2*pi*ranf(0)
@@ -20,24 +20,24 @@ ccccc Randomize the radius and angles
       enddo
       pos_radius = r + (ranf(0)-0.5)*step_size_dens
 
-cccc Calculate position on cartesian axis
+!cccc Calculate position on cartesian axis
       x_inter = pos_radius * sin(pos_theta) * cos(pos_phi)
       y_inter = pos_radius * sin(pos_theta) * sin(pos_phi)
       z_inter = pos_radius * cos(pos_theta)
 
       end
 
-ccccc Generate the table of density in function of r
+!ccccc Generate the table of density in function of r
       subroutine GenNucDens
       implicit none
 
-      include 'common.f'
+      include 'common.f90'
 
       integer i,idist,irho
       double precision nucdens,r
       real integral
 
-ccccc Some init
+!ccccc Some init
       QW_nb = 0
       QW_qhat = 0.
 
@@ -50,7 +50,7 @@ ccccc Some init
 
       do i=1,2000
         density_table(i) = nucdens(r,iZ,iA,idist,irho)
-ccccc calculate the quantity of mater in function of the radius
+!ccccc calculate the quantity of mater in function of the radius
         integral = integral + 4*PI*density_table(i)*r**2*step_size_dens
         quantity_table(i) = integral
         r = r + step_size_dens

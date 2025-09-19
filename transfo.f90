@@ -1,6 +1,6 @@
-c------------------------------------------------------------------------------
-c Subroutine for lorentz transformation
-c------------------------------------------------------------------------------
+!c------------------------------------------------------------------------------
+!c Subroutine for lorentz transformation
+!c------------------------------------------------------------------------------
       subroutine TL(EEj,PPj,Pjx,Pjy,Pjz,BB,Bx,By,Bz)
       implicit none
 
@@ -11,16 +11,13 @@ c------------------------------------------------------------------------------
       GG = 1/sqrt(1-BB**2)
 
       EEi = GG*(EEj-Bx*Pjx-By*Pjy-Bz*Pjz)
-      Pix = -Bx*GG*EEj+Pjx+Pjx*(GG-1)*Bx**2/BB**2
-     &          +Pjy*(GG-1)*By*Bx/BB**2+Pjz*(GG-1)*Bz*Bx/BB**2
-      Piy = -By*GG*EEj+Pjx*(GG-1)*Bx*By/BB**2+Pjy
-     &          +Pjy*(GG-1)*By*By/BB**2+Pjz*(GG-1)*Bz*By/BB**2
-      Piz = -Bz*GG*EEj+Pjx*(GG-1)*Bx*Bz/BB**2+Pjz
-     &          +Pjy*(GG-1)*By*Bz/BB**2+Pjz*(GG-1)*Bz*Bz/BB**2
+      Pix = -Bx*GG*EEj+Pjx+Pjx*(GG-1)*Bx**2/BB**2+Pjy*(GG-1)*By*Bx/BB**2+Pjz*(GG-1)*Bz*Bx/BB**2
+      Piy = -By*GG*EEj+Pjx*(GG-1)*Bx*By/BB**2+Pjy+Pjy*(GG-1)*By*By/BB**2+Pjz*(GG-1)*Bz*By/BB**2
+      Piz = -Bz*GG*EEj+Pjx*(GG-1)*Bx*Bz/BB**2+Pjz+Pjy*(GG-1)*By*Bz/BB**2+Pjz*(GG-1)*Bz*Bz/BB**2
       PPi = sqrt(Pix**2 + Piy**2 + Piz**2)
       
-c      write(*,*) 'Beta :',BB,Bx,By,Bz,GG
-c      write(*,*) 'Int :',EEi,PPi,Pix,Piy,Piz
+!c      write(*,*) 'Beta :',BB,Bx,By,Bz,GG
+!c      write(*,*) 'Int :',EEi,PPi,Pix,Piy,Piz
 
       EEj = EEi
       PPj = PPi
@@ -30,14 +27,14 @@ c      write(*,*) 'Int :',EEi,PPi,Pix,Piy,Piz
       
       end
 
-c------------------------------------------------------------------------------
-c Subroutine for rotation around y
-c------------------------------------------------------------------------------
+!c------------------------------------------------------------------------------
+!c Subroutine for rotation around y
+!c------------------------------------------------------------------------------
       subroutine InitRotY(Theta)
       implicit none
 
-ccccc Include all the common blocks
-      include 'common.f'
+!ccccc Include all the common blocks
+      include 'common.f90'
       real Pix,Piy,Piz ! intermediate kinematics
       real Theta !angle for rotation
 
@@ -57,14 +54,14 @@ ccccc Include all the common blocks
 
       end
 
-c------------------------------------------------------------------------------
-c Subroutine for rotation around z
-c------------------------------------------------------------------------------
+!c------------------------------------------------------------------------------
+!c Subroutine for rotation around z
+!c------------------------------------------------------------------------------
       subroutine InitRotZ(PhiAng)
       implicit none
 
-ccccc Include all the common blocks
-      include 'common.f'
+!ccccc Include all the common blocks
+      include 'common.f90'
       real Pix,Piy,Piz ! intermediate kinematics
       real PhiAng !angle for rotation
 
@@ -83,14 +80,14 @@ ccccc Include all the common blocks
       Pnz = Piz
 
       end
-c------------------------------------------------------------------------------
-c Subroutine for rotation around y
-c------------------------------------------------------------------------------
+!c------------------------------------------------------------------------------
+!c Subroutine for rotation around y
+!c------------------------------------------------------------------------------
       subroutine FinalRotY(Theta)
       implicit none
 
-ccccc Include all the common blocks
-      include 'common.f'
+!ccccc Include all the common blocks
+      include 'common.f90'
       real Pix,Piy,Piz ! intermediate kinematics
       real Theta !angle for rotation
       integer ip ! For do
@@ -109,14 +106,14 @@ ccccc Include all the common blocks
 
       end
 
-c------------------------------------------------------------------------------
-c Subroutine for rotation around z
-c------------------------------------------------------------------------------
+!c------------------------------------------------------------------------------
+!c Subroutine for rotation around z
+!c------------------------------------------------------------------------------
       subroutine FinalRotZ(PhiAng)
       implicit none
 
-ccccc Include all the common blocks
-      include 'common.f'
+!ccccc Include all the common blocks
+      include 'common.f90'
       real Pix,Piy,Piz ! intermediate kinematics
       real PhiAng !angle for rotation
       integer ip ! For do
