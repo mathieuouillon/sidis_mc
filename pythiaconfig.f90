@@ -53,7 +53,7 @@
 
 !ccccc Include all the common blocks
       include 'common.f90'
-      integer i
+      !integer i
 
 !c DIS only
       MSTP(14) = 26
@@ -79,7 +79,6 @@
 !c W limit
       CKIN(77) = 2. 
       CKIN(78) = -1. 
-
       end
 
 !c------------------------------------------------------------------------------

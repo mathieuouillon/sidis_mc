@@ -1,7 +1,7 @@
 !------------------------------------------------------------------------------
 ! Initialization of variables to book in the ntuple
 !------------------------------------------------------------------------------
-      subroutine InitKin2Book
+subroutine InitKin2Book
       implicit none
 
       ! Include all the common blocks
@@ -14,33 +14,28 @@
       TrkGS = 0
       Nb_part = 0
 
-      end
-!c------------------------------------------------------------------------------
-!c Computation of variables to book in the ntuple
-!c------------------------------------------------------------------------------
-      subroutine ComputV
+end subroutine InitKin2Book
+
+!------------------------------------------------------------------------------
+! Computation of variables to book in the ntuple
+!------------------------------------------------------------------------------
+subroutine ComputV
       implicit none
 
-!ccccc Include all the common blocks
+      ! Include all the common blocks
       include 'common.f90'
 
       integer ip
-!ccccc for calculation of Phih
+      ! for calculation of Phih
       real A1,A2,A3,AA
       real B1,B2,B3,BB
       real phi_ele
-!ccccc function
-      integer clas12_accept,RTPC_accept
-!ccccc dummy
-      real Ekin,Theta
-!ccccc Nucleon Momentum
-      real pp,pt
-!ccccc gamma beta
-      real ga,be
-!ccccc Initial kinematics
+      ! function
+      integer clas12_accept
+      ! Initial kinematics
       real eip
       real nip,nie
-!ccccc C func
+      ! C func
       integer alertaccept
 
       eip = P(1,4)
@@ -48,153 +43,139 @@
       nie = P(2,5)
 
       if(iColl.eq.1) then
-         nie = EColl
-         nip = sqrt(EColl**2 - P(2,5)**2)
+            nie = EColl
+            nip = sqrt(EColl**2 - P(2,5)**2)
       endif
 
-!C.. Booking the hbook
+      ! Booking the hbook
       do ip=1,N
-        if (k(ip,2).eq.22 .and. k(ip,3).eq.1) then
-          Nu = (p(ip,4)*nie+p(ip,3)*nip)/P(2,5)
-          Q22 = P(ip,5)**2
-          if (Nu .ne. 0) XBj = Q22 /2 /P(2,5) /Nu
-          if (Nu .ne. 0) y_ele = Nu * P(2,5) /eip /(nie+nip)
-          W = 0.
-          W = dsqrt((nie+p(ip,4))**2-(-nip+p(ip,3))**2-p(ip,2)**2-p(ip,1)**2)
-          TrkGS = ip
-          phi_ele = atan2(p(ip,2),p(ip,1))*57.2958 +210
+            if (k(ip,2).eq.22 .and. k(ip,3).eq.1) then
+            Nu = (p(ip,4)*nie+p(ip,3)*nip)/P(2,5)
+            Q22 = P(ip,5)**2
+            if (Nu .ne. 0) XBj = Q22 /2 /P(2,5) /Nu
+            if (Nu .ne. 0) y_ele = Nu * P(2,5) /eip /(nie+nip)
+            W = 0.
+            W = dsqrt((nie+p(ip,4))**2-(-nip+p(ip,3))**2-p(ip,2)**2-p(ip,1)**2)
+            TrkGS = ip
+            phi_ele = atan2(p(ip,2),p(ip,1))*57.2958 +210
 
-!c         W = (P(2,4)*P(ip,4) - P(2,3)*P(ip,3)
-!c    &         - P(2,2)*P(ip,2) - P(2,1)*P(ip,1))/P(2,5)
+            endif
 
-        endif
-
-!c       if (k(ip,2).eq.111 .or. abs(k(ip,2)).eq.211
-! c    &       .or. k(ip,2).eq.221 .or. k(ip,2).eq.223
-! c    &       .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310
-! c    &       .or. abs(k(ip,2)).eq.411 .or. k(ip,2).eq.421
-! c    &       .or. k(ip,2).eq.441 .or. k(ip,2).eq.443
-! c    &       .or. abs(k(ip,2)).eq.521 .or. k(ip,2).eq.511
-! c    &       .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)
-! c    &       .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)
-! c    &       .or. (abs(k(ip,2)).eq.11 .and. k(ip,1).eq.1)
-! c    &       .or. k(ip,2).gt.10000) then
-
-!c        if((k(ip,2).eq.11.and.k(ip,1).eq.1)
-        if(abs(k(ip,2)).eq.211.or.(k(ip,2).eq.11.and.k(ip,1).eq.1) &
+            if(abs(k(ip,2)).eq.211.or.(k(ip,2).eq.11.and.k(ip,1).eq.1) &
             .or. abs(k(ip,2)).eq.321 .or. k(ip,2).eq.310 &
             .or. (abs(k(ip,2)).eq.2212 .and. k(ip,1).eq.1)&
             .or. (abs(k(ip,2)).eq.2112 .and. k(ip,1).eq.1)&
             .or. (abs(k(ip,2)).gt.10000 .and. k(ip,1).eq.1)&
-         ) then
+            .or. (k(ip,2).eq.22).or.(k(ip,2).eq.111)&
+            ) then
 
-          Nb_part           = Nb_part + 1
-          acc_part(Nb_part) = 0
-          ch_part(Nb_part)  = 0
-          if(k(ip,2).eq.11 .or.&
+            Nb_part           = Nb_part + 1
+            acc_part(Nb_part) = 0
+            ch_part(Nb_part)  = 0
+            if(k(ip,2).eq.11 .or.&
             k(ip,2).eq.-211 .or.&
             k(ip,2).eq.-321 .or.&
             k(ip,2).eq.-2212 ) ch_part(Nb_part)  = -1
-          if(k(ip,2).eq.211 .or.&
+            if(k(ip,2).eq.211 .or.&
             k(ip,2).eq.321 .or.&
             k(ip,2).eq.1000010030 .or.&
             k(ip,2).eq.1000010020 .or.&
             k(ip,2).eq.2212 ) ch_part(Nb_part)  = 1
-          if(k(ip,2).eq.1000020030) ch_part(Nb_part)  = 2
-          
+            if(k(ip,2).eq.1000020030) ch_part(Nb_part)  = 2
+            
 
-          id_part(Nb_part)  = k(ip,2)
-          id_mother(Nb_part)= k(k(ip,3),2)
-          px_part(Nb_part)  = p(ip,1)
-          py_part(Nb_part)  = p(ip,2)
-          pz_part(Nb_part)  = p(ip,3)
-          p_part(Nb_part)   = sqrt(p(ip,4)**2-p(ip,5)**2)
-          E_part(Nb_part)   = p(ip,4)
-          m_part(Nb_part)   = p(ip,5)
-          z_part(Nb_part)   = (p(ip,4)*nie+p(ip,3)*nip)/Nu/P(2,5)
-          th_part(Nb_part)  = 57.2957795*acos(pz_part(Nb_part)/sqrt(p(ip,1)**2+p(ip,2)**2+pz_part(Nb_part)**2))
-          phi_part(Nb_part) = atan2(p(ip,2),p(ip,1))*57.2958 +30
-          if(phi_part(Nb_part).lt.0) phi_part(Nb_part) = phi_part(Nb_part) + 360
+            id_part(Nb_part)  = k(ip,2)
+            id_mother(Nb_part)= k(k(ip,3),2)
+            px_part(Nb_part)  = p(ip,1)
+            py_part(Nb_part)  = p(ip,2)
+            pz_part(Nb_part)  = p(ip,3)
+            p_part(Nb_part)   = sqrt(p(ip,4)**2-p(ip,5)**2)
+            E_part(Nb_part)   = p(ip,4)
+            m_part(Nb_part)   = p(ip,5)
+            z_part(Nb_part)   = (p(ip,4)*nie+p(ip,3)*nip)/Nu/P(2,5)
+            th_part(Nb_part)  = 57.2957795*acos(pz_part(Nb_part)/sqrt(p(ip,1)**2+p(ip,2)**2+pz_part(Nb_part)**2))
+            phi_part(Nb_part) = atan2(p(ip,2),p(ip,1))*57.2958 +30
+            if(phi_part(Nb_part).lt.0) phi_part(Nb_part) = phi_part(Nb_part) + 360
 
-!c TODO update and make frame independent for collider kinematics
-          A1 = sin(phi_ele)
-          A2 = -cos(phi_ele)
-          A3 = 0
-          AA = A1**2 + A2**2 + A3**2
-       
-          B1 = p(TrkGS,2)*p(ip,3) - p(TrkGS,3)*p(ip,2)
-          B2 = p(TrkGS,3)*p(ip,1) - p(TrkGS,1)*p(ip,3)
-          B3 = p(TrkGS,1)*p(ip,2) - p(TrkGS,2)*p(ip,1)
-          BB = B1**2 + B2**2 + B3**2
-     
-          phih_part(Nb_part) = acos((A1*B1+A2*B2+A3*B3)/sqrt(AA*BB))*57.2958
+            ! TODO update and make frame independent for collider kinematics
+            A1 = sin(phi_ele)
+            A2 = -cos(phi_ele)
+            A3 = 0
+            AA = A1**2 + A2**2 + A3**2
+            
+            B1 = p(TrkGS,2)*p(ip,3) - p(TrkGS,3)*p(ip,2)
+            B2 = p(TrkGS,3)*p(ip,1) - p(TrkGS,1)*p(ip,3)
+            B3 = p(TrkGS,1)*p(ip,2) - p(TrkGS,2)*p(ip,1)
+            BB = B1**2 + B2**2 + B3**2
 
-          tt_part(Nb_part)  =  (Nu-p(ip,4))**2 - (p(TrkGS,1)-p(ip,1))**2 - (p(TrkGS,2)-p(ip,2))**2 - (p(TrkGS,3)-p(ip,3))**2
+            phih_part(Nb_part) = acos((A1*B1+A2*B2+A3*B3)/sqrt(AA*BB))*57.2958
 
-          Pts_part(Nb_part) = (z_part(Nb_part)*Nu)**2-m_part(Nb_part)**2 &
-           -((- p(TrkGS,4)*p(ip,4) + p(TrkGS,1)*p(ip,1) &
-              + p(TrkGS,2)*p(ip,2) + p(TrkGS,3)*p(ip,3) &
-              + z_part(Nb_part)*Nu**2)**2 / (Nu**2+Q22))
+            tt_part(Nb_part)  =  (Nu-p(ip,4))**2 - (p(TrkGS,1)-p(ip,1))**2 - (p(TrkGS,2)-p(ip,2))**2 - (p(TrkGS,3)-p(ip,3))**2
 
-          Xf_part(Nb_part) = &
+            Pts_part(Nb_part) = (z_part(Nb_part)*Nu)**2-m_part(Nb_part)**2 &
+            -((- p(TrkGS,4)*p(ip,4) + p(TrkGS,1)*p(ip,1) &
+                  + p(TrkGS,2)*p(ip,2) + p(TrkGS,3)*p(ip,3) &
+                  + z_part(Nb_part)*Nu**2)**2 / (Nu**2+Q22))
+
+            Xf_part(Nb_part) = &
                   ( z_part(Nb_part)*P(2,5)*Nu**2 &
-                    - z_part(Nb_part)*Q22*Nu &
-                    - (P(2,5)+Nu)* &
-                          (p(TrkGS,4)*p(ip,4)-p(TrkGS,1)*p(ip,1) &
-                          -p(TrkGS,2)*p(ip,2)-p(TrkGS,3)*p(ip,3)) ) &
+                        - z_part(Nb_part)*Q22*Nu &
+                        - (P(2,5)+Nu)* &
+                              (p(TrkGS,4)*p(ip,4)-p(TrkGS,1)*p(ip,1) &
+                              -p(TrkGS,2)*p(ip,2)-p(TrkGS,3)*p(ip,3)) ) &
                   / sqrt(W**2/4 - p(ip,5)**2) / W &
                   / sqrt(Nu**2 + Q22)
-          Als(Nb_part) = ( P(ip,4) - ( z_part(Nb_part)*Nu**2 &
-                    - ( p(TrkGS,4)*p(ip,4)-p(TrkGS,1)*p(ip,1) &
-                       -p(TrkGS,2)*p(ip,2)-p(TrkGS,3)*p(ip,3) ) ) &
-                    / sqrt(W**2/4 + Q22) ) / P(ip,5)
-          acc_part(Nb_part) = 1
+            Als(Nb_part) = ( P(ip,4) - ( z_part(Nb_part)*Nu**2 &
+                        - ( p(TrkGS,4)*p(ip,4)-p(TrkGS,1)*p(ip,1) &
+                        -p(TrkGS,2)*p(ip,2)-p(TrkGS,3)*p(ip,3) ) ) &
+                        / sqrt(W**2/4 + Q22) ) / P(ip,5)
+            acc_part(Nb_part) = 1
 
-          if(iAccept.eq.1) then
+            if(iAccept.eq.1) then
             acc_part(Nb_part) = 0
             if(abs(k(ip,2)).eq.11.or.abs(k(ip,2)).eq.211.or. &
-              abs(k(ip,2)).eq.321.or.k(ip,2).eq.22.or.&
-              k(ip,2).eq.2112) then
-               acc_part(Nb_part) =  clas12_accept(k(ip,2),p(ip,1),p(ip,2),p(ip,3))
+                  abs(k(ip,2)).eq.321.or.k(ip,2).eq.22.or.&
+                  k(ip,2).eq.2112) then
+                  acc_part(Nb_part) =  clas12_accept(k(ip,2),p(ip,1),p(ip,2),p(ip,3))
             else if(k(ip,2).gt.2200 .and. p_part(Nb_part).lt.0.5 .and. th_part(Nb_part).lt.180) then
-              if(iAlert.eq.1) then
-                   acc_part(Nb_part) =             alertaccept(k(ip,2),p_part(Nb_part),th_part(Nb_part))
-              else if(iAlert.eq.0) then
-                if( k(ip,2).eq.2212 ) then
-                   if(ranf(0) .lt. pro_acc(int(p_part(Nb_part)/.02)+1, &
+                  if(iAlert.eq.1) then
+                        acc_part(Nb_part) =             alertaccept(k(ip,2),p_part(Nb_part),th_part(Nb_part))
+                  else if(iAlert.eq.0) then
+                  if( k(ip,2).eq.2212 ) then
+                        if(ranf(0) .lt. pro_acc(int(p_part(Nb_part)/.02)+1, &
                                           int(th_part(Nb_part)/7.2)+1)) &
-                      acc_part(Nb_part) = 1
-                else if( k(ip,2).eq.10002) then
-                   acc_part(Nb_part) = 0
-                else if( k(ip,2).eq.10102) then
-                   if(ranf(0) .lt. deu_acc(int(p_part(Nb_part)/.02)+1,&
+                        acc_part(Nb_part) = 1
+                  else if( k(ip,2).eq.10002) then
+                        acc_part(Nb_part) = 0
+                  else if( k(ip,2).eq.10102) then
+                        if(ranf(0) .lt. deu_acc(int(p_part(Nb_part)/.02)+1,&
                                           int(th_part(Nb_part)/7.2)+1))&
-                      acc_part(Nb_part) = 1
-                else if( k(ip,2).eq.10103) then
-                   if(ranf(0) .lt. tri_acc(int(p_part(Nb_part)/.02)+1,&
+                        acc_part(Nb_part) = 1
+                  else if( k(ip,2).eq.10103) then
+                        if(ranf(0) .lt. tri_acc(int(p_part(Nb_part)/.02)+1,&
                                           int(th_part(Nb_part)/7.2)+1))&
-                      acc_part(Nb_part) = 1
-                else if( k(ip,2).eq.10202) then
-                   acc_part(Nb_part) = 0
-                else if( k(ip,2).eq.10203) then
-                   if(ranf(0) .lt. he3_acc(int(p_part(Nb_part)/.02)+1,&
+                        acc_part(Nb_part) = 1
+                  else if( k(ip,2).eq.10202) then
+                        acc_part(Nb_part) = 0
+                  else if( k(ip,2).eq.10203) then
+                        if(ranf(0) .lt. he3_acc(int(p_part(Nb_part)/.02)+1,&
                                           int(th_part(Nb_part)/7.2)+1))&
-                      acc_part(Nb_part) = 1
-                else if( k(ip,2).eq.10204) then
-                   if(ranf(0) .lt. he4_acc(int(p_part(Nb_part)/.02)+1,&
+                        acc_part(Nb_part) = 1
+                  else if( k(ip,2).eq.10204) then
+                        if(ranf(0) .lt. he4_acc(int(p_part(Nb_part)/.02)+1,&
                                           int(th_part(Nb_part)/7.2)+1))&
-                      acc_part(Nb_part) = 1
-                endif
-              endif
+                        acc_part(Nb_part) = 1
+                  endif
+                  endif
             endif
-          endif
+            endif
 
-        endif
+            endif
       enddo      
 
-      end
+end subroutine ComputV
 
-      subroutine init_recoil
+subroutine init_recoil
       implicit none
 
       integer i,j
@@ -232,4 +213,4 @@
       close(24)
       close(25)
 
-      end
+end subroutine init_recoil
