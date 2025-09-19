@@ -11,23 +11,219 @@ program monte_carlo_simulation
     include 'common.f90'
     
     ! Local variables
-    real :: t1, t2                    ! For time of computation
+    real(kind=8) :: t1, t2            ! For time of computation
     real(kind=8) :: beam_energy       ! Input value for pythia
-    integer :: ip, i, l               ! Loop counters
-    !integer :: nkin                   ! Number of events per kinematics
-    !real :: vz                        ! Vertex z position
+    integer(kind=8) :: i, l           ! Loop counters
+    character(len=100) :: lund_file    ! Lund output file name
+
+    ! Command line argument variables
+    integer :: num_args, iostat, i_arg
+    character(len=100) :: arg_str, next_arg
+    logical :: nevent_set, output_set, target_set, nkin_set, e0_set
+
+    ! Initialize flags
+    nevent_set = .false.
+    output_set = .false.
+    target_set = .false.
+    nkin_set = .false.
+    e0_set = .false.
+    nevent = 0
+    lund_file = ''
+    iTg = -1        
+    nkin = 0       
+    e0 = 0.0        
+    
+    ! Parse command line arguments
+    num_args = command_argument_count()
+    
+    if (num_args == 0) then
+        write(*,*) 'Usage: ./monte_carlo_simulation --nevent <number_of_events> --output <lund_output_file> &
+         --target <target_type> --nkin <nkin_value> --e0 <electron_energy>'
+        write(*,*) 'Example: ./monte_carlo_simulation --nevent 10000 --output 120k_D.txt --target 1 --nkin 20000 --e0 10.5'
+        write(*,*) 'Use --help for detailed information about all options'
+        stop 1
+    end if
+    
+    ! Parse named arguments
+    i_arg = 1
+    do while (i_arg <= num_args)
+        call get_command_argument(i_arg, arg_str)
+        
+        select case (trim(arg_str))
+        case ('--nevent', '-n')
+            if (i_arg == num_args) then
+                write(*,*) 'Error: --nevent requires a value'
+                stop 1
+            end if
+            call get_command_argument(i_arg + 1, next_arg)
+            read(next_arg, *, iostat=iostat) nevent
+            if (iostat /= 0 .or. nevent <= 0) then
+                write(*,*) 'Error: Invalid number of events. Must be a positive integer.'
+                write(*,*) 'Provided: ', trim(next_arg)
+                stop 1
+            end if
+            nevent_set = .true.
+            i_arg = i_arg + 2
+            
+        case ('--output', '-o')
+            if (i_arg == num_args) then
+                write(*,*) 'Error: --output requires a value'
+                stop 1
+            end if
+            call get_command_argument(i_arg + 1, lund_file)
+            if (len_trim(lund_file) == 0) then
+                write(*,*) 'Error: Lund file name cannot be empty.'
+                stop 1
+            end if
+            output_set = .true.
+            i_arg = i_arg + 2
+            
+        case ('--target', '-t')
+            if (i_arg == num_args) then
+                write(*,*) 'Error: --target requires a value'
+                stop 1
+            end if
+            call get_command_argument(i_arg + 1, next_arg)
+            read(next_arg, *, iostat=iostat) iTg
+            if (iostat /= 0 .or. iTg < 0 .or. iTg > 15) then
+                write(*,*) 'Error: Invalid target type. Must be an integer between 0 and 15.'
+                write(*,*) 'Target types: 0->p, 1->2H, 2->3H, 3->3He, 4->4He, 5->6Li,'
+                write(*,*) '              6->7Li, 7->C, 8->Al, 9->Fe, 10->Sn, 11->Pb,'
+                write(*,*) '              12->Ne, 13->Kr, 14->Xe, 15->Cu'
+                write(*,*) 'Provided: ', trim(next_arg)
+                stop 1
+            end if
+            target_set = .true.
+            i_arg = i_arg + 2
+            
+        case ('--nkin')
+            if (i_arg == num_args) then
+                write(*,*) 'Error: --nkin requires a value'
+                stop 1
+            end if
+            call get_command_argument(i_arg + 1, next_arg)
+            read(next_arg, *, iostat=iostat) nkin
+            if (iostat /= 0 .or. nkin <= 0) then
+                write(*,*) 'Error: Invalid nkin value. Must be a positive integer.'
+                write(*,*) 'Provided: ', trim(next_arg)
+                stop 1
+            end if
+            nkin_set = .true.
+            i_arg = i_arg + 2
+            
+        case ('--e0')
+            if (i_arg == num_args) then
+                write(*,*) 'Error: --e0 requires a value'
+                stop 1
+            end if
+            call get_command_argument(i_arg + 1, next_arg)
+            read(next_arg, *, iostat=iostat) e0
+            if (iostat /= 0 .or. e0 <= 0.0) then
+                write(*,*) 'Error: Invalid electron energy. Must be a positive number.'
+                write(*,*) 'Provided: ', trim(next_arg)
+                stop 1
+            end if
+            e0_set = .true.
+            i_arg = i_arg + 2
+            
+        case ('--help', '-h')
+            write(*,*) 'Monte Carlo Simulation Program'
+            write(*,*) ''
+            write(*,*) 'Usage: ./monte_carlo_simulation [OPTIONS]'
+            write(*,*) ''
+            write(*,*) 'Required Options:'
+            write(*,*) '  --nevent, -n    Number of events to generate (positive integer)'
+            write(*,*) '  --output, -o    Output file name for Lund format data'
+            write(*,*) '  --target, -t    Target type (integer 0-15)'
+            write(*,*) '  --nkin          Number of kinematic iterations (positive integer)'
+            write(*,*) '  --e0            Electron energy in GeV (positive number)'
+            write(*,*) ''
+            write(*,*) 'Optional:'
+            write(*,*) '  --help, -h      Show this help message'
+            write(*,*) ''
+            write(*,*) 'Target Types:'
+            write(*,*) '  0  -> p      (proton)'
+            write(*,*) '  1  -> 2H     (deuterium)'
+            write(*,*) '  2  -> 3H     (tritium)'
+            write(*,*) '  3  -> 3He    (helium-3)'
+            write(*,*) '  4  -> 4He    (helium-4)'
+            write(*,*) '  5  -> 6Li    (lithium-6)'
+            write(*,*) '  6  -> 7Li    (lithium-7)'
+            write(*,*) '  7  -> C      (carbon)'
+            write(*,*) '  8  -> Al     (aluminum)'
+            write(*,*) '  9  -> Fe     (iron)'
+            write(*,*) '  10 -> Sn     (tin)'
+            write(*,*) '  11 -> Pb     (lead)'
+            write(*,*) '  12 -> Ne     (neon)'
+            write(*,*) '  13 -> Kr     (krypton)'
+            write(*,*) '  14 -> Xe     (xenon)'
+            write(*,*) '  15 -> Cu     (copper)'
+            write(*,*) ''
+            write(*,*) 'Examples:'
+            write(*,*) '  ./monte_carlo_simulation --nevent 10000 --output 120k_D.txt --target 1 --nkin 20000 --e0 10.5'
+            write(*,*) '  ./monte_carlo_simulation -n 50000 -o results.txt -t 7 --nkin 15000 --e0 12.0'
+            write(*,*) '  ./monte_carlo_simulation --target 0 --nevent 25000 --output proton.txt --nkin 10000 --e0 8.5'
+            stop 0
+            
+        case default
+            write(*,*) 'Error: Unknown argument: ', trim(arg_str)
+            write(*,*) 'Use --help for usage information'
+            stop 1
+        end select
+    end do
+    
+    ! Check if required arguments were provided
+    if (.not. nevent_set) then
+        write(*,*) 'Error: --nevent argument is required'
+        write(*,*) 'Use --help for usage information'
+        stop 1
+    end if
+    
+    if (.not. output_set) then
+        write(*,*) 'Error: --output argument is required'
+        write(*,*) 'Use --help for usage information'
+        stop 1
+    end if
+    
+    if (.not. target_set) then
+        write(*,*) 'Error: --target argument is required'
+        write(*,*) 'Use --help for usage information'
+        stop 1
+    end if
+    
+    if (.not. nkin_set) then
+        write(*,*) 'Error: --nkin argument is required'
+        write(*,*) 'Use --help for usage information'
+        stop 1
+    end if
+    
+    if (.not. e0_set) then
+        write(*,*) 'Error: --e0 argument is required'
+        write(*,*) 'Use --help for usage information'
+        stop 1
+    end if
+    
+    ! Display parsed arguments
+    write(*,*) 'Monte Carlo Simulation Parameters:'
+    write(*,*) '  Number of events: ', nevent
+    write(*,*) '  Lund output file: ', trim(lund_file)
+    write(*,*) '  Target type:      ', iTg
+    write(*,*) '  Nkin value:       ', nkin  
+    write(*,*) '  Electron energy:  ', e0, ' GeV'
+    write(*,*) ''
     
     call timex(t1)
     
     ! Beginning of the simulation
-    nkin = 20000
-    nevent = 10000                    ! Number of events 
-    e0 = 10.5                        ! Electron energy (GeV)
+    !nkin = 20000
+    !nevent = 10000                    ! Number of events 
+    !e0 = 10.5                        ! Electron energy (GeV)
+    !lund_file = '120k_D.txt'          ! Lund output file name
     
     ! Target type: 0->p, 1->2H, 2->3H, 3->3He, 4->4He, 5->6Li, 
     !              6->7Li, 7->C, 8->Al, 9->Fe, 10->Sn, 11->Pb
     !              12->Ne, 13->Kr, 14->Xe, 15->Cu       
-    iTg = 1
+    !iTg = 1
     
     ! Collider options
     iColl = 0                        ! 1 = activate collider kinematic
@@ -91,7 +287,7 @@ program monte_carlo_simulation
     call init_random()
     if (iAccept == 1) call init_recoil()
     if (iAlert == 1) call initalert()
-    if (iLund == 1) open(unit=59, file='10k_D.txt')
+    if (iLund == 1) open(unit=59, file=lund_file)
     
     ! Main Loop
     do while (ievent < nevent)
@@ -175,16 +371,16 @@ program monte_carlo_simulation
         
         ! Book the ntuple
         call calculate_vz_position(iTg, vz)
+        
         if (iLund == 1) then
-            write(59,*) Nb_part, iA, iZ, 0, 0, 11, E0, nucleon, 1, 1.0
+            write(59, '(I12,I12,I12,I12,I12,I12,F12.7,I17,I12,F12.8)') Nb_part, iA, iZ, 0, 0, 11, E0, nucleon, 1, 1.0
             do l = 1, Nb_part
-                write(59,*) l, ch_part(l), 1, id_part(l), id_mother(l), 0, &
-                           px_part(l), py_part(l), pz_part(l), E_part(l), &
-                           m_part(l), 0, 0, vz
+                write(59, '(I12,I12,I12,I12,I12,I12,E16.8,E16.8,E16.8,E16.8,E16.8,I15,I12,F12.8)') l, &
+                        ch_part(l), 1, id_part(l), id_mother(l), 0, &
+                        px_part(l), py_part(l), pz_part(l), E_part(l), m_part(l), 0, 0, vz
             end do
         end if
-        
-        ! call fillroot()
+
         ievent = ievent + 1
         i = i + 1
     end do

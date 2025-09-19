@@ -2,7 +2,7 @@ project('simulation', ['c', 'cpp', 'fortran'],
         version : '1.0',
         default_options : ['warning_level=0',
                           'optimization=3',
-                          'debug=true'])
+                          'debug=false'])
 
 # Compiler flags
 fortran_args = ['-O3', '-w', '-g']
@@ -21,22 +21,13 @@ root_dep = declare_dependency(
 gfortran_dep = meson.get_compiler('cpp').find_library('gfortran', required : true)
 
 # CERNLIB path and libraries
-cernlib_path = '/cvmfs/oasis.opensciencegrid.org/jlab/scicomp/sw/el9/cernlib'
-cernlib_libdir = cernlib_path / '2023/lib'
+cernlib_libdir = '/cvmfs/oasis.opensciencegrid.org/jlab/scicomp/sw/el9/cernlib' / '2023/lib'
 
 # Find CERNLIB libraries
-mathlib_dep = meson.get_compiler('cpp').find_library('mathlib', 
-                                                    dirs : cernlib_libdir, 
-                                                    required : true)
-pawlib_dep = meson.get_compiler('cpp').find_library('pawlib', 
-                                                   dirs : cernlib_libdir, 
-                                                   required : true)
-packlib_dep = meson.get_compiler('cpp').find_library('packlib', 
-                                                    dirs : cernlib_libdir, 
-                                                    required : true)
-kernlib_dep = meson.get_compiler('cpp').find_library('kernlib', 
-                                                    dirs : cernlib_libdir, 
-                                                    required : true)
+mathlib_dep = meson.get_compiler('cpp').find_library('mathlib', dirs : cernlib_libdir, required : true)
+pawlib_dep = meson.get_compiler('cpp').find_library('pawlib', dirs : cernlib_libdir, required : true)
+packlib_dep = meson.get_compiler('cpp').find_library('packlib', dirs : cernlib_libdir, required : true)
+kernlib_dep = meson.get_compiler('cpp').find_library('kernlib', dirs : cernlib_libdir, required : true)
 
 # Source files
 fortran_sources = [
