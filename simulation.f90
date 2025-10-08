@@ -300,7 +300,7 @@ program monte_carlo_simulation
     end if
     call init_random()
     if (iAccept == 1) call init_recoil()
-    if (iAlert == 1) call initalert()
+    ! if (iAlert == 1) call initalert()
     if (iLund == 1) open(unit=59, file=lund_file)
     
     ! Main Loop

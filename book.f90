@@ -162,9 +162,9 @@ subroutine ComputV
                   k(ip,2).eq.2112) then
                   acc_part(Nb_part) =  clas12_accept(k(ip,2),p(ip,1),p(ip,2),p(ip,3))
             else if(k(ip,2).gt.2200 .and. p_part(Nb_part).lt.0.5 .and. th_part(Nb_part).lt.180) then
-                  if(iAlert.eq.1) then
-                        acc_part(Nb_part) =             alertaccept(k(ip,2),p_part(Nb_part),th_part(Nb_part))
-                  else if(iAlert.eq.0) then
+                  ! if(iAlert.eq.1) then
+                  !       acc_part(Nb_part) =             alertaccept(k(ip,2),p_part(Nb_part),th_part(Nb_part))
+                  if(iAlert.eq.0) then
                   if( k(ip,2).eq.2212 ) then
                         if(ranf(0) .lt. pro_acc(int(p_part(Nb_part)/.02)+1, &
                                           int(th_part(Nb_part)/7.2)+1)) &

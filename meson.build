@@ -48,11 +48,6 @@ fortran_sources = [
   'smear_fun.f'
 ]
 
-cpp_sources = [
-  'ALERT_fastMC.cc',
- # 'main.cc'
-]
-
 # All dependencies
 all_deps = [
   root_dep,
@@ -65,12 +60,8 @@ all_deps = [
 
 # Create executable
 executable('simulation',
-          sources : [fortran_sources, cpp_sources],
+          sources : [fortran_sources],
           dependencies : all_deps,
           fortran_args : fortran_args,
           cpp_args : cpp_args,
           install : true)
-
-# Custom target to show compiler version (equivalent to 'gfortran --version' in makefile)
-run_target('show-version',
-          command : [find_program('gfortran'), '--version'])
