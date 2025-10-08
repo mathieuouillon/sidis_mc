@@ -2,6 +2,11 @@
 ! Initialize fermi momentum
 !------------------------------------------------------------------------------
 subroutine InitNucl
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
     implicit none
     
     ! Include all the common blocks
@@ -79,6 +84,11 @@ subroutine InitNucl
 end subroutine InitNucl
 
 subroutine InitFM
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
     implicit none
     
     ! Include all the common blocks
@@ -98,6 +108,11 @@ end subroutine InitFM
 
 ! Read table from RW
 subroutine GenRWtable()
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
     implicit none
     
     include 'common.f90'
@@ -242,6 +257,11 @@ end subroutine GenRWtable
 ! Initialize kinematics values with fermi motion
 !------------------------------------------------------------------------------
 subroutine FMParam
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
     implicit none
     
     real, parameter :: a = 2.0
@@ -326,6 +346,11 @@ subroutine FMParam
 end subroutine FMParam
 
 subroutine GenFMtable(irho)
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
     implicit none
     
     integer, intent(in) :: irho

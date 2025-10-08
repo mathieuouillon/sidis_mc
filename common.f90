@@ -1,23 +1,23 @@
 ! Initial Kinematic Block
-integer :: ievent
-real :: EEn,PPn,Pnx,Pny,Pnz ! nucleon kinematics
-real :: EEe,PPe,Pex,Pey,Pez ! electron kinematics
-real :: ele_ene,ele_the,ele_phi,nuc_mom,nuc_the,nuc_phi !value to book
-common/kinematics/ievent,EEn,PPn,Pnx,Pny,Pnz,EEe,PPe,Pex,Pey,Pez, &
-                  ele_ene,ele_the,ele_phi,nuc_mom,nuc_the,nuc_phi
+! integer :: ievent
+!real :: EEn,PPn,Pnx,Pny,Pnz ! nucleon kinematics
+!real :: EEe,PPe,Pex,Pey,Pez ! electron kinematics
+!real :: ele_ene,ele_the,ele_phi,nuc_mom,nuc_the,nuc_phi !value to book
+!common/kinematics/ievent,EEn,PPn,Pnx,Pny,Pnz,EEe,PPe,Pex,Pey,Pez, &
+!                  ele_ene,ele_the,ele_phi,nuc_mom,nuc_the,nuc_phi
 
 ! Important variables for transformations
-real :: ThFM,PhiFM,Kf !Theta, Phi and K Fermi
-real :: BB1,B1x,B1y,B1z ! Lorentz kinematics
-real :: BB2,B2x,B2y,B2z ! Lorentz kinematics
-real :: Thi,Phi !angles for rotation
-real :: Beta,ECoM ! For calculation of the CoM energy
-common/TransfoVar/ThFM,PhiFM,Kf,BB1,B1x,B1y,B1z,BB2,B2x,B2y,B2z, &
-                  Thi,Phi,Beta,ECoM
+! real :: ThFM,PhiFM,Kf !Theta, Phi and K Fermi
+! real :: BB1,B1x,B1y,B1z ! Lorentz kinematics
+! real :: BB2,B2x,B2y,B2z ! Lorentz kinematics
+! real :: Thi,Phi !angles for rotation
+! real :: Beta,ECoM ! For calculation of the CoM energy
+! common/TransfoVar/ThFM,PhiFM,Kf,BB1,B1x,B1y,B1z,BB2,B2x,B2y,B2z, &
+!                   Thi,Phi,Beta,ECoM
 
 ! Files names
-character(len=60) :: bosout,hbookout
-common /OUT_NAMES/ bosout,hbookout
+! character(len=60) :: bosout,hbookout
+! common /OUT_NAMES/ bosout,hbookout
 
 ! Stuff for PYTHIA 6.4
 real(kind=8) :: PARP(200),PARI(200)
@@ -37,29 +37,29 @@ real(kind=8) :: XSEC(0:500,3)
 COMMON/PYINT5/NGENPD,NGEN,XSEC
 
 ! Events information
-real :: Q22,W,Nu,XBj,y_ele
-common/nt/Q22,W,Nu,XBj,y_ele
+! real :: Q22,W,Nu,XBj,y_ele
+! common/nt/Q22,W,Nu,XBj,y_ele
 
 ! Recoiled Particles
-integer :: TrkGS
-integer :: Nb_part,id_part(100),id_mother(100),acc_part(100)
-integer :: ch_part(100)
-real :: p_part(100),px_part(100),py_part(100),pz_part(100)
-real :: E_part(100),m_part(100),z_part(100),th_part(100)
-real :: tt_part(100),Pts_part(100),phih_part(100),phi_part(100)
-real :: vx_part(100),Xf_part(100),Als(100)
-common/part/TrkGS,Nb_part,id_part,id_mother,acc_part,ch_part, &
-      p_part,px_part,py_part,pz_part,E_part,m_part, &
-      z_part,th_part,tt_part,Pts_part,phih_part,phi_part, &
-      vx_part,Xf_part,Als
+! integer :: TrkGS
+! integer :: Nb_part,id_part(100),id_mother(100),acc_part(100)
+! integer :: ch_part(100)
+! real :: p_part(100),px_part(100),py_part(100),pz_part(100)
+! real :: E_part(100),m_part(100),z_part(100),th_part(100)
+! real :: tt_part(100),Pts_part(100),phih_part(100),phi_part(100)
+! real :: vx_part(100),Xf_part(100),Als(100)
+! common/part/TrkGS,Nb_part,id_part,id_mother,acc_part,ch_part, &
+!       p_part,px_part,py_part,pz_part,E_part,m_part, &
+!       z_part,th_part,tt_part,Pts_part,phih_part,phi_part, &
+!       vx_part,Xf_part,Als
 
 ! Table for FM distribution
-real :: FM_table(1000),step_size_FM,FM_n(1000),FM_p(1000)
-real :: FM_i(1000), FMintact
-integer :: iZ, iA ! target Z and A
-integer :: FMnb
-common/FMvar/FM_table,step_size_FM,FM_n,FM_p,FM_i,FMintact,iZ,iA, &
-             FMnb
+! real :: FM_table(1000),step_size_FM,FM_n(1000),FM_p(1000)
+! real :: FM_i(1000), FMintact
+! integer :: iZ, iA ! target Z and A
+! integer :: FMnb
+! common/FMvar/FM_table,step_size_FM,FM_n,FM_p,FM_i,FMintact,iZ,iA, &
+!              FMnb
 
 ! Table for density distribution
 real :: density_table(2000),step_size_dens

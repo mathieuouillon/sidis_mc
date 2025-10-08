@@ -2,6 +2,11 @@
 !c Initialize the config values of LEPTO
 !c------------------------------------------------------------------------------
       subroutine PythiaConfigAll
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
 !ccccc Include all the common blocks
@@ -49,6 +54,11 @@
       end
 
       subroutine PythiaConfigDIS
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
 !ccccc Include all the common blocks
@@ -85,6 +95,11 @@
 !c Initialize the config values of LEPTO
 !c------------------------------------------------------------------------------
       subroutine PythiaConfigOWN
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
 !ccccc Include all the common blocks
@@ -166,6 +181,11 @@
 !c Initialize the config values of LEPTO
 !c------------------------------------------------------------------------------
       subroutine PythiaConfigHayk
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
 !ccccc Include all the common blocks
@@ -336,6 +356,11 @@
 !c Initialize the config values of LEPTO
 !c------------------------------------------------------------------------------
       subroutine PythiaConfigBrahim
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
 !ccccc Include all the common blocks
@@ -436,6 +461,11 @@
 !c Initialize the config values of LEPTO
 !c------------------------------------------------------------------------------
       subroutine PythiaConfigHERMES
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
 !ccccc Include all the common blocks

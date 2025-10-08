@@ -1,4 +1,9 @@
       subroutine ApplyQW()
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
       include 'common.f90'
@@ -163,6 +168,11 @@
       end
 
       subroutine QWComput(ipx,ipy,ipz,E,id)
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
       include 'common.f90'

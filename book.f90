@@ -2,6 +2,11 @@
 ! Initialization of variables to book in the ntuple
 !------------------------------------------------------------------------------
 subroutine InitKin2Book
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
       ! Include all the common blocks
@@ -20,6 +25,11 @@ end subroutine InitKin2Book
 ! Computation of variables to book in the ntuple
 !------------------------------------------------------------------------------
 subroutine ComputV
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
       ! Include all the common blocks
@@ -176,6 +186,11 @@ subroutine ComputV
 end subroutine ComputV
 
 subroutine init_recoil
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
       integer i,j

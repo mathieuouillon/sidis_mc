@@ -1,14 +1,21 @@
 program monte_carlo_simulation
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
     implicit none
 
     ! ------------------------------------------------------------------------------
     ! TO DO LIST:
     !   Implement some radiative effect
     !   Have alpha s changing with Q2 in QW
+    !   Get rid of the common blocks
     ! ------------------------------------------------------------------------------
     
     ! Include all the common blocks (these would need to be converted to modules)
     include 'common.f90'
+
     
     ! Local variables
     real(kind=8) :: t1, t2            ! For time of computation
@@ -217,7 +224,7 @@ program monte_carlo_simulation
     ! Beginning of the simulation
     !nkin = 20000
     !nevent = 10000                    ! Number of events 
-    !e0 = 10.5                        ! Electron energy (GeV)
+    !e0 = 10.5                         ! Electron energy (GeV)
     !lund_file = '120k_D.txt'          ! Lund output file name
     
     ! Target type: 0->p, 1->2H, 2->3H, 3->3He, 4->4He, 5->6Li, 
@@ -422,7 +429,7 @@ subroutine calculate_vz_position(target_type, vz)
         target_length = 0.018
         
     case(15)
-        ! Case for Cu (not fully implemented yet)
+        ! Case for Cu
         target_pos = -7.5
         target_length = 0.009
         
@@ -494,6 +501,11 @@ end subroutine init_random
 ! Initialize kinematics values
 ! ------------------------------------------------------------------------------
 subroutine init_kin()
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
     implicit none
     
     real, parameter :: electron_mass = 0.000511
@@ -525,6 +537,11 @@ end subroutine init_kin
 ! Create spectators
 ! ------------------------------------------------------------------------------
 subroutine create_spec()
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
     implicit none
 
     include 'common.f90'
@@ -587,6 +604,11 @@ end subroutine create_spec
 ! Lorentz transformation for Fermi motion
 ! ------------------------------------------------------------------------------
 subroutine lorentz_fm(transform_type)
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
     implicit none
     
     integer, intent(in) :: transform_type
@@ -624,6 +646,11 @@ end subroutine lorentz_fm
 ! Inverse Lorentz transformation for Fermi motion
 ! ------------------------------------------------------------------------------
 subroutine lorentz_fm_back(transform_type)
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
     implicit none
     
     integer, intent(in) :: transform_type

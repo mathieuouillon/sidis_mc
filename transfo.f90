@@ -30,8 +30,13 @@
 !c------------------------------------------------------------------------------
 !c Subroutine for rotation around y
 !c------------------------------------------------------------------------------
-      subroutine InitRotY(Theta)
-      implicit none
+subroutine InitRotY(Theta)
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
+    implicit none
 
 !ccccc Include all the common blocks
       include 'common.f90'
@@ -58,6 +63,11 @@
 !c Subroutine for rotation around z
 !c------------------------------------------------------------------------------
       subroutine InitRotZ(PhiAng)
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
       implicit none
 
 !ccccc Include all the common blocks
@@ -83,8 +93,13 @@
 !c------------------------------------------------------------------------------
 !c Subroutine for rotation around y
 !c------------------------------------------------------------------------------
-      subroutine FinalRotY(Theta)
-      implicit none
+subroutine FinalRotY(Theta)
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
+    implicit none
 
 !ccccc Include all the common blocks
       include 'common.f90'
@@ -110,6 +125,11 @@
 !c Subroutine for rotation around z
 !c------------------------------------------------------------------------------
       subroutine FinalRotZ(PhiAng)
+    use kinematics_module
+    use file_names_module
+    use event_info_module
+    use particles_module
+    use fermi_motion_module
       implicit none
 
 !ccccc Include all the common blocks

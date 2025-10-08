@@ -1,5 +1,10 @@
 !ccccc Generate the interaction position
       subroutine InterPos
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
       include 'common.f90'
 
@@ -29,6 +34,11 @@
 
 !ccccc Generate the table of density in function of r
       subroutine GenNucDens
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
       implicit none
 
       include 'common.f90'

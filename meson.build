@@ -37,6 +37,7 @@ fortran_sources = [
   'pythiaconfig.f90',
   'book.f90',
   'transfo.f90',
+  'common_module.f90',
   'nucdens.f',
   'density.f90',
   'qweight.f90',
