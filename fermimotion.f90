@@ -7,10 +7,17 @@ subroutine InitNucl
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
     
     ! Include all the common blocks
-    include 'common.f90'
+    ! include 'common.f90'
     
     ! Fill rFM, iZ and iA in function of the Target
     select case(iTg)
@@ -89,10 +96,17 @@ subroutine InitFM
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
     
     ! Include all the common blocks
-    include 'common.f90'
+    ! include 'common.f90'
     integer :: irho ! dummy variable
     
     ! Produce the table for FM generation (CS)
@@ -113,10 +127,17 @@ subroutine GenRWtable()
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
-    
-    include 'common.f90'
-    
+
+    ! include 'common.f90'
+
     integer :: ERROR
     real :: a, b, c, d, e
     real :: sum_n, sum_p
@@ -262,6 +283,13 @@ subroutine FMParam
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
     
     real, parameter :: a = 2.0
@@ -272,7 +300,7 @@ subroutine FMParam
     integer :: i
     
     ! Include all the common blocks
-    include 'common.f90'
+   ! include 'common.f90'
     
     FMintact = 1
     
@@ -351,6 +379,13 @@ subroutine GenFMtable(irho)
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
     
     integer, intent(in) :: irho
@@ -358,7 +393,7 @@ subroutine GenFMtable(irho)
     integer :: itz, ita
     real(kind=8) :: rhofermi, mom, proba, ptot, step
     
-    include 'common.f90'
+    ! include 'common.f90'
     
     itz = iZ
     ita = iA

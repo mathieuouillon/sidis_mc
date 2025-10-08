@@ -5,8 +5,15 @@
       use event_info_module
       use particles_module
       use fermi_motion_module
+      use density_module
+      use interaction_module
+      use quenching_module
+      use config_module
+      use acceptance_module
+      use misc_module
+      use pythia_commons
       implicit none
-      include 'common.f90'
+      ! include 'common.f90'
 
       real r
       integer i
@@ -39,9 +46,16 @@
       use event_info_module
       use particles_module
       use fermi_motion_module
+      use density_module
+      use interaction_module
+      use quenching_module
+      use config_module
+      use acceptance_module
+      use misc_module
+      use pythia_commons
       implicit none
 
-      include 'common.f90'
+      ! include 'common.f90'
 
       integer i,idist,irho
       double precision nucdens,r

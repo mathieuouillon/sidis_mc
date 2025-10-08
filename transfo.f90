@@ -36,10 +36,17 @@ subroutine InitRotY(Theta)
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
 
 !ccccc Include all the common blocks
-      include 'common.f90'
+      ! include 'common.f90'
       real Pix,Piy,Piz ! intermediate kinematics
       real Theta !angle for rotation
 
@@ -63,15 +70,22 @@ subroutine InitRotY(Theta)
 !c Subroutine for rotation around z
 !c------------------------------------------------------------------------------
       subroutine InitRotZ(PhiAng)
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
+      use density_module
+      use interaction_module
+      use quenching_module
+      use config_module
+      use acceptance_module
+      use misc_module
+      use pythia_commons
       implicit none
 
 !ccccc Include all the common blocks
-      include 'common.f90'
+      ! include 'common.f90'
       real Pix,Piy,Piz ! intermediate kinematics
       real PhiAng !angle for rotation
 
@@ -99,10 +113,17 @@ subroutine FinalRotY(Theta)
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
 
 !ccccc Include all the common blocks
-      include 'common.f90'
+      !   include 'common.f90'
       real Pix,Piy,Piz ! intermediate kinematics
       real Theta !angle for rotation
       integer ip ! For do
@@ -125,15 +146,22 @@ subroutine FinalRotY(Theta)
 !c Subroutine for rotation around z
 !c------------------------------------------------------------------------------
       subroutine FinalRotZ(PhiAng)
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
+      use kinematics_module
+      use file_names_module
+      use event_info_module
+      use particles_module
+      use fermi_motion_module
+      use density_module
+      use interaction_module
+      use quenching_module
+      use config_module
+      use acceptance_module
+      use misc_module
+      use pythia_commons
       implicit none
 
 !ccccc Include all the common blocks
-      include 'common.f90'
+      ! include 'common.f90'
       real Pix,Piy,Piz ! intermediate kinematics
       real PhiAng !angle for rotation
       integer ip ! For do

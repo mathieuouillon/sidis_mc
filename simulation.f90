@@ -4,6 +4,13 @@ program monte_carlo_simulation
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
 
     ! ------------------------------------------------------------------------------
@@ -14,7 +21,7 @@ program monte_carlo_simulation
     ! ------------------------------------------------------------------------------
     
     ! Include all the common blocks (these would need to be converted to modules)
-    include 'common.f90'
+    ! include 'common.f90'
 
     
     ! Local variables
@@ -506,12 +513,19 @@ subroutine init_kin()
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
     
     real, parameter :: electron_mass = 0.000511
     real, parameter :: nucleon_mass = 0.938
 
-    include 'common.f90'
+    ! include 'common.f90'
 
     PPe = E0
     EEe = sqrt(PPe**2 + electron_mass**2)
@@ -542,9 +556,16 @@ subroutine create_spec()
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
 
-    include 'common.f90'
+    !include 'common.f90'
 
     ! Decide if there is a spectator (RW model only) 
     if (rand(0) > FMintact) return
@@ -609,10 +630,17 @@ subroutine lorentz_fm(transform_type)
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
     
     integer, intent(in) :: transform_type
-    include 'common.f90'
+    ! include 'common.f90'
 
     if (transform_type == 1) then
         BB1 = PPn / EEn
@@ -651,11 +679,18 @@ subroutine lorentz_fm_back(transform_type)
     use event_info_module
     use particles_module
     use fermi_motion_module
+    use density_module
+    use interaction_module
+    use quenching_module
+    use config_module
+    use acceptance_module
+    use misc_module
+    use pythia_commons
     implicit none
     
     integer, intent(in) :: transform_type
-    include 'common.f90'
-    
+    ! include 'common.f90'
+
     real :: mom1, mom2, mom3, mom4, ppp
     integer :: ip
     

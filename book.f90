@@ -7,10 +7,17 @@ subroutine InitKin2Book
       use event_info_module
       use particles_module
       use fermi_motion_module
+      use density_module
+      use interaction_module
+      use quenching_module
+      use config_module
+      use acceptance_module
+      use misc_module
+      use pythia_commons
       implicit none
 
       ! Include all the common blocks
-      include 'common.f90'
+      ! include 'common.f90'
 
       Nu = 0.
       Q22 = 0
@@ -30,10 +37,17 @@ subroutine ComputV
       use event_info_module
       use particles_module
       use fermi_motion_module
+      use density_module
+      use interaction_module
+      use quenching_module
+      use config_module
+      use acceptance_module
+      use misc_module
+      use pythia_commons
       implicit none
 
       ! Include all the common blocks
-      include 'common.f90'
+      ! include 'common.f90'
 
       integer ip
       ! for calculation of Phih
@@ -191,13 +205,20 @@ subroutine init_recoil
       use event_info_module
       use particles_module
       use fermi_motion_module
+      use density_module
+      use interaction_module
+      use quenching_module
+      use config_module
+      use acceptance_module
+      use misc_module
+      use pythia_commons
       implicit none
 
       integer i,j
       real a,b,c,d,e
 
       ! Include all the common blocks
-      include 'common.f90'
+      ! include 'common.f90'
 
       write(*,*) 'Init recoil acceptance routine'
 
