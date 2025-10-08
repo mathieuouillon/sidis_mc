@@ -20,21 +20,21 @@
 ! common /OUT_NAMES/ bosout,hbookout
 
 ! Stuff for PYTHIA 6.4
-real(kind=8) :: PARP(200),PARI(200)
-integer :: MSTP(200),MSTI(200)
-COMMON/PYPARS/MSTP,PARP,MSTI,PARI
-real(kind=8) :: PARU(200),PARJ(200)
-integer :: MSTU(200),MSTJ(200)
-COMMON/PYDAT1/MSTU,PARU,MSTJ,PARJ
-real(kind=8) :: P(4000,5),V(4000,5)
-integer :: N,NPAD,K(4000,5)
-COMMON/PYJETS/N,NPAD,K,P,V
-integer :: MSEL,MSELPD,MSUB(500),KFIN(2,-40:40)
+real(kind=8) :: PARP(200), PARI(200)
+integer :: MSTP(200), MSTI(200)
+COMMON/PYPARS/MSTP, PARP, MSTI, PARI
+real(kind=8) :: PARU(200), PARJ(200)
+integer :: MSTU(200), MSTJ(200)
+COMMON/PYDAT1/MSTU, PARU, MSTJ, PARJ
+real(kind=8) :: P(4000, 5), V(4000, 5)
+integer :: N, NPAD, K(4000, 5)
+COMMON/PYJETS/N, NPAD, K, P, V
+integer :: MSEL, MSELPD, MSUB(500), KFIN(2, -40:40)
 real(kind=8) :: CKIN(200)
-COMMON/PYSUBS/MSEL,MSELPD,MSUB,KFIN,CKIN
-integer :: NGENPD,NGEN(0:500,3)
-real(kind=8) :: XSEC(0:500,3)
-COMMON/PYINT5/NGENPD,NGEN,XSEC
+COMMON/PYSUBS/MSEL, MSELPD, MSUB, KFIN, CKIN
+integer :: NGENPD, NGEN(0:500, 3)
+real(kind=8) :: XSEC(0:500, 3)
+COMMON/PYINT5/NGENPD, NGEN, XSEC
 
 ! Events information
 ! real :: Q22,W,Nu,XBj,y_ele
@@ -62,26 +62,26 @@ COMMON/PYINT5/NGENPD,NGEN,XSEC
 !              FMnb
 
 ! Table for density distribution
-real :: density_table(2000),step_size_dens
-real :: quantity_table(2000),init_dens
-common/Density/density_table,step_size_dens,quantity_table, &
-               init_dens
+real :: density_table(2000), step_size_dens
+real :: quantity_table(2000), init_dens
+common/Density/density_table, step_size_dens, quantity_table, &
+    init_dens
 
 ! Interaction position
-real :: x_inter,y_inter,z_inter
-real :: pos_radius,pos_theta,pos_phi
-common/InteracPos/x_inter,y_inter,z_inter, &
-      pos_radius,pos_theta,pos_phi
+real :: x_inter, y_inter, z_inter
+real :: pos_radius, pos_theta, pos_phi
+common/InteracPos/x_inter, y_inter, z_inter, &
+    pos_radius, pos_theta, pos_phi
 
 ! Quenching Weight variables
 integer :: QW_nb
-real :: QW_wc,QW_R,QW_L,QW_w,QW_qhat,QW_chi,QW_th
-common/QuenWei/QW_nb,QW_wc,QW_R,QW_L,QW_w,QW_qhat,QW_chi,QW_th
+real :: QW_wc, QW_R, QW_L, QW_w, QW_qhat, QW_chi, QW_th
+common/QuenWei/QW_nb, QW_wc, QW_R, QW_L, QW_w, QW_qhat, QW_chi, QW_th
 
 ! AA routine variables
 real(kind=8) :: alphas
-integer :: iqw,scor,ncor,sfthrd,irw
-common/qw/alphas,iqw,scor,ncor,sfthrd,irw
+integer :: iqw, scor, ncor, sfthrd, irw
+common/qw/alphas, iqw, scor, ncor, sfthrd, irw
 
 ! Miscellanous
 ! random number generator from CERNLIB
@@ -95,18 +95,18 @@ real :: pi
 data pi/3.1415926535/
 
 ! Flags and config values
-integer :: iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,nevent 
-integer :: nkin,nucleon,specId,iColl,iqg,iEg,iPtF,iIso,iAlert
+integer :: iTg, iFM, iDens, iQuenching, iSim, iNS, iAccept, nevent
+integer :: nkin, nucleon, specId, iColl, iqg, iEg, iPtF, iIso, iAlert
 integer :: iLund
-real :: rFM,E0,qhat,ehat,EColl,FMlimit,SupFac
-common/flags/iTg,iFM,iDens,iQuenching,iSim,iNS,iAccept,iLund, &
-             nevent, &
-             nkin,nucleon,specId,rFM,E0,qhat,ehat,iColl,EColl, &
-             FMlimit,iqg,iEg,SupFac,iPtF,iIso,iAlert
+real :: rFM, E0, qhat, ehat, EColl, FMlimit, SupFac
+common/flags/iTg, iFM, iDens, iQuenching, iSim, iNS, iAccept, iLund, &
+    nevent, &
+    nkin, nucleon, specId, rFM, E0, qhat, ehat, iColl, EColl, &
+    FMlimit, iqg, iEg, SupFac, iPtF, iIso, iAlert
 
 ! Recoil acceptance
-real :: pro_acc(25,25),deu_acc(25,25),tri_acc(25,25)
-real :: he3_acc(25,25),he4_acc(25,25)
-common/recoil/ pro_acc,deu_acc,tri_acc,he3_acc,he4_acc
+real :: pro_acc(25, 25), deu_acc(25, 25), tri_acc(25, 25)
+real :: he3_acc(25, 25), he4_acc(25, 25)
+common/recoil/pro_acc, deu_acc, tri_acc, he3_acc, he4_acc
 
 real :: vz
