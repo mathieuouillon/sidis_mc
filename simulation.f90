@@ -689,7 +689,6 @@ subroutine lorentz_fm_back(transform_type)
     implicit none
     
     integer, intent(in) :: transform_type
-    ! include 'common.f90'
 
     real :: mom1, mom2, mom3, mom4, ppp
     integer :: ip

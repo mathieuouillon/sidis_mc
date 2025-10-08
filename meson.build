@@ -21,7 +21,7 @@ root_dep = declare_dependency(
 gfortran_dep = meson.get_compiler('cpp').find_library('gfortran', required : true)
 
 # CERNLIB path and libraries
-cernlib_libdir = '/cvmfs/oasis.opensciencegrid.org/jlab/scicomp/sw/el9/cernlib' / '2023/lib'
+cernlib_libdir = '/cvmfs/oasis.opensciencegrid.org/jlab/scicomp/sw/el9/cernlib/2023/lib'
 
 # Find CERNLIB libraries
 mathlib_dep = meson.get_compiler('cpp').find_library('mathlib', dirs : cernlib_libdir, required : true)
