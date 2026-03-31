@@ -31,18 +31,7 @@
 !c Subroutine for rotation around y
 !c------------------------------------------------------------------------------
       subroutine InitRotY(Theta)
-          use kinematics_module
-          use file_names_module
-          use event_info_module
-          use particles_module
-          use fermi_motion_module
-          use density_module
-          use interaction_module
-          use quenching_module
-          use config_module
-          use acceptance_module
-          use misc_module
-          use pythia_commons
+          use kinematics_module, only: Pex, Pey, Pez, Pnx, Pny, Pnz
           implicit none
 
           real Pix, Piy, Piz ! intermediate kinematics
@@ -68,18 +57,7 @@
 !c Subroutine for rotation around z
 !c------------------------------------------------------------------------------
       subroutine InitRotZ(PhiAng)
-          use kinematics_module
-          use file_names_module
-          use event_info_module
-          use particles_module
-          use fermi_motion_module
-          use density_module
-          use interaction_module
-          use quenching_module
-          use config_module
-          use acceptance_module
-          use misc_module
-          use pythia_commons
+          use kinematics_module, only: Pex, Pey, Pez, Pnx, Pny, Pnz
           implicit none
 
           real Pix, Piy, Piz ! intermediate kinematics
@@ -104,18 +82,7 @@
 !c Subroutine for rotation around y
 !c------------------------------------------------------------------------------
       subroutine FinalRotY(Theta)
-          use kinematics_module
-          use file_names_module
-          use event_info_module
-          use particles_module
-          use fermi_motion_module
-          use density_module
-          use interaction_module
-          use quenching_module
-          use config_module
-          use acceptance_module
-          use misc_module
-          use pythia_commons
+          use pythia_commons, only: N, P
           implicit none
 
           real Pix, Piy, Piz ! intermediate kinematics
@@ -140,18 +107,7 @@
 !c Subroutine for rotation around z
 !c------------------------------------------------------------------------------
       subroutine FinalRotZ(PhiAng)
-          use kinematics_module
-          use file_names_module
-          use event_info_module
-          use particles_module
-          use fermi_motion_module
-          use density_module
-          use interaction_module
-          use quenching_module
-          use config_module
-          use acceptance_module
-          use misc_module
-          use pythia_commons
+          use pythia_commons, only: N, P
           implicit none
 
           real Pix, Piy, Piz ! intermediate kinematics

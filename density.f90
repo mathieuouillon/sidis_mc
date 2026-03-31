@@ -1,17 +1,9 @@
 !ccccc Generate the interaction position
       subroutine InterPos
-          use kinematics_module
-          use file_names_module
-          use event_info_module
-          use particles_module
-          use fermi_motion_module
-          use density_module
-          use interaction_module
-          use quenching_module
-          use config_module
-          use acceptance_module
-          use misc_module
-          use pythia_commons
+          use density_module, only: quantity_table, step_size_dens, init_dens
+          use interaction_module, only: pos_radius, pos_theta, pos_phi, &
+              x_inter, y_inter, z_inter
+          use misc_module, only: ranf, pi
           implicit none
 
           real r
@@ -40,18 +32,12 @@
 
 !ccccc Generate the table of density in function of r
       subroutine GenNucDens
-          use kinematics_module
-          use file_names_module
-          use event_info_module
-          use particles_module
-          use fermi_motion_module
-          use density_module
-          use interaction_module
-          use quenching_module
-          use config_module
-          use acceptance_module
-          use misc_module
-          use pythia_commons
+          use density_module, only: density_table, quantity_table, &
+              step_size_dens, init_dens
+          use fermi_motion_module, only: iZ, iA
+          use config_module, only: iDens
+          use misc_module, only: pi
+          use quenching_module, only: QW_nb, QW_qhat
           implicit none
 
 

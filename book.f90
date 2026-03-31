@@ -2,18 +2,8 @@
 ! Initialization of variables to book in the ntuple
 !------------------------------------------------------------------------------
 subroutine InitKin2Book
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use event_info_module, only: Nu, Q22, XBj, W
+    use particles_module, only: TrkGS, Nb_part
     implicit none
 
 
@@ -30,18 +20,14 @@ end subroutine InitKin2Book
 ! Computation of variables to book in the ntuple
 !------------------------------------------------------------------------------
 subroutine ComputV
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use event_info_module, only: Nu, Q22, XBj, W, y_ele
+    use particles_module, only: TrkGS, Nb_part, acc_part, ch_part, id_part, id_mother, &
+        px_part, py_part, pz_part, p_part, E_part, m_part, z_part, th_part, tt_part, &
+        Pts_part, phih_part, phi_part, Xf_part, Als
+    use pythia_commons, only: P, N, K
+    use config_module, only: iColl, EColl, iAccept, iAlert
+    use acceptance_module, only: pro_acc, deu_acc, tri_acc, he3_acc, he4_acc
+    use misc_module, only: ranf
     implicit none
 
 
@@ -195,18 +181,7 @@ subroutine ComputV
 end subroutine ComputV
 
 subroutine init_recoil
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use acceptance_module, only: pro_acc, deu_acc, tri_acc, he3_acc, he4_acc
     implicit none
 
     integer i, j

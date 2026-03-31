@@ -1,16 +1,8 @@
       subroutine ApplyQW()
-          use kinematics_module
-          use file_names_module
-          use event_info_module
-          use particles_module
-          use fermi_motion_module
-          use density_module
-          use interaction_module
-          use quenching_module
-          use config_module
-          use acceptance_module
-          use misc_module
-          use pythia_commons
+          use quenching_module, only: QW_nb, QW_w, QW_L, QW_qhat, QW_th, alphas
+          use config_module, only: iqg, iEg, iPtF, qhat, SupFac
+          use misc_module, only: ranf
+          use pythia_commons, only: N, K, P
           implicit none
 
 
@@ -174,18 +166,11 @@
       end
 
       subroutine QWComput(ipx, ipy, ipz, E, id)
-          use kinematics_module
-          use file_names_module
-          use event_info_module
-          use particles_module
-          use fermi_motion_module
-          use density_module
-          use interaction_module
-          use quenching_module
-          use config_module
-          use acceptance_module
-          use misc_module
-          use pythia_commons
+          use interaction_module, only: x_inter, y_inter, z_inter
+          use density_module, only: density_table, step_size_dens
+          use quenching_module, only: QW_w, QW_L, QW_wc, QW_R, QW_chi, QW_th, irw, sfthrd
+          use config_module, only: qhat, ehat
+          use misc_module, only: ranf
           implicit none
 
 

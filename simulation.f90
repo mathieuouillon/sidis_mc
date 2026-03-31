@@ -1,16 +1,14 @@
 program monte_carlo_simulation
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use kinematics_module, only: ievent, PPe
+    use particles_module, only: Nb_part, ch_part, id_part, id_mother, &
+        px_part, py_part, pz_part, E_part, m_part
+    use fermi_motion_module, only: iZ, iA
+    use quenching_module, only: QW_nb, QW_qhat, alphas, iqw, scor, ncor, sfthrd
+    use config_module, only: nevent, nkin, iTg, iFM, iColl, EColl, E0, user_seed, &
+        iIso, iNS, iAccept, iLund, iQuenching, iSim, nucleon, qhat, ehat, &
+        iDens, iqg, iEg, iPtF, SupFac, FMlimit, rFM
+    use misc_module, only: vz
+    use pythia_commons, only: MSTJ, XSEC
     implicit none
 
     ! ------------------------------------------------------------------------------
@@ -296,18 +294,9 @@ end subroutine init_random
 ! Initialize kinematics values
 ! ------------------------------------------------------------------------------
 subroutine init_kin()
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use kinematics_module, only: EEe, PPe, Pex, Pey, Pez, EEn, PPn, Pnx, Pny, Pnz, &
+        ThFM, PhiFM, Kf, ele_ene, ele_the, ele_phi, nuc_mom, nuc_the, nuc_phi
+    use config_module, only: E0
     implicit none
 
     real, parameter :: electron_mass = 0.000511
@@ -337,18 +326,10 @@ end subroutine init_kin
 ! Create spectators
 ! ------------------------------------------------------------------------------
 subroutine create_spec()
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use kinematics_module, only: nuc_the, nuc_phi, nuc_mom
+    use fermi_motion_module, only: FMintact
+    use config_module, only: iTg, nucleon, specId
+    use pythia_commons, only: N, K, P
     implicit none
 
     ! Decide if there is a spectator (RW model only)
@@ -409,18 +390,9 @@ end subroutine create_spec
 ! Lorentz transformation for Fermi motion
 ! ------------------------------------------------------------------------------
 subroutine lorentz_fm(transform_type)
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use kinematics_module, only: EEe, PPe, Pex, Pey, Pez, EEn, PPn, Pnx, Pny, Pnz, &
+        BB1, B1x, B1y, B1z, BB2, B2x, B2y, B2z, Thi, Phi
+    use config_module, only: EColl
     implicit none
 
     integer, intent(in) :: transform_type
@@ -457,18 +429,8 @@ end subroutine lorentz_fm
 ! Inverse Lorentz transformation for Fermi motion
 ! ------------------------------------------------------------------------------
 subroutine lorentz_fm_back(transform_type)
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use kinematics_module, only: BB1, B1x, B1y, B1z, BB2, B2x, B2y, B2z, Thi, Phi
+    use pythia_commons, only: N, P
     implicit none
 
     integer, intent(in) :: transform_type

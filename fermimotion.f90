@@ -2,18 +2,8 @@
 ! Initialize fermi momentum
 !------------------------------------------------------------------------------
 subroutine InitNucl
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use fermi_motion_module, only: iZ, iA
+    use config_module, only: iTg, rFM
     implicit none
 
 
@@ -94,18 +84,7 @@ subroutine InitNucl
 end subroutine InitNucl
 
 subroutine InitFM
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use config_module, only: iFM
     implicit none
 
 
@@ -124,18 +103,8 @@ end subroutine InitFM
 
 ! Read table from RW
 subroutine GenRWtable()
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use fermi_motion_module, only: iZ, iA, FM_n, FM_p, FM_i, step_size_FM
+    use config_module, only: FMlimit
     use constants_module, only: HBAR_C
     implicit none
 
@@ -270,18 +239,10 @@ end subroutine GenRWtable
 ! Initialize kinematics values with fermi motion
 !------------------------------------------------------------------------------
 subroutine FMParam
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use kinematics_module, only: ThFM, PhiFM, Kf
+    use fermi_motion_module, only: FM_table, FM_n, FM_p, FM_i, step_size_FM, FMintact
+    use config_module, only: iFM, rFM, FMlimit, nucleon, iTg
+    use misc_module, only: pi, ranf
     implicit none
 
     real, parameter :: a = 2.0
@@ -365,18 +326,8 @@ subroutine FMParam
 end subroutine FMParam
 
 subroutine GenFMtable(irho)
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use fermi_motion_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use config_module
-    use acceptance_module
-    use misc_module
-    use pythia_commons
+    use fermi_motion_module, only: iZ, iA, FMnb, step_size_FM, FM_table
+    use config_module, only: iTg, iFM, FMlimit
     implicit none
 
     integer, intent(in) :: irho
