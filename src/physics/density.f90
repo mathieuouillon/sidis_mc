@@ -42,7 +42,7 @@
 
 
           integer i, idist, irho
-          double precision nucdens, r
+          real(kind=8) nucdens, r
           real integral
 
 !ccccc Some init

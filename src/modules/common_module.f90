@@ -236,4 +236,9 @@ module pythia_commons
     real(kind=8) :: XSEC(0:500, 3)
     COMMON/PYINT5/NGENPD, NGEN, XSEC
 
+    ! PYDATR common block (random number state)
+    integer :: MRPY(6)
+    real(kind=8) :: RRPY(100)
+    COMMON/PYDATR/MRPY, RRPY
+
 end module pythia_commons

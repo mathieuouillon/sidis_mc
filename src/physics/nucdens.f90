@@ -3,8 +3,8 @@
 !***********************************************************************
 module nucdens_data_module
     implicit none
-    double precision :: RR, a0, c0      ! Woods-Saxon parameters
-    double precision :: RAeq, RAws      ! nuclear radii
+    real(kind=8) :: RR, a0, c0      ! Woods-Saxon parameters
+    real(kind=8) :: RAeq, RAws      ! nuclear radii
 end module nucdens_data_module
 
 
@@ -114,25 +114,26 @@ function nucdens(r, Z, A, idist, irho)
 
     integer, intent(in) :: Z, A, idist, irho
 
-    double precision :: nucdens, r
+    real(kind=8) :: nucdens
+    real(kind=8), intent(in) :: r
 
 !   *** functions
 
-    double precision :: dgauss11, DeuteronDensity, WoodsSaxon3d, &
+    real(kind=8) :: dgauss11, DeuteronDensity, WoodsSaxon3d, &
          r2DD, r2WS3d
     external :: WoodsSaxon3d, r2DD, r2WS3d
 
 !   *** parameters and initial values
 
-    double precision, parameter :: onethird = 0.333333333333333d0, srft = 1.29099
+    real(kind=8), parameter :: onethird = 0.333333333333333d0, srft = 1.29099
 
-    double precision, parameter :: twopi = 6.2831530718d0, &
+    real(kind=8), parameter :: twopi = 6.2831530718d0, &
          threefourthoverpi = 0.2387336394417d0
 
     integer :: Asave(10), Zsave(10)
     logical :: firsttime(10)
-    double precision :: Rws(92), aws(92), cws(92)
-    double precision :: NWS(10), RA(10), RAequiv(10), aa(10), cc(10)
+    real(kind=8) :: Rws(92), aws(92), cws(92)
+    real(kind=8) :: NWS(10), RA(10), RAequiv(10), aa(10), cc(10)
     save :: firsttime, NWS, RA, RAequiv, aa, cc, Asave, Zsave
 
 !   ... first time flag for normalization of WS
@@ -422,9 +423,10 @@ function WoodsSaxon3d(r)
 
 !   *** variables
 
-    double precision :: WoodsSaxon3d, r
+    real(kind=8) :: WoodsSaxon3d
+    real(kind=8), intent(in) :: r
 
-    double precision, parameter :: pi = 3.141592653d0
+    real(kind=8), parameter :: pi = 3.141592653d0
 
 !   *** common blocks replaced by module use above
 !   RA, aa, cc are aliases for RR, a0, c0 from the module
@@ -442,7 +444,7 @@ end function WoodsSaxon3d
 
 !***********************************************************************
 !     integrand for <r^2>
-double precision function r2WS3d(r)
+real(kind=8) function r2WS3d(r)
 !     programmer: Alberto Accardi
 !     date: 20/07/04
 !
@@ -457,11 +459,11 @@ double precision function r2WS3d(r)
 
 !   *** variables
 
-    double precision :: r
+    real(kind=8), intent(in) :: r
 
 !   *** functions
 
-    double precision :: WoodsSaxon3d
+    real(kind=8) :: WoodsSaxon3d
 
 !
 !  C. ACTION
@@ -486,8 +488,9 @@ function DeuteronDensity(r)
 !
 !  B. Declarations
     implicit none
-    double precision :: DeuteronDensity, reidsc, r
-    double precision, parameter :: twopi = 6.2831530718d0
+    real(kind=8) :: DeuteronDensity, reidsc
+    real(kind=8), intent(in) :: r
+    real(kind=8), parameter :: twopi = 6.2831530718d0
 
 !  C. Action
     DeuteronDensity = reidsc(2*r) / (twopi*r*r)
@@ -497,7 +500,7 @@ end function DeuteronDensity
 
 !***********************************************************************
 !     integrand for <r^2>
-double precision function r2DD(r)
+real(kind=8) function r2DD(r)
 !     programmer: Alberto Accardi
 !     date: 20 July 2004
 !
@@ -509,8 +512,9 @@ double precision function r2DD(r)
 !
 !  B. Declarations
     implicit none
-    double precision :: reidsc, r
-    double precision, parameter :: twopi = 6.2831530718d0
+    real(kind=8) :: reidsc
+    real(kind=8), intent(in) :: r
+    real(kind=8), parameter :: twopi = 6.2831530718d0
 
 !  C. Action
     r2DD = 2*r*r*reidsc(2*r)
@@ -540,19 +544,21 @@ function reidsc(r)
 
 !   *** variables
 
-    double precision :: reidsc, r, x, h, p, A1, A2, A3, A4, alphax, &
+    real(kind=8) :: reidsc
+    real(kind=8), intent(in) :: r
+    real(kind=8) :: x, h, p, A1, A2, A3, A4, alphax, &
          u2, w2
     integer :: j
 
 !   *** data, parameters and initial values
 
-    double precision, parameter :: fourpi = 2d0*6.2831530718d0, mu = 0.7d0, mu2 = mu**2, &
+    real(kind=8), parameter :: fourpi = 2d0*6.2831530718d0, mu = 0.7d0, mu2 = mu**2, &
          AS2 = 0.7749985d0, ADS2 = 6.7081d-4, &
          alpha = 0.33088d0, twoalpha = 0.66176d0
 
     integer, parameter :: N = 33
 
-    double precision :: xx(N), u(N), w(N), du(N), dw(N)
+    real(kind=8) :: xx(N), u(N), w(N), du(N), dw(N)
 !   tabulated u, w, du, dw
     DATA xx/ 1.000d-2, 4.125d-2, 7.250d-2, 1.350d-1, 1.975d-1, &
              2.600d-1, 3.225d-1, 3.850d-1, 4.475d-1, 5.100d-1, &
@@ -646,7 +652,7 @@ subroutine locatetable(xx, n, x, j)
     integer, intent(out) :: j
     integer, intent(in) :: n
     integer :: jl, jm, ju
-    double precision, intent(in) :: x, xx(n)
+    real(kind=8), intent(in) :: x, xx(n)
 !
 !  C. ACTION
 !
@@ -674,19 +680,19 @@ end subroutine locatetable
 
 !***********************************************************************
 !
-DOUBLE PRECISION FUNCTION DGAUSS11(F, A, B, EPS)
+real(kind=8) FUNCTION DGAUSS11(F, A, B, EPS)
     implicit none
 
-!   ADAPTIVE DOUBLE PRECISION GAUSSIAN QUADRATURE.
+!   ADAPTIVE real(kind=8) GAUSSIAN QUADRATURE.
 !
 !   DGAUSS11 IS SET EQUAL TO THE APPROXIMATE VALUE OF THE INTEGRAL OF
 !   THE FUNCTION F OVER THE INTERVAL (A,B), WITH ACCURACY PARAMETER
 !   EPS.
 !
 
-    DOUBLE PRECISION, intent(in) :: A, B, EPS
-    DOUBLE PRECISION :: F
-    DOUBLE PRECISION :: W(12), X(12), AA, BB, C1, C2, U, S8, S16, CONST
+    real(kind=8), intent(in) :: A, B, EPS
+    real(kind=8) :: F
+    real(kind=8) :: W(12), X(12), AA, BB, C1, C2, U, S8, S16, CONST
     LOGICAL :: MFLAG, RFLAG
     INTEGER :: I, LGFILE
     EXTERNAL :: F

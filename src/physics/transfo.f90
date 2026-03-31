@@ -5,8 +5,9 @@
           implicit none
 
           real EEi, PPi, Pix, Piy, Piz ! intermediate kinematics
-          real EEj, PPj, Pjx, Pjy, Pjz ! jntermedjate kjnematjcs
-          real BB, Bx, By, Bz, GG ! Lorentz kinematics
+          real, intent(inout) :: EEj, PPj, Pjx, Pjy, Pjz ! jntermedjate kjnematjcs
+          real, intent(in) :: BB, Bx, By, Bz
+          real GG ! Lorentz kinematics
 
           GG = 1/sqrt(1 - BB**2)
 
@@ -35,7 +36,7 @@
           implicit none
 
           real Pix, Piy, Piz ! intermediate kinematics
-          real Theta !angle for rotation
+          real, intent(in) :: Theta !angle for rotation
 
           Pix = Pex*cos(Theta) + Pez*sin(Theta)
           Piy = Pey
@@ -61,7 +62,7 @@
           implicit none
 
           real Pix, Piy, Piz ! intermediate kinematics
-          real PhiAng !angle for rotation
+          real, intent(in) :: PhiAng !angle for rotation
 
           Pix = Pex
           Piy = Pey*cos(PhiAng) + Pez*sin(PhiAng)
@@ -86,7 +87,7 @@
           implicit none
 
           real Pix, Piy, Piz ! intermediate kinematics
-          real Theta !angle for rotation
+          real, intent(in) :: Theta !angle for rotation
           integer ip ! For do
 
           do ip = 1, N
@@ -111,7 +112,7 @@
           implicit none
 
           real Pix, Piy, Piz ! intermediate kinematics
-          real PhiAng !angle for rotation
+          real, intent(in) :: PhiAng !angle for rotation
           integer ip ! For do
 
           do ip = 1, N

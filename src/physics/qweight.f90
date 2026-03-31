@@ -1,3 +1,17 @@
+module qweight_data_module
+    implicit none
+    save
+
+    ! Data for swqmult/initmult (formerly /dataqua/ and /dataglu/)
+    real(kind=8) :: mult_xx(400), mult_daq(34), mult_caq(34, 261), mult_rrr(34)
+    real(kind=8) :: mult_xxg(400), mult_dag(34), mult_cag(34, 261), mult_rrrg(34)
+
+    ! Data for swqlin/initlin (formerly /dataqualin/ and /dataglulin/)
+    real(kind=8) :: lin_xx(400), lin_daq(34), lin_caq(34, 261), lin_rrr(34)
+    real(kind=8) :: lin_xxg(400), lin_dag(34), lin_cag(34, 261), lin_rrrg(34)
+
+end module qweight_data_module
+
       subroutine ApplyQW()
           use quenching_module, only: QW_nb, QW_w, QW_L, QW_qhat, QW_th, alphas
           use config_module, only: iqg, iEg, iPtF, qhat, SupFac
@@ -174,7 +188,8 @@
           implicit none
 
 
-          double precision ipx, ipy, ipz, E !input energy momentum of the particle
+          real(kind=8), intent(in) :: ipx, ipy, ipz, E !input energy momentum of the particle
+          integer, intent(in) :: id !id of the parton
           real partmass !mass of the particle (for conservation purpose)
           real radius !distance to the center of the nuclei
           real x, y, z !position of the parton
@@ -183,13 +198,12 @@
           parameter(integral_step=0.1)
           real d !distance already coverd
           integer ipart !0=gluon - otherwise=quark
-          double precision cont(1000), disc, step_QW !Variables for energy loss proba
-          double precision xx, yy !Variables for energy loss proba
+          real(kind=8) cont(1000), disc, step_QW !Variables for energy loss proba
+          real(kind=8) xx, yy !Variables for energy loss proba
           integer i, nb_step !nb of step for QW calculation
-          double precision total !Total of QW for normalization purpose
+          real(kind=8) total !Total of QW for normalization purpose
           real randnum !random number to pick the QW
-          integer id !id of the parton
-          double precision ChiR !Chi sq R
+          real(kind=8) ChiR !Chi sq R
           real qhateff
 
           QW_w = 0.
@@ -441,33 +455,29 @@
 !*
 !*  B. DECLARATIONS
 !*
-          implicit none
-
-          integer ipart
-          double precision rrrr, xx, yy, cont, disc
-
-          double precision rrin, frac, kk
-
-!*     FUNCTIONS
-
-          double precision dbarg, dbarq
-
-!*     COMMON BLOCKS
-
-! *     Quenching weight choice
+!*     Module variables (formerly common block /qw/)
 ! *     ... iqw             = (i)  1=SW  2=Arleo
 ! *     ... scor            = (i)  finite size corrections flag (0=no 1=yes)
 ! *     ... ncor            = (i)  finite energy corrections flag (0=no 1=yes)
 ! *     ... sfthrd          = (i)  1=soft scatterings  2=hard scatterings
 ! *     ... irw             = (i)  0= no reweighting  1= reweighting
-          double precision alphas
-          integer iqw, scor, ncor, sfthrd, irw
-          common/qw/alphas, iqw, scor, ncor, sfthrd, irw
+          use quenching_module, only: alphas, iqw, scor, ncor, sfthrd, irw
+          implicit none
+
+          integer, intent(in) :: ipart
+          real(kind=8), intent(in) :: rrrr, xx, yy
+          real(kind=8), intent(out) :: cont, disc
+
+          real(kind=8) rrin, frac, kk
+
+!*     FUNCTIONS
+
+          real(kind=8) dbarg, dbarq
 
 !*     INITIAL PARAMETRS AND DATA
 
 !*    ... min and max rrrr for S.W. routine
-          double precision xxmultmax, xxlinmax
+          real(kind=8) xxmultmax, xxlinmax
           parameter(xxmultmax=2.59d0, xxlinmax=9.87d0)
 
 !*    ... S.W. initialization flag
@@ -554,7 +564,8 @@
 
           implicit none
 
-          double precision dbarg, wl, e, dbarq
+          real(kind=8) dbarg, dbarq
+          real(kind=8), intent(in) :: wl, e
 
           dbarg = 4.D0/9.D0*dbarq(4.D0/9.D0*wl, e)
 
@@ -566,9 +577,10 @@
 
           implicit none
 
-          double precision dbarq, wl, e, xmu, xsigma
+          real(kind=8) dbarq, xmu, xsigma
+          real(kind=8), intent(in) :: wl, e
 
-          double precision pi
+          real(kind=8) pi
           parameter(pi=3.1415926D0)
 
           if (wl .eq. 0.D0) then
@@ -583,14 +595,11 @@
 !c ---------------------------------------------------------------------
       function xmu(e)
 
+          use quenching_module, only: ncor
           implicit none
 
-          double precision xmu, e
-
-!*     Quenching weight choice
-          double precision alphas
-          integer iqw, scor, ncor, sfthrd, irw
-          common/qw/alphas, iqw, scor, ncor, sfthrd, irw
+          real(kind=8) xmu
+          real(kind=8), intent(in) :: e
 
           if (ncor .eq. 0) then
 !*!       ... no 1/e corrections
@@ -606,14 +615,11 @@
 !c ---------------------------------------------------------------------
       function xsigma(e)
 
+          use quenching_module, only: ncor
           implicit none
 
-          double precision xsigma, e
-
-!*     Quenching weight choice
-          double precision alphas
-          integer iqw, scor, ncor, sfthrd, irw
-          common/qw/alphas, iqw, scor, ncor, sfthrd, irw
+          real(kind=8) xsigma
+          real(kind=8), intent(in) :: e
 
           if (ncor .eq. 0) then
 !*       ... no 1/e corrections
@@ -670,18 +676,17 @@
 
       SUBROUTINE swqmult(ipart, rrrr, xxxx, continuous, discrete)
 !*
-          REAL*8 xx(400), daq(34), caq(34, 261), rrr(34)
-          COMMON/dataqua/xx, daq, caq, rrr
-!*
-          REAL*8 xxg(400), dag(34), cag(34, 261), rrrg(34)
-          COMMON/dataglu/xxg, dag, cag, rrrg
+          use qweight_data_module, only: mult_xx, mult_daq, mult_caq, mult_rrr, &
+                                         mult_xxg, mult_dag, mult_cag, mult_rrrg
 
-          REAL*8 rrrr, xxxx, continuous, discrete
-          REAL*8 rrin, xxin
+          INTEGER, intent(in) :: ipart
+          real(kind=8), intent(in) :: rrrr, xxxx
+          real(kind=8), intent(out) :: continuous, discrete
+          real(kind=8) rrin, xxin
           INTEGER nrlow, nrhigh, nxlow, nxhigh
-          REAL*8 rrhigh, rrlow, rfraclow, rfrachigh
-          REAL*8 xfraclow, xfrachigh
-          REAL*8 clow, chigh
+          real(kind=8) rrhigh, rrlow, rfraclow, rfrachigh
+          real(kind=8) xfraclow, xfrachigh
+          real(kind=8) clow, chigh
 !*
 
           continuous = 0.d0
@@ -691,11 +696,11 @@
           xxin = xxxx
 !*
           search_r: do nr = 1, 34
-              if (rrin .lt. rrr(nr)) then
-                  rrhigh = rrr(nr)
+              if (rrin .lt. mult_rrr(nr)) then
+                  rrhigh = mult_rrr(nr)
               else
-                  rrhigh = rrr(nr - 1)
-                  rrlow = rrr(nr)
+                  rrhigh = mult_rrr(nr - 1)
+                  rrlow = mult_rrr(nr)
                   nrlow = nr
                   nrhigh = nr - 1
                   exit search_r
@@ -709,57 +714,52 @@
               rfrachigh = dlog(rrin/rrlow)/dlog(rrhigh/rrlow)
           end if
 !*
-          if (ipart .ne. 0 .and. rrin .ge. rrr(1)) then
+          if (ipart .ne. 0 .and. rrin .ge. mult_rrr(1)) then
               nrlow = 1
               nrhigh = 1
               rfraclow = 1
               rfrachigh = 0
           end if
 
-          if (ipart .eq. 0 .and. rrin .ge. rrrg(1)) then
+          if (ipart .eq. 0 .and. rrin .ge. mult_rrrg(1)) then
               nrlow = 1
               nrhigh = 1
               rfraclow = 1
               rfrachigh = 0
           end if
 
-          if (xxxx .ge. xx(260)) stop
+          if (xxxx .ge. mult_xx(260)) stop
 
           nxlow = int(xxin/0.01) + 1
           nxhigh = nxlow + 1
-          xfraclow = (xx(nxhigh) - xxin)/0.01
-          xfrachigh = (xxin - xx(nxlow))/0.01
+          xfraclow = (mult_xx(nxhigh) - xxin)/0.01
+          xfrachigh = (xxin - mult_xx(nxlow))/0.01
 !*
           if (ipart .ne. 0) then
-              clow = xfraclow*caq(nrlow, nxlow) + xfrachigh*caq(nrlow, nxhigh)
-              chigh = xfraclow*caq(nrhigh, nxlow) + xfrachigh*caq(nrhigh, nxhigh)
+              clow = xfraclow*mult_caq(nrlow, nxlow) + xfrachigh*mult_caq(nrlow, nxhigh)
+              chigh = xfraclow*mult_caq(nrhigh, nxlow) + xfrachigh*mult_caq(nrhigh, nxhigh)
           else
-              clow = xfraclow*cag(nrlow, nxlow) + xfrachigh*cag(nrlow, nxhigh)
-              chigh = xfraclow*cag(nrhigh, nxlow) + xfrachigh*cag(nrhigh, nxhigh)
+              clow = xfraclow*mult_cag(nrlow, nxlow) + xfrachigh*mult_cag(nrlow, nxhigh)
+              chigh = xfraclow*mult_cag(nrhigh, nxlow) + xfrachigh*mult_cag(nrhigh, nxhigh)
           end if
 
           continuous = rfraclow*clow + rfrachigh*chigh
 
           if (ipart .ne. 0) then
-              discrete = rfraclow*daq(nrlow) + rfrachigh*daq(nrhigh)
+              discrete = rfraclow*mult_daq(nrlow) + rfrachigh*mult_daq(nrhigh)
           else
-              discrete = rfraclow*dag(nrlow) + rfrachigh*dag(nrhigh)
+              discrete = rfraclow*mult_dag(nrlow) + rfrachigh*mult_dag(nrhigh)
           end if
 !
       END SUBROUTINE swqmult
 
       subroutine initmult(alphas)
 
-          double precision alphas
+          use qweight_data_module, only: mult_xx, mult_daq, mult_caq, mult_rrr, &
+                                         mult_xxg, mult_dag, mult_cag, mult_rrrg
+          real(kind=8), intent(in) :: alphas
           integer :: io_err
           integer :: unit_cont, unit_disc
-
-          REAL*8 xxq(400), daq(34), caq(34, 261), rrr(34)
-          COMMON/dataqua/xxq, daq, caq, rrr
-!*
-          REAL*8 xxg(400), dag(34), cag(34, 261), rrrg(34)
-          COMMON/dataglu/xxg, dag, cag, rrrg
-!*
 
           if (nint(alphas*3d0) .eq. 1) then
               OPEN (NEWUNIT=unit_cont, FILE='datafiles/qweight/cont03.all', STATUS='OLD', IOSTAT=io_err)
@@ -778,32 +778,32 @@
               error stop 'initmult: alphas =/= 1/3 or 1/2'
           end if
           do 110 nn = 1, 261
-              read (unit_cont, *) xxq(nn), caq(1, nn), caq(2, nn), caq(3, nn), &
-                  caq(4, nn), caq(5, nn), caq(6, nn), caq(7, nn), caq(8, nn), &
-                  caq(9, nn), caq(10, nn), caq(11, nn), caq(12, nn), &
-                  caq(13, nn), &
-                  caq(14, nn), caq(15, nn), caq(16, nn), caq(17, nn), &
-                  caq(18, nn), &
-                  caq(19, nn), caq(20, nn), caq(21, nn), caq(22, nn), &
-                  caq(23, nn), &
-                  caq(24, nn), caq(25, nn), caq(26, nn), caq(27, nn), &
-                  caq(28, nn), &
-                  caq(29, nn), caq(30, nn), caq(31, nn), caq(32, nn), &
-                  caq(33, nn), caq(34, nn)
+              read (unit_cont, *) mult_xx(nn), mult_caq(1, nn), mult_caq(2, nn), mult_caq(3, nn), &
+                  mult_caq(4, nn), mult_caq(5, nn), mult_caq(6, nn), mult_caq(7, nn), mult_caq(8, nn), &
+                  mult_caq(9, nn), mult_caq(10, nn), mult_caq(11, nn), mult_caq(12, nn), &
+                  mult_caq(13, nn), &
+                  mult_caq(14, nn), mult_caq(15, nn), mult_caq(16, nn), mult_caq(17, nn), &
+                  mult_caq(18, nn), &
+                  mult_caq(19, nn), mult_caq(20, nn), mult_caq(21, nn), mult_caq(22, nn), &
+                  mult_caq(23, nn), &
+                  mult_caq(24, nn), mult_caq(25, nn), mult_caq(26, nn), mult_caq(27, nn), &
+                  mult_caq(28, nn), &
+                  mult_caq(29, nn), mult_caq(30, nn), mult_caq(31, nn), mult_caq(32, nn), &
+                  mult_caq(33, nn), mult_caq(34, nn)
 110           continue
               do 111 nn = 1, 261
-                  read (unit_cont, *) xxg(nn), cag(1, nn), cag(2, nn), cag(3, nn), &
-                      cag(4, nn), cag(5, nn), cag(6, nn), cag(7, nn), cag(8, nn), &
-                      cag(9, nn), cag(10, nn), cag(11, nn), cag(12, nn), &
-                      cag(13, nn), &
-                      cag(14, nn), cag(15, nn), cag(16, nn), cag(17, nn), &
-                      cag(18, nn), &
-                      cag(19, nn), cag(20, nn), cag(21, nn), cag(22, nn), &
-                      cag(23, nn), &
-                      cag(24, nn), cag(25, nn), cag(26, nn), cag(27, nn), &
-                      cag(28, nn), &
-                      cag(29, nn), cag(30, nn), cag(31, nn), cag(32, nn), &
-                      cag(33, nn), cag(34, nn)
+                  read (unit_cont, *) mult_xxg(nn), mult_cag(1, nn), mult_cag(2, nn), mult_cag(3, nn), &
+                      mult_cag(4, nn), mult_cag(5, nn), mult_cag(6, nn), mult_cag(7, nn), mult_cag(8, nn), &
+                      mult_cag(9, nn), mult_cag(10, nn), mult_cag(11, nn), mult_cag(12, nn), &
+                      mult_cag(13, nn), &
+                      mult_cag(14, nn), mult_cag(15, nn), mult_cag(16, nn), mult_cag(17, nn), &
+                      mult_cag(18, nn), &
+                      mult_cag(19, nn), mult_cag(20, nn), mult_cag(21, nn), mult_cag(22, nn), &
+                      mult_cag(23, nn), &
+                      mult_cag(24, nn), mult_cag(25, nn), mult_cag(26, nn), mult_cag(27, nn), &
+                      mult_cag(28, nn), &
+                      mult_cag(29, nn), mult_cag(30, nn), mult_cag(31, nn), mult_cag(32, nn), &
+                      mult_cag(33, nn), mult_cag(34, nn)
 111               continue
                   close (unit_cont)
 !*
@@ -824,10 +824,10 @@
                       error stop 'initmult: alphas =/= 1/3 or 1/2'
                   end if
                   do 112 nn = 1, 34
-                      read (unit_disc, *) rrr(nn), daq(nn)
+                      read (unit_disc, *) mult_rrr(nn), mult_daq(nn)
 112                   continue
                       do 113 nn = 1, 34
-                          read (unit_disc, *) rrrg(nn), dag(nn)
+                          read (unit_disc, *) mult_rrrg(nn), mult_dag(nn)
 113                       continue
                           close (unit_disc)
 !*
@@ -872,18 +872,17 @@
 
                       SUBROUTINE swqlin(ipart, rrrr, xxxx, continuous, discrete)
 !*
-                          REAL*8 xx(400), daq(34), caq(34, 261), rrr(34)
-                          COMMON/dataqualin/xx, daq, caq, rrr
-!*
-                          REAL*8 xxg(400), dag(34), cag(34, 261), rrrg(34)
-                          COMMON/dataglulin/xxg, dag, cag, rrrg
+                          use qweight_data_module, only: lin_xx, lin_daq, lin_caq, lin_rrr, &
+                                                         lin_xxg, lin_dag, lin_cag, lin_rrrg
 
-                          REAL*8 rrrr, xxxx, continuous, discrete
-                          REAL*8 rrin, xxin
+                          INTEGER, intent(in) :: ipart
+                          real(kind=8), intent(in) :: rrrr, xxxx
+                          real(kind=8), intent(out) :: continuous, discrete
+                          real(kind=8) rrin, xxin
                           INTEGER nrlow, nrhigh, nxlow, nxhigh
-                          REAL*8 rrhigh, rrlow, rfraclow, rfrachigh
-                          REAL*8 xfraclow, xfrachigh
-                          REAL*8 clow, chigh
+                          real(kind=8) rrhigh, rrlow, rfraclow, rfrachigh
+                          real(kind=8) xfraclow, xfrachigh
+                          real(kind=8) clow, chigh
 !*
 
                           continuous = 0.d0
@@ -893,11 +892,11 @@
                           xxin = xxxx
 !*
                           search_r: do nr = 1, 34
-                              if (rrin .lt. rrr(nr)) then
-                                  rrhigh = rrr(nr)
+                              if (rrin .lt. lin_rrr(nr)) then
+                                  rrhigh = lin_rrr(nr)
                               else
-                                  rrhigh = rrr(nr - 1)
-                                  rrlow = rrr(nr)
+                                  rrhigh = lin_rrr(nr - 1)
+                                  rrlow = lin_rrr(nr)
                                   nrlow = nr
                                   nrhigh = nr - 1
                                   exit search_r
@@ -911,57 +910,53 @@
                               rfrachigh = dlog(rrin/rrlow)/dlog(rrhigh/rrlow)
                           end if
 !*
-                          if (ipart .eq. 1 .and. rrin .ge. rrr(1)) then
+                          if (ipart .eq. 1 .and. rrin .ge. lin_rrr(1)) then
                               nrlow = 1
                               nrhigh = 1
                               rfraclow = 1
                               rfrachigh = 0
                           end if
 
-                          if (ipart .ne. 1 .and. rrin .ge. rrrg(1)) then
+                          if (ipart .ne. 1 .and. rrin .ge. lin_rrrg(1)) then
                               nrlow = 1
                               nrhigh = 1
                               rfraclow = 1
                               rfrachigh = 0
                           end if
 
-                          if (xxxx .lt. xx(260)) then
+                          if (xxxx .lt. lin_xx(260)) then
                               nxlow = int(xxin/0.038) + 1
                               nxhigh = nxlow + 1
-                              xfraclow = (xx(nxhigh) - xxin)/0.038
-                              xfrachigh = (xxin - xx(nxlow))/0.038
+                              xfraclow = (lin_xx(nxhigh) - xxin)/0.038
+                              xfrachigh = (xxin - lin_xx(nxlow))/0.038
 !*
                               if (ipart .eq. 1) then
-                                  clow = xfraclow*caq(nrlow, nxlow) + xfrachigh*caq(nrlow, nxhigh)
-                                  chigh = xfraclow*caq(nrhigh, nxlow) + xfrachigh*caq(nrhigh, nxhigh)
+                                  clow = xfraclow*lin_caq(nrlow, nxlow) + xfrachigh*lin_caq(nrlow, nxhigh)
+                                  chigh = xfraclow*lin_caq(nrhigh, nxlow) + xfrachigh*lin_caq(nrhigh, nxhigh)
                               else
-                                  clow = xfraclow*cag(nrlow, nxlow) + xfrachigh*cag(nrlow, nxhigh)
-                                  chigh = xfraclow*cag(nrhigh, nxlow) + xfrachigh*cag(nrhigh, nxhigh)
+                                  clow = xfraclow*lin_cag(nrlow, nxlow) + xfrachigh*lin_cag(nrlow, nxhigh)
+                                  chigh = xfraclow*lin_cag(nrhigh, nxlow) + xfrachigh*lin_cag(nrhigh, nxhigh)
                               end if
 
                               continuous = rfraclow*clow + rfrachigh*chigh
                           end if
 
                           if (ipart .eq. 1) then
-                              discrete = rfraclow*daq(nrlow) + rfrachigh*daq(nrhigh)
+                              discrete = rfraclow*lin_daq(nrlow) + rfrachigh*lin_daq(nrhigh)
                           else
-                              discrete = rfraclow*dag(nrlow) + rfrachigh*dag(nrhigh)
+                              discrete = rfraclow*lin_dag(nrlow) + rfrachigh*lin_dag(nrhigh)
                           end if
 !*
                       END SUBROUTINE swqlin
 
                       subroutine initlin(alphas)
 
-                          double precision alphas
+                          use qweight_data_module, only: lin_xx, lin_daq, lin_caq, lin_rrr, &
+                                                         lin_xxg, lin_dag, lin_cag, lin_rrrg
+                          real(kind=8), intent(in) :: alphas
                           integer :: io_err
                           integer :: unit_cont, unit_disc
 
-                          REAL*8 xxq(400), daq(34), caq(34, 261), rrr(34)
-                          COMMON/dataqualin/xxq, daq, caq, rrr
-!*
-                          REAL*8 xxg(400), dag(34), cag(34, 261), rrrg(34)
-                          COMMON/dataglulin/xxg, dag, cag, rrrg
-!*
                           if (nint(alphas*3d0) .eq. 1) then
                               OPEN (NEWUNIT=unit_cont, FILE='datafiles/qweight/contlin03.all', STATUS='OLD', IOSTAT=io_err)
                               if (io_err /= 0) then
@@ -977,32 +972,32 @@
                               error stop 'initlin: alphas =/= 1/3 or 1/2'
                           end if
                           do 110 nn = 1, 261
-                              read (unit_cont, *) xxq(nn), caq(1, nn), caq(2, nn), caq(3, nn), &
-                                  caq(4, nn), caq(5, nn), caq(6, nn), caq(7, nn), caq(8, nn), &
-                                  caq(9, nn), caq(10, nn), caq(11, nn), caq(12, nn), &
-                                  caq(13, nn), &
-                                  caq(14, nn), caq(15, nn), caq(16, nn), caq(17, nn), &
-                                  caq(18, nn), &
-                                  caq(19, nn), caq(20, nn), caq(21, nn), caq(22, nn), &
-                                  caq(23, nn), &
-                                  caq(24, nn), caq(25, nn), caq(26, nn), caq(27, nn), &
-                                  caq(28, nn), &
-                                  caq(29, nn), caq(30, nn), caq(31, nn), caq(32, nn), &
-                                  caq(33, nn), caq(34, nn)
+                              read (unit_cont, *) lin_xx(nn), lin_caq(1, nn), lin_caq(2, nn), lin_caq(3, nn), &
+                                  lin_caq(4, nn), lin_caq(5, nn), lin_caq(6, nn), lin_caq(7, nn), lin_caq(8, nn), &
+                                  lin_caq(9, nn), lin_caq(10, nn), lin_caq(11, nn), lin_caq(12, nn), &
+                                  lin_caq(13, nn), &
+                                  lin_caq(14, nn), lin_caq(15, nn), lin_caq(16, nn), lin_caq(17, nn), &
+                                  lin_caq(18, nn), &
+                                  lin_caq(19, nn), lin_caq(20, nn), lin_caq(21, nn), lin_caq(22, nn), &
+                                  lin_caq(23, nn), &
+                                  lin_caq(24, nn), lin_caq(25, nn), lin_caq(26, nn), lin_caq(27, nn), &
+                                  lin_caq(28, nn), &
+                                  lin_caq(29, nn), lin_caq(30, nn), lin_caq(31, nn), lin_caq(32, nn), &
+                                  lin_caq(33, nn), lin_caq(34, nn)
 110                           continue
                               do 111 nn = 1, 261
-                                  read (unit_cont, *) xxg(nn), cag(1, nn), cag(2, nn), cag(3, nn), &
-                                      cag(4, nn), cag(5, nn), cag(6, nn), cag(7, nn), cag(8, nn), &
-                                      cag(9, nn), cag(10, nn), cag(11, nn), cag(12, nn), &
-                                      cag(13, nn), &
-                                      cag(14, nn), cag(15, nn), cag(16, nn), cag(17, nn), &
-                                      cag(18, nn), &
-                                      cag(19, nn), cag(20, nn), cag(21, nn), cag(22, nn), &
-                                      cag(23, nn), &
-                                      cag(24, nn), cag(25, nn), cag(26, nn), cag(27, nn), &
-                                      cag(28, nn), &
-                                      cag(29, nn), cag(30, nn), cag(31, nn), cag(32, nn), &
-                                      cag(33, nn), cag(34, nn)
+                                  read (unit_cont, *) lin_xxg(nn), lin_cag(1, nn), lin_cag(2, nn), lin_cag(3, nn), &
+                                      lin_cag(4, nn), lin_cag(5, nn), lin_cag(6, nn), lin_cag(7, nn), lin_cag(8, nn), &
+                                      lin_cag(9, nn), lin_cag(10, nn), lin_cag(11, nn), lin_cag(12, nn), &
+                                      lin_cag(13, nn), &
+                                      lin_cag(14, nn), lin_cag(15, nn), lin_cag(16, nn), lin_cag(17, nn), &
+                                      lin_cag(18, nn), &
+                                      lin_cag(19, nn), lin_cag(20, nn), lin_cag(21, nn), lin_cag(22, nn), &
+                                      lin_cag(23, nn), &
+                                      lin_cag(24, nn), lin_cag(25, nn), lin_cag(26, nn), lin_cag(27, nn), &
+                                      lin_cag(28, nn), &
+                                      lin_cag(29, nn), lin_cag(30, nn), lin_cag(31, nn), lin_cag(32, nn), &
+                                      lin_cag(33, nn), lin_cag(34, nn)
 111                               continue
                                   close (unit_cont)
 !*
@@ -1021,10 +1016,10 @@
                                       error stop 'initlin: alphas =/= 1/3 or 1/2'
                                   end if
                                   do 112 nn = 1, 34
-                                      read (unit_disc, *) rrr(nn), daq(nn)
+                                      read (unit_disc, *) lin_rrr(nn), lin_daq(nn)
 112                                   continue
                                       do 113 nn = 1, 34
-                                          read (unit_disc, *) rrrg(nn), dag(nn)
+                                          read (unit_disc, *) lin_rrrg(nn), lin_dag(nn)
 113                                       continue
                                           close (unit_disc)
 !*

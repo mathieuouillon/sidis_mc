@@ -487,7 +487,8 @@ function rhofermi(iZ, iA, k, irho)
     !
     implicit none
 
-    real(kind=8) :: rhofermi, k
+    real(kind=8) :: rhofermi
+    real(kind=8), intent(in) :: k
     integer, intent(in) :: iZ, iA, irho
 
     ! *** variables
@@ -576,7 +577,8 @@ function rhoSVGsh(iZ, iA, k, idist)
     !
     implicit none
 
-    real(kind=8) :: rhoSVGsh, k
+    real(kind=8) :: rhoSVGsh
+    real(kind=8), intent(in) :: k
     integer, intent(in) :: iZ, iA, idist
 
     ! *** variables
@@ -647,7 +649,8 @@ function rhosoftSVG(iZ, iA, k)
     !
     implicit none
 
-    real(kind=8) :: rhosoftSVG, k
+    real(kind=8) :: rhosoftSVG
+    real(kind=8), intent(in) :: k
     integer, intent(in) :: iZ, iA
 
     ! *** variables
@@ -786,7 +789,9 @@ function rhohardSVG(iZ, iA, k, height, slope, norm)
     !
     implicit none
 
-    real(kind=8) :: rhohardSVG, k, height, slope, norm
+    real(kind=8) :: rhohardSVG
+    real(kind=8), intent(in) :: k
+    real(kind=8), intent(out) :: height, slope, norm
     integer, intent(in) :: iZ, iA
 
     ! *** variables
@@ -873,7 +878,8 @@ function rhoCS(iZ, iA, k)
     !
     implicit none
 
-    real(kind=8) :: rhoCS, rhoCSsh, k
+    real(kind=8) :: rhoCS, rhoCSsh
+    real(kind=8), intent(in) :: k
     integer, intent(in) :: iZ, iA
 
     !
@@ -920,7 +926,8 @@ function rhoCSsh(iZ, iA, k, idist)
     !
     implicit none
 
-    real(kind=8) :: rhoCSsh, k
+    real(kind=8) :: rhoCSsh
+    real(kind=8), intent(in) :: k
     integer, intent(in) :: iZ, iA, idist
 
     ! *** variables

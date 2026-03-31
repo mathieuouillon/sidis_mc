@@ -12,19 +12,16 @@ contains
 ! ------------------------------------------------------------------------------
 subroutine init_random()
     use config_module, only: user_seed
+    use pythia_commons, only: MRPY, RRPY
     implicit none
 
     integer :: i                          ! Loop counter
     real :: test                          ! Dummy variable
     real :: ranf                          ! Random number generator from CERNLIB
     integer :: initrm1, initrm2          ! To initialize ranf
-    integer :: MRPY(6)
-    real(kind=8) :: RRPY(100), PYR
+    real(kind=8) :: PYR
     integer :: today(3), now(3)
     integer :: iseed                      ! Effective seed value
-
-    common/PYDATR/MRPY, RRPY
-    save/PYDATR/
 
     if (user_seed >= 0) then
         ! Deterministic seeding for reproducibility
