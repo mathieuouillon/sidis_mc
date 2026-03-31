@@ -110,7 +110,7 @@ subroutine GenRWtable()
 
 
 
-    integer :: ERROR
+    integer :: io_err
     real :: a, b, c, d, e
     real :: sum_n, sum_p
     integer :: i, j
@@ -122,49 +122,72 @@ subroutine GenRWtable()
     d = 0.0
     e = 0.0
 
-    ERROR = 0
     select case (iA)
     case (2)
         if (iZ == 1) then
-            open (unit=8, file='datafiles/fmrw/h2.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/h2.momentum', status='old', iostat=io_err)
+            if (io_err /= 0) then
+                write(*,*) 'ERROR: Cannot open datafiles/fmrw/h2.momentum'
+                stop 1
+            end if
         else
-            ERROR = 1
+            write(*,*) 'ERROR: Unsupported iZ/iA combination'
+            stop 1
         end if
     case (3)
         if (iZ == 1) then
-            open (unit=8, file='datafiles/fmrw/h3.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/h3.momentum', status='old', iostat=io_err)
+            if (io_err /= 0) then
+                write(*,*) 'ERROR: Cannot open datafiles/fmrw/h3.momentum'
+                stop 1
+            end if
         else if (iZ == 2) then
-            open (unit=8, file='datafiles/fmrw/he3.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/he3.momentum', status='old', iostat=io_err)
+            if (io_err /= 0) then
+                write(*,*) 'ERROR: Cannot open datafiles/fmrw/he3.momentum'
+                stop 1
+            end if
         else
-            ERROR = 1
+            write(*,*) 'ERROR: Unsupported iZ/iA combination'
+            stop 1
         end if
     case (4)
         if (iZ == 2) then
-            open (unit=8, file='datafiles/fmrw/he4.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/he4.momentum', status='old', iostat=io_err)
+            if (io_err /= 0) then
+                write(*,*) 'ERROR: Cannot open datafiles/fmrw/he4.momentum'
+                stop 1
+            end if
         else
-            ERROR = 1
+            write(*,*) 'ERROR: Unsupported iZ/iA combination'
+            stop 1
         end if
     case (6)
         if (iZ == 3) then
-            open (unit=8, file='datafiles/fmrw/lad.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/lad.momentum', status='old', iostat=io_err)
+            if (io_err /= 0) then
+                write(*,*) 'ERROR: Cannot open datafiles/fmrw/lad.momentum'
+                stop 1
+            end if
         else
-            ERROR = 1
+            write(*,*) 'ERROR: Unsupported iZ/iA combination'
+            stop 1
         end if
     case (7)
         if (iZ == 3) then
-            open (unit=8, file='datafiles/fmrw/lat.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/lat.momentum', status='old', iostat=io_err)
+            if (io_err /= 0) then
+                write(*,*) 'ERROR: Cannot open datafiles/fmrw/lat.momentum'
+                stop 1
+            end if
         else
-            ERROR = 1
+            write(*,*) 'ERROR: Unsupported iZ/iA combination'
+            stop 1
         end if
     case default
-        ERROR = 1
+        write(*,*) 'ERROR: Unsupported iZ/iA combination'
+        stop 1
     end select
-
-    if (ERROR == 1) then
-        write (*, *) 'ERROR'
-        close (8)
-        stop
-    end if
 
     ! Skip header lines until we find the marker
     do while (str(2:2) /= '*' .or. str(3:3) /= '*')
@@ -628,7 +651,7 @@ function rhosoftSVG(iZ, iA, k)
 
     ! *** variables
     integer, parameter :: nmax = 20
-    integer :: nin, i, j, n
+    integer :: nin, i, j, n, io_err
     save n
 
     real(kind=8) :: a(6, nmax), alpha(nmax), beta(nmax), nj
@@ -669,7 +692,11 @@ function rhosoftSVG(iZ, iA, k)
         firsttime = .false.
         nin = nextunit()
         open (unit=nin, file='datafiles/fmacc/fermimotion2.SVG.tbl', &
-              status='old')
+              status='old', iostat=io_err)
+        if (io_err /= 0) then
+            write(*,*) 'ERROR: Cannot open datafiles/fmacc/fermimotion2.SVG.tbl'
+            stop 1
+        end if
         ! ... skips headers
         do i = 1, 7
             read (nin, *) string
@@ -897,7 +924,7 @@ function rhoCSsh(iZ, iA, k, idist)
 
     ! *** variables
     integer, parameter :: nmax = 20
-    integer :: nin, i, j, n
+    integer :: nin, i, j, n, io_err
     save n
 
     real(kind=8) :: a0(nmax), b0(nmax), c0(nmax), d0(nmax), e0(nmax), &
@@ -934,7 +961,11 @@ function rhoCSsh(iZ, iA, k, idist)
         firsttime = .false.
         nin = nextunit()
         open (unit=nin, file='datafiles/fmacc/fermimotion2.CS.tbl', &
-              status='old')
+              status='old', iostat=io_err)
+        if (io_err /= 0) then
+            write(*,*) 'ERROR: Cannot open datafiles/fmacc/fermimotion2.CS.tbl'
+            stop 1
+        end if
         ! ... skips headers
         do i = 1, 9
             read (nin, *) string

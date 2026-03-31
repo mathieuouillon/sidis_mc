@@ -751,6 +751,7 @@
       subroutine initmult(alphas)
 
           double precision alphas
+          integer :: io_err
 
           REAL*8 xxq(400), daq(34), caq(34, 261), rrr(34)
           COMMON/dataqua/xxq, daq, caq, rrr
@@ -760,9 +761,17 @@
 !*
 
           if (nint(alphas*3d0) .eq. 1) then
-              OPEN (UNIT=20, FILE='datafiles/qweight/cont03.all', STATUS='OLD', ERR=90)
+              OPEN (UNIT=20, FILE='datafiles/qweight/cont03.all', STATUS='OLD', IOSTAT=io_err)
+              if (io_err /= 0) then
+                  write(*,*) 'ERROR: Cannot open datafiles/qweight/cont03.all'
+                  stop 1
+              end if
           else if (nint(alphas*2d0) .eq. 1) then
-              OPEN (UNIT=20, FILE='datafiles/qweight/cont05.all', STATUS='OLD', ERR=90)
+              OPEN (UNIT=20, FILE='datafiles/qweight/cont05.all', STATUS='OLD', IOSTAT=io_err)
+              if (io_err /= 0) then
+                  write(*,*) 'ERROR: Cannot open datafiles/qweight/cont05.all'
+                  stop 1
+              end if
           else
               print *, 'Error (initmult): alphas =/= 1/3 or 1/2'
               stop
@@ -798,9 +807,17 @@
                   close (20)
 !*
                   if (nint(alphas*3d0) .eq. 1) then
-                      OPEN (UNIT=21, FILE='datafiles/qweight/disc03.all', STATUS='OLD', ERR=90)
+                      OPEN (UNIT=21, FILE='datafiles/qweight/disc03.all', STATUS='OLD', IOSTAT=io_err)
+                      if (io_err /= 0) then
+                          write(*,*) 'ERROR: Cannot open datafiles/qweight/disc03.all'
+                          stop 1
+                      end if
                   else if (nint(alphas*2d0) .eq. 1) then
-                      OPEN (UNIT=21, FILE='datafiles/qweight/disc05.all', STATUS='OLD', ERR=90)
+                      OPEN (UNIT=21, FILE='datafiles/qweight/disc05.all', STATUS='OLD', IOSTAT=io_err)
+                      if (io_err /= 0) then
+                          write(*,*) 'ERROR: Cannot open datafiles/qweight/disc05.all'
+                          stop 1
+                      end if
                   else
                       print *, 'Error (initmult): alphas =/= 1/3 or 1/2'
                       stop
@@ -814,8 +831,6 @@
                           close (21)
 !*
                           return
-90                        PRINT *, 'input - output error'
-91                        PRINT *, 'input - output error #2'
 
                       end
 
@@ -937,6 +952,7 @@
                       subroutine initlin(alphas)
 
                           double precision alphas
+                          integer :: io_err
 
                           REAL*8 xxq(400), daq(34), caq(34, 261), rrr(34)
                           COMMON/dataqualin/xxq, daq, caq, rrr
@@ -945,7 +961,11 @@
                           COMMON/dataglulin/xxg, dag, cag, rrrg
 !*
                           if (nint(alphas*3d0) .eq. 1) then
-                              OPEN (UNIT=20, FILE='datafiles/qweight/contlin03.all', STATUS='OLD', ERR=90)
+                              OPEN (UNIT=20, FILE='datafiles/qweight/contlin03.all', STATUS='OLD', IOSTAT=io_err)
+                              if (io_err /= 0) then
+                                  write(*,*) 'ERROR: Cannot open datafiles/qweight/contlin03.all'
+                                  stop 1
+                              end if
                           else if (nint(alphas*2d0) .eq. 1) then
 !*         OPEN(UNIT=20,FILE='contlin05.all',STATUS='OLD',ERR=90)
                               print *, 'Error (initlin): alphas=0.5 not yet implemented'
@@ -985,7 +1005,11 @@
                                   close (20)
 !*
                                   if (nint(alphas*3d0) .eq. 1) then
-                                      OPEN (UNIT=21, FILE='datafiles/qweight/disclin03.all', STATUS='OLD', ERR=91)
+                                      OPEN (UNIT=21, FILE='datafiles/qweight/disclin03.all', STATUS='OLD', IOSTAT=io_err)
+                                      if (io_err /= 0) then
+                                          write(*,*) 'ERROR: Cannot open datafiles/qweight/disclin03.all'
+                                          stop 1
+                                      end if
                                   else if (nint(alphas*2d0) .eq. 1) then
 !         OPEN(UNIT=21,FILE='disclin05.all',STATUS='OLD',ERR=91)
                                       print *, 'Error (initlin): alphas=0.5 not yet implemented'
@@ -1003,8 +1027,6 @@
                                           close (21)
 !*
                                           return
-90                                        PRINT *, 'input - output error'
-91                                        PRINT *, 'input - output error #2'
 
                                       end
 

@@ -18,6 +18,7 @@ program monte_carlo_simulation
     real(kind=8) :: beam_energy          ! Input value for pythia
     integer(kind=8) :: i, l              ! Loop counters
     character(len=100) :: lund_file      ! Lund output file name
+    integer :: io_err
 
     ! Command line argument variables
     integer :: num_args
@@ -95,7 +96,13 @@ program monte_carlo_simulation
         call GenNucDens()
     end if
     call init_random()
-    if (iLund == 1) open (unit=59, file=lund_file)
+    if (iLund == 1) then
+        open (unit=59, file=lund_file, iostat=io_err)
+        if (io_err /= 0) then
+            write(*,*) 'ERROR: Cannot open output file: ', trim(lund_file)
+            stop 1
+        end if
+    end if
 
     ! Main Loop
     do while (ievent < nevent)
