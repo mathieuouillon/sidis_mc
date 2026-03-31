@@ -45,7 +45,8 @@ fortran_sources = [
   'clas_at12g.f',
   'clas12_accept.f',
   'read_par_clas12g.f',
-  'smear_fun.f'
+  'smear_fun.f',
+  'vz_position.f90'
 ]
 
 # All dependencies
@@ -59,9 +60,11 @@ all_deps = [
 ]
 
 # Create executable
-executable('simulation',
+sim_exe = executable('simulation',
           sources : [fortran_sources],
           dependencies : all_deps,
           fortran_args : fortran_args,
           cpp_args : cpp_args,
           install : true)
+
+subdir('tests')

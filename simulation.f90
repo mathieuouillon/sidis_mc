@@ -44,7 +44,7 @@ program monte_carlo_simulation
 
     ! Parse command line arguments
     num_args = command_argument_count()
-    call parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl, eColl, iFM)
+    call parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl, eColl, iFM, user_seed)
     call get_symbol_name(iTg, target_symbol)
 
     write (*, *) 'Monte Carlo Simulation Parameters:'
@@ -59,6 +59,11 @@ program monte_carlo_simulation
         write (*, *) '  Collider energy:  ', eColl, ' GeV'
     else
         write (*, *) '  Collider mode:    Disabled'
+    end if
+    if (user_seed >= 0) then
+        write (*, *) '  Random seed:      ', user_seed
+    else
+        write (*, *) '  Random seed:       time-based'
     end if
     write (*, *) ''
 
@@ -220,62 +225,10 @@ program monte_carlo_simulation
 end program monte_carlo_simulation
 
 ! ------------------------------------------------------------------------------
-! Set target vertex z for Lund (RG-D; 2024)
-! ------------------------------------------------------------------------------
-subroutine calculate_vz_position(target_type, vz)
-    implicit none
-
-    integer, intent(in) :: target_type    ! Input target type
-    real, intent(out) :: vz               ! Output vertex z position
-
-    ! Local variables
-    real, parameter :: first_pos = -2.5
-    real, parameter :: second_pos = -7.5
-    real :: target_pos
-    real :: target_length
-    real :: random_number
-
-    random_number = rand()                 ! Choose a value in [0,1]
-    vz = 0.0                              ! Default value for vz
-
-    select case (target_type)
-    case (10)
-        ! Case for Sn
-        target_pos = -3.5
-        target_length = 0.018
-
-    case (15)
-        ! Case for Cu
-        target_pos = -8.5
-        target_length = 0.009
-
-    case (7)
-        ! Case for Carbon
-        target_length = 0.2
-        if (random_number < 0.5) then
-            target_pos = -3.5
-        else
-            target_pos = -8.5
-        end if
-
-    case (1)
-        ! Case for LD2
-        target_pos = -5.0
-        target_length = 5.0
-
-    case default
-        ! Do nothing for unspecified targets
-        return
-    end select
-
-    vz = target_pos + target_length*(rand() - 0.5)
-
-end subroutine calculate_vz_position
-
-! ------------------------------------------------------------------------------
 ! Initialize random number generator
 ! ------------------------------------------------------------------------------
 subroutine init_random()
+    use config_module, only: user_seed
     implicit none
 
     integer :: i                          ! Loop counter
@@ -285,31 +238,57 @@ subroutine init_random()
     integer :: MRPY(6)
     real(kind=8) :: RRPY(100), PYR
     integer :: today(3), now(3)
+    integer :: iseed                      ! Effective seed value
 
     common/PYDATR/MRPY, RRPY
     save/PYDATR/
 
-    call idate(today)                     ! today(1)=day, (2)=month, (3)=year
-    call itime(now)                       ! now(1)=hour, (2)=minute, (3)=second
+    if (user_seed >= 0) then
+        ! Deterministic seeding for reproducibility
+        iseed = user_seed
+        call ranset(iseed)
 
-    test = real(now(1)*now(2))/real(now(3))
+        MRPY(2) = 0
+        MRPY(3) = mod(iseed, 85635)
+        MRPY(4) = mod(iseed, 67)
+        MRPY(5) = mod(iseed, 56)
 
-    call datime(initrm1, initrm2)
-    call ranset(initrm1*initrm2*int(test))
+        do i = 1, 100
+            RRPY(i) = ranf(0)
+        end do
 
-    MRPY(2) = 0
-    MRPY(3) = mod(initrm1, 85635)
-    MRPY(4) = mod(initrm1, 67)
-    MRPY(5) = mod(initrm2, 56)
+        ! Fixed warm-up count for reproducibility
+        do i = 1, 1000
+            test = ranf(0)
+            test = PYR(0)
+        end do
 
-    do i = 1, 100
-        RRPY(i) = ranf(0)
-    end do
+        ! Seed the Fortran intrinsic RNG (used by calculate_vz_position)
+        call srand(iseed)
+    else
+        ! Original time-based seeding
+        call idate(today)
+        call itime(now)
 
-    do i = 1, initrm2*int(test)
-        test = ranf(0)
-        test = PYR(0)
-    end do
+        test = real(now(1)*now(2))/real(now(3))
+
+        call datime(initrm1, initrm2)
+        call ranset(initrm1*initrm2*int(test))
+
+        MRPY(2) = 0
+        MRPY(3) = mod(initrm1, 85635)
+        MRPY(4) = mod(initrm1, 67)
+        MRPY(5) = mod(initrm2, 56)
+
+        do i = 1, 100
+            RRPY(i) = ranf(0)
+        end do
+
+        do i = 1, initrm2*int(test)
+            test = ranf(0)
+            test = PYR(0)
+        end do
+    end if
 
 end subroutine init_random
 
@@ -529,7 +508,7 @@ subroutine lorentz_fm_back(transform_type)
 
 end subroutine lorentz_fm_back
 
-subroutine parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl, eColl, iFM)
+subroutine parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl, eColl, iFM, user_seed)
     implicit none
 
     integer, intent(in) :: num_args
@@ -537,6 +516,7 @@ subroutine parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl,
     character(len=100), intent(out) :: lund_file
     integer, intent(out) :: iTg, nkin, iColl, iFM
     real(kind=4), intent(out) :: e0, eColl
+    integer, intent(inout) :: user_seed
 
     ! Local variables
     integer :: i_arg, iostat
@@ -698,6 +678,20 @@ subroutine parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl,
             iFM_set = .true.
             i_arg = i_arg + 2
 
+        case ('--seed', '-s')
+            if (i_arg == num_args) then
+                write (*, *) 'Error: --seed requires a value'
+                stop 1
+            end if
+            call get_command_argument(i_arg + 1, next_arg)
+            read (next_arg, *, iostat=iostat) user_seed
+            if (iostat /= 0 .or. user_seed < 0) then
+                write (*, *) 'Error: Invalid seed value. Must be a non-negative integer.'
+                write (*, *) 'Provided: ', trim(next_arg)
+                stop 1
+            end if
+            i_arg = i_arg + 2
+
         case ('--help', '-h')
             write (*, *) 'Monte Carlo Simulation Program'
             write (*, *) ''
@@ -715,6 +709,7 @@ subroutine parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl,
             write (*, *) '  --iColl         Collider option: 0 (no collider), 1 (collider) [default: 0]'
             write (*, *) '  --eColl        Collider energy in GeV (non-negative number) [default: 0.0]'
             write (*, *) '  --iFM          Fermi motion option (integer 0-5) [default: 5]'
+            write (*, *) '  --seed, -s     Random seed for reproducibility (non-negative integer) [default: time-based]'
             write (*, *) ''
             write (*, *) 'Target Types:'
             write (*, *) '  0  -> p      (proton)'

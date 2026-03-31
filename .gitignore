@@ -3,6 +3,21 @@ sc-root.C
 script0
 *.o
 *.swp
+*.mod
 default.root
 lund.txt
 simulation
+
+# Build directories
+build/
+builddir/
+
+# Python
+__pycache__/
+
+# Output files
+*.pdf
+
+# Test artifacts
+tests/golden/*.lund
+tests/statistical/ref/*.npz

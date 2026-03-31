@@ -178,6 +178,9 @@ module config_module
     real :: FMlimit         ! Fermi momentum limit
     real :: SupFac          ! Suppression factor
 
+    ! Seed for reproducibility (-1 = use time-based seed)
+    integer :: user_seed = -1
+
 end module config_module
 
 !==============================================================================

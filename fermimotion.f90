@@ -82,6 +82,10 @@ subroutine InitNucl
         rFM = 0.260
         iZ = 54
         iA = 132
+    case (15)
+        rFM = 0.260
+        iZ = 29
+        iA = 63
     case default
         rFM = 0.0
         iZ = 1
@@ -155,33 +159,33 @@ subroutine GenRWtable()
     select case (iA)
     case (2)
         if (iZ == 1) then
-            open (unit=8, file='../datafiles/fmrw/h2.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/h2.momentum', status='old')
         else
             ERROR = 1
         end if
     case (3)
         if (iZ == 1) then
-            open (unit=8, file='../datafiles/fmrw/h3.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/h3.momentum', status='old')
         else if (iZ == 2) then
-            open (unit=8, file='../datafiles/fmrw/he3.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/he3.momentum', status='old')
         else
             ERROR = 1
         end if
     case (4)
         if (iZ == 2) then
-            open (unit=8, file='../datafiles/fmrw/he4.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/he4.momentum', status='old')
         else
             ERROR = 1
         end if
     case (6)
         if (iZ == 3) then
-            open (unit=8, file='../datafiles/fmrw/lad.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/lad.momentum', status='old')
         else
             ERROR = 1
         end if
     case (7)
         if (iZ == 3) then
-            open (unit=8, file='../datafiles/fmrw/lat.momentum', status='old')
+            open (unit=8, file='datafiles/fmrw/lat.momentum', status='old')
         else
             ERROR = 1
         end if
