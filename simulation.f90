@@ -241,21 +241,21 @@ subroutine calculate_vz_position(target_type, vz)
     select case (target_type)
     case (10)
         ! Case for Sn
-        target_pos = -2.5
+        target_pos = -3.5
         target_length = 0.018
 
     case (15)
         ! Case for Cu
-        target_pos = -7.5
+        target_pos = -8.5
         target_length = 0.009
 
     case (7)
         ! Case for Carbon
         target_length = 0.2
         if (random_number < 0.5) then
-            target_pos = -2.5
+            target_pos = -3.5
         else
-            target_pos = -7.5
+            target_pos = -8.5
         end if
 
     case (1)
