@@ -31,24 +31,33 @@ kernlib_dep = meson.get_compiler('cpp').find_library('kernlib', dirs : cernlib_l
 
 # Source files
 fortran_sources = [
-  'simulation.f90',
-  'fermimotion.f90',
-  'pythia6428.f',
-  'pythiaconfig.f90',
-  'book.f90',
-  'transfo.f90',
-  'common_module.f90',
-  'nucdens.f',
-  'density.f90',
-  'qweight.f90',
-  'accep_fun.f',
-  'clas_at12g.f',
-  'clas12_accept.f',
-  'read_par_clas12g.f',
-  'smear_fun.f',
-  'vz_position.f90',
-  'simulation_helpers.f90',
-  'cli.f90'
+  # Main program
+  'src/simulation.f90',
+
+  # Modules
+  'src/modules/common_module.f90',
+  'src/modules/simulation_helpers.f90',
+  'src/modules/cli.f90',
+
+  # Physics
+  'src/physics/fermimotion.f90',
+  'src/physics/pythiaconfig.f90',
+  'src/physics/book.f90',
+  'src/physics/transfo.f90',
+  'src/physics/nucdens.f',
+  'src/physics/density.f90',
+  'src/physics/qweight.f90',
+  'src/physics/vz_position.f90',
+
+  # Detector acceptance
+  'src/detector/accep_fun.f',
+  'src/detector/clas_at12g.f',
+  'src/detector/clas12_accept.f',
+  'src/detector/read_par_clas12g.f',
+  'src/detector/smear_fun.f',
+
+  # External libraries
+  'src/external/pythia6428.f',
 ]
 
 # All dependencies

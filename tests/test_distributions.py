@@ -19,8 +19,8 @@ import subprocess
 import tempfile
 import numpy as np
 
-# Add parent directory to path for importing plot_lund
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add scripts directory to path for importing plot_lund
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'scripts'))
 from plot_lund import read_lund, compute_dis
 
 

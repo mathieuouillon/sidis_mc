@@ -1,7 +1,7 @@
 # Tests build file for FARM simulation
 
 # Common module source (needed by most tests)
-common_mod_src = files('../common_module.f90')
+common_mod_src = files('../src/modules/common_module.f90')
 
 # ── Unit test: Lorentz boost (TL) ──────────────────────────────────────────
 test_tl_exe = executable('test_tl',
@@ -12,7 +12,7 @@ test('unit_lorentz_boost', test_tl_exe)
 
 # ── Unit test: Nuclear initialization (InitNucl) ──────────────────────────
 test_initnucl_exe = executable('test_initnucl',
-    sources: ['test_initnucl.f90', '../fermimotion.f90', common_mod_src],
+    sources: ['test_initnucl.f90', '../src/physics/fermimotion.f90', common_mod_src],
     dependencies: all_deps,
     fortran_args: fortran_args,
     install: false)
@@ -21,7 +21,7 @@ test('unit_init_nuclear', test_initnucl_exe,
 
 # ── Unit test: Vertex z-position ──────────────────────────────────────────
 test_vz_exe = executable('test_vz',
-    sources: ['test_vz.f90', '../vz_position.f90'],
+    sources: ['test_vz.f90', '../src/physics/vz_position.f90'],
     fortran_args: fortran_args,
     install: false)
 test('unit_vertex_z', test_vz_exe)
