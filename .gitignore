@@ -12,6 +12,9 @@ simulation
 build/
 builddir/
 
+# Archived dead code
+archive/
+
 # Python
 __pycache__/
 

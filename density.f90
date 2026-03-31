@@ -13,7 +13,6 @@
           use misc_module
           use pythia_commons
           implicit none
-          ! include 'common.f90'
 
           real r
           integer i
@@ -55,7 +54,6 @@
           use pythia_commons
           implicit none
 
-          ! include 'common.f90'
 
           integer i, idist, irho
           double precision nucdens, r

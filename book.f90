@@ -16,8 +16,6 @@ subroutine InitKin2Book
     use pythia_commons
     implicit none
 
-    ! Include all the common blocks
-    ! include 'common.f90'
 
     Nu = 0.
     Q22 = 0
@@ -46,8 +44,6 @@ subroutine ComputV
     use pythia_commons
     implicit none
 
-    ! Include all the common blocks
-    ! include 'common.f90'
 
     integer ip
     ! for calculation of Phih
@@ -216,8 +212,6 @@ subroutine init_recoil
     integer i, j
     real a, b, c, d, e
 
-    ! Include all the common blocks
-    ! include 'common.f90'
 
     write (*, *) 'Init recoil acceptance routine'
 

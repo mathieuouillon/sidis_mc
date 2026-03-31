@@ -16,8 +16,6 @@
           use pythia_commons
           implicit none
 
-!ccccc Include all the common blocks
-          ! include 'common.f90'
 
           MSEL = 2
 !c Kind of possible multiple interaction (needed to avoid bugs) D = 4 H =1
@@ -75,8 +73,6 @@
           use pythia_commons
           implicit none
 
-!ccccc Include all the common blocks
-          ! include 'common.f90'
           !integer i
 
 !c DIS only
@@ -123,8 +119,6 @@
           use pythia_commons
           implicit none
 
-!ccccc Include all the common blocks
-          ! include 'common.f90'
 
 !ccc Deeply Inelastic Scattering and γ ∗ γ ∗ physics
 !ccc MSEL = 1, 2, 35, 36, 37, 38
@@ -215,8 +209,6 @@
           use pythia_commons
           implicit none
 
-!ccccc Include all the common blocks
-          ! include 'common.f90'
 
 !c Maximum number of generations D = 3 / H = 2
           MSTP(1) = 2
@@ -392,8 +384,6 @@
           use pythia_commons
           implicit none
 
-!ccccc Include all the common blocks
-          ! include 'common.f90'
 
           MSEL = 2
 !c      MSUB(29) = 1
@@ -501,8 +491,6 @@
           use pythia_commons
           implicit none
 
-!ccccc Include all the common blocks
-          ! include 'common.f90'
 
 !C****************************************************************************
 !C Latest pythia tune with fragmentation tune 2004_C

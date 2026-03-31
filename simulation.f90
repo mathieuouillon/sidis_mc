@@ -313,8 +313,6 @@ subroutine init_kin()
     real, parameter :: electron_mass = 0.000511
     real, parameter :: nucleon_mass = 0.938
 
-    ! include 'common.f90'
-
     PPe = E0
     EEe = sqrt(PPe**2 + electron_mass**2)
     Pex = 0.0
@@ -352,8 +350,6 @@ subroutine create_spec()
     use misc_module
     use pythia_commons
     implicit none
-
-    !include 'common.f90'
 
     ! Decide if there is a spectator (RW model only)
     if (rand(0) > FMintact) return
@@ -428,7 +424,6 @@ subroutine lorentz_fm(transform_type)
     implicit none
 
     integer, intent(in) :: transform_type
-    ! include 'common.f90'
 
     if (transform_type == 1) then
         BB1 = PPn/EEn

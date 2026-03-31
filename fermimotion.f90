@@ -16,8 +16,7 @@ subroutine InitNucl
     use pythia_commons
     implicit none
 
-    ! Include all the common blocks
-    ! include 'common.f90'
+
 
     ! Fill rFM, iZ and iA in function of the Target
     select case (iTg)
@@ -109,8 +108,7 @@ subroutine InitFM
     use pythia_commons
     implicit none
 
-    ! Include all the common blocks
-    ! include 'common.f90'
+
     integer :: irho ! dummy variable
 
     ! Produce the table for FM generation (CS)
@@ -138,9 +136,10 @@ subroutine GenRWtable()
     use acceptance_module
     use misc_module
     use pythia_commons
+    use constants_module, only: HBAR_C
     implicit none
 
-    ! include 'common.f90'
+
 
     integer :: ERROR
     real :: a, b, c, d, e
@@ -153,7 +152,6 @@ subroutine GenRWtable()
     c = 0.0
     d = 0.0
     e = 0.0
-    write (*, *) 'Enter GenRWtable'
 
     ERROR = 0
     select case (iA)
@@ -202,9 +200,6 @@ subroutine GenRWtable()
     ! Skip header lines until we find the marker
     do while (str(2:2) /= '*' .or. str(3:3) /= '*')
         read (8, *) str
-        write (*, *) str
-        write (*, *) str(2:2)
-        write (*, *) str(3:3)
     end do
 
     i = 0
@@ -212,10 +207,9 @@ subroutine GenRWtable()
     sum_p = 0.0
 
     if (iZ == 1 .and. iA == 2) then
-        do while (a < FMlimit/0.1973269602)
+        do while (a < FMlimit/HBAR_C)
             i = i + 1
             read (8, *) a, b, c, d
-            write (*, *) a, b, c, d
             FM_n(i) = d
             FM_p(i) = d
             sum_n = sum_n + d
@@ -223,30 +217,27 @@ subroutine GenRWtable()
         end do
     else if ((iZ == 1 .and. iA == 3) .or. (iZ == 2 .and. iA == 3) &
              .or. (iZ == 3 .and. iA == 7)) then
-        do while (a < FMlimit/0.1973269602)
+        do while (a < FMlimit/HBAR_C)
             i = i + 1
             read (8, *) a, b, c, d, e
-            write (*, *) a, b, c, d, e
             FM_n(i) = d
             FM_p(i) = b
             sum_n = sum_n + d
             sum_p = sum_p + b
         end do
     else if (iZ == 3 .and. iA == 6) then
-        do while (a < FMlimit/0.1973269602)
+        do while (a < FMlimit/HBAR_C)
             i = i + 1
             read (8, *) a, b, c
-            write (*, *) a, b, c
             FM_n(i) = b
             FM_p(i) = b
             sum_n = sum_n + b
             sum_p = sum_p + b
         end do
     else if (iZ == 2 .and. iA == 4) then
-        do while (a < FMlimit/0.1973269602)
+        do while (a < FMlimit/HBAR_C)
             i = i + 1
             read (8, *) a, b, c, d, e
-            write (*, *) a, b, c, d, e
             FM_n(i) = b*(a + 0.05)**2
             FM_p(i) = b*(a + 0.05)**2
             sum_n = sum_n + FM_n(i)
@@ -260,7 +251,6 @@ subroutine GenRWtable()
     end if
 
     step_size_FM = FMlimit/real(i)
-    write (*, *) 'step ', step_size_FM, sum_n
 
     do j = 1, i
         FM_n(j) = FM_n(j)/sum_n
@@ -270,10 +260,8 @@ subroutine GenRWtable()
     do j = 2, i
         FM_n(j) = FM_n(j - 1) + FM_n(j)
         FM_p(j) = FM_p(j - 1) + FM_p(j)
-        write (*, *) j, FM_n(j), FM_p(j), FM_i(j)
     end do
 
-    write (*, *) 'Exit GenRWtable'
     close (8)
 
 end subroutine GenRWtable
@@ -303,8 +291,7 @@ subroutine FMParam
     real :: Ps, Thr, C, Rd ! variables for Kf computation
     integer :: i
 
-    ! Include all the common blocks
-    ! include 'common.f90'
+
 
     FMintact = 1
 
@@ -397,7 +384,7 @@ subroutine GenFMtable(irho)
     integer :: itz, ita
     real(kind=8) :: rhofermi, mom, proba, ptot, step
 
-    ! include 'common.f90'
+
 
     itz = iZ
     ita = iA

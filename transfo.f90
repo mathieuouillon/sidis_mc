@@ -45,8 +45,6 @@
           use pythia_commons
           implicit none
 
-!ccccc Include all the common blocks
-          ! include 'common.f90'
           real Pix, Piy, Piz ! intermediate kinematics
           real Theta !angle for rotation
 
@@ -84,8 +82,6 @@
           use pythia_commons
           implicit none
 
-!ccccc Include all the common blocks
-          ! include 'common.f90'
           real Pix, Piy, Piz ! intermediate kinematics
           real PhiAng !angle for rotation
 
@@ -122,8 +118,6 @@
           use pythia_commons
           implicit none
 
-!ccccc Include all the common blocks
-          !   include 'common.f90'
           real Pix, Piy, Piz ! intermediate kinematics
           real Theta !angle for rotation
           integer ip ! For do
@@ -160,8 +154,6 @@
           use pythia_commons
           implicit none
 
-!ccccc Include all the common blocks
-          ! include 'common.f90'
           real Pix, Piy, Piz ! intermediate kinematics
           real PhiAng !angle for rotation
           integer ip ! For do

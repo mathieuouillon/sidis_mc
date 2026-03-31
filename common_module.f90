@@ -1,3 +1,22 @@
+!==============================================================================
+! MODULE: constants_module
+! Purpose: Physical and mathematical constants used throughout the simulation
+!==============================================================================
+module constants_module
+    implicit none
+
+    real, parameter :: PI = 3.1415926535
+    real, parameter :: DEG_TO_RAD = PI / 180.0
+    real, parameter :: RAD_TO_DEG = 180.0 / PI
+    real, parameter :: HBAR_C = 0.1973269602       ! GeV*fm conversion factor
+    real(kind=8), parameter :: PI_D = 3.1415926535898d0
+
+end module constants_module
+
+!==============================================================================
+! MODULE: kinematics_module
+! Purpose: Initial kinematic variables and transformation parameters
+!==============================================================================
 module kinematics_module
     implicit none
 
@@ -206,11 +225,11 @@ end module acceptance_module
 ! Purpose: Miscellaneous variables and constants
 !==============================================================================
 module misc_module
+    use constants_module, only: pi
     implicit none
 
     real :: vxz             ! Vertex position for GSIM
     real :: vz              ! Vertex z position
-    real, parameter :: pi = 3.1415926535
 
     interface
         real function ranf(dummy)

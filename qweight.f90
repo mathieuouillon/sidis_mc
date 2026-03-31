@@ -13,7 +13,6 @@
           use pythia_commons
           implicit none
 
-          ! include 'common.f90'
 
           integer ip, iq, ir ! For do
 
@@ -189,7 +188,6 @@
           use pythia_commons
           implicit none
 
-          ! include 'common.f90'
 
           double precision ipx, ipy, ipz, E !input energy momentum of the particle
           real partmass !mass of the particle (for conservation purpose)
