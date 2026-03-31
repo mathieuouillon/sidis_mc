@@ -46,7 +46,9 @@ fortran_sources = [
   'clas12_accept.f',
   'read_par_clas12g.f',
   'smear_fun.f',
-  'vz_position.f90'
+  'vz_position.f90',
+  'simulation_helpers.f90',
+  'cli.f90'
 ]
 
 # All dependencies
