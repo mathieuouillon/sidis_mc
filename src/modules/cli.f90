@@ -7,20 +7,20 @@ module cli_module
 
 contains
 
-subroutine parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl, eColl, iFM, user_seed)
+subroutine parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iFM, user_seed)
     implicit none
 
     integer, intent(in) :: num_args
     integer, intent(out) :: nevent
     character(len=100), intent(out) :: lund_file
-    integer, intent(out) :: iTg, nkin, iColl, iFM
-    real(kind=4), intent(out) :: e0, eColl
+    integer, intent(out) :: iTg, nkin, iFM
+    real(kind=4), intent(out) :: e0
     integer, intent(inout) :: user_seed
 
     ! Local variables
     integer :: i_arg, iostat
     character(len=100) :: arg_str, next_arg
-    logical :: nevent_set, output_set, target_set, nkin_set, e0_set, iColl_set, eColl_set, iFM_set
+    logical :: nevent_set, output_set, target_set, nkin_set, e0_set, iFM_set
 
     ! Initialize flags
     nevent_set = .false.
@@ -28,24 +28,20 @@ subroutine parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl,
     target_set = .false.
     nkin_set = .false.
     e0_set = .false.
-    iColl_set = .false.
-    eColl_set = .false.
     iFM_set = .false.
     nevent = 0
     lund_file = ''
     iTg = -1
     nkin = 0
     e0 = 0.0
-    iColl = 0
-    eColl = 0.0
     iFM = 5
 
     if (num_args == 0) then
         write (*, *) 'Usage: ./monte_carlo_simulation --nevent <number_of_events> --output <lund_output_file> &
-           --target <target_type> --nkin <nkin_value> --e0 <electron_energy> --iColl <collider_option> --eColl <collider_energy> &
+           --target <target_type> --nkin <nkin_value> --e0 <electron_energy> &
            --iFM <fermi_motion_option>'
         write (*, *) 'Example: ./monte_carlo_simulation --nevent 10000 --output 120k_D.txt --target 1 --nkin 20000 --e0 10.5 &
-         --iColl 1 --eColl 0.5 --iFM 5'
+         --iFM 5'
         write (*, *) 'Use --help for detailed information about all options'
         stop 1
     end if
@@ -132,36 +128,6 @@ subroutine parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl,
             e0_set = .true.
             i_arg = i_arg + 2
 
-        case ('--iColl')
-            if (i_arg == num_args) then
-                write (*, *) 'Error: --iColl requires a value'
-                stop 1
-            end if
-            call get_command_argument(i_arg + 1, next_arg)
-            read (next_arg, *, iostat=iostat) iColl
-            if (iostat /= 0 .or. (iColl /= 0 .and. iColl /= 1)) then
-                write (*, *) 'Error: Invalid collider option. Must be 0 (no collider) or 1 (collider).'
-                write (*, *) 'Provided: ', trim(next_arg)
-                stop 1
-            end if
-            iColl_set = .true.
-            i_arg = i_arg + 2
-
-        case ('--eColl')
-            if (i_arg == num_args) then
-                write (*, *) 'Error: --eColl requires a value'
-                stop 1
-            end if
-            call get_command_argument(i_arg + 1, next_arg)
-            read (next_arg, *, iostat=iostat) eColl
-            if (iostat /= 0 .or. eColl < 0.0) then
-                write (*, *) 'Error: Invalid collider energy. Must be a non-negative number.'
-                write (*, *) 'Provided: ', trim(next_arg)
-                stop 1
-            end if
-            eColl_set = .true.
-            i_arg = i_arg + 2
-
         case ('--iFM')
             if (i_arg == num_args) then
                 write (*, *) 'Error: --iFM requires a value'
@@ -205,8 +171,6 @@ subroutine parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl,
             write (*, *) ''
             write (*, *) 'Optional:'
             write (*, *) '  --help, -h      Show this help message'
-            write (*, *) '  --iColl         Collider option: 0 (no collider), 1 (collider) [default: 0]'
-            write (*, *) '  --eColl        Collider energy in GeV (non-negative number) [default: 0.0]'
             write (*, *) '  --iFM          Fermi motion option (integer 0-5) [default: 5]'
             write (*, *) '  --seed, -s     Random seed for reproducibility (non-negative integer) [default: time-based]'
             write (*, *) ''
@@ -242,8 +206,7 @@ subroutine parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl,
             write (*, *) '  - [2] A. Bodek and J. L. Ritchie PRD 23, 1070 (1981)'
             write (*, *) ''
             write (*, *) 'Examples:'
-            write (*, *) '  ./monte_carlo_simulation --nevent 10000 --output 120k_D.txt --target 1 --nkin 20000 --e0 10.5 &
-            --iColl 1 --eColl 0.5 --iFM 5'
+            write (*, *) '  ./monte_carlo_simulation --nevent 10000 --output 120k_D.txt --target 1 --nkin 20000 --e0 10.5 --iFM 5'
             write (*, *) '  ./monte_carlo_simulation -n 50000 -o results.txt -t 7 --nkin 15000 --e0 12.0'
             write (*, *) '  ./monte_carlo_simulation --target 0 --nevent 25000 --output proton.txt --nkin 10000 --e0 8.5'
             stop 0

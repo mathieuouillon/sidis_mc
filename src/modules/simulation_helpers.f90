@@ -176,8 +176,7 @@ end subroutine create_spec
 ! ------------------------------------------------------------------------------
 subroutine lorentz_fm(transform_type)
     use kinematics_module, only: EEe, PPe, Pex, Pey, Pez, EEn, PPn, Pnx, Pny, Pnz, &
-        BB1, B1x, B1y, B1z, BB2, B2x, B2y, B2z, Thi, Phi
-    use config_module, only: EColl
+        BB1, B1x, B1y, B1z, Thi, Phi
     implicit none
 
     integer, intent(in) :: transform_type
@@ -198,14 +197,6 @@ subroutine lorentz_fm(transform_type)
         ! Rotate around z
         Phi = -atan2(Pey, Pez)
         call InitRotZ(Phi)
-
-    else if (transform_type == 2) then
-        BB2 = -sqrt(EColl**2 - 0.939**2)/EColl
-        B2x = 0.0
-        B2y = 0.0
-        B2z = BB2
-
-        call TL(EEe, PPe, Pex, Pey, Pez, BB2, B2x, B2y, B2z)
     end if
 
 end subroutine lorentz_fm
@@ -214,7 +205,7 @@ end subroutine lorentz_fm
 ! Inverse Lorentz transformation for Fermi motion
 ! ------------------------------------------------------------------------------
 subroutine lorentz_fm_back(transform_type)
-    use kinematics_module, only: BB1, B1x, B1y, B1z, BB2, B2x, B2y, B2z, Thi, Phi
+    use kinematics_module, only: BB1, B1x, B1y, B1z, Thi, Phi
     use pythia_commons, only: N, P
     implicit none
 
@@ -238,8 +229,6 @@ subroutine lorentz_fm_back(transform_type)
 
         if (transform_type == 1) then
             call TL(mom4, ppp, mom1, mom2, mom3, -BB1, -B1x, -B1y, -B1z)
-        else if (transform_type == 2) then
-            call TL(mom4, ppp, mom1, mom2, mom3, -BB2, -B2x, -B2y, -B2z)
         end if
 
         p(ip, 1) = mom1

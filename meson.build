@@ -49,13 +49,6 @@ fortran_sources = [
   'src/physics/qweight.f90',
   'src/physics/vz_position.f90',
 
-  # Detector acceptance
-  'src/detector/accep_fun.f',
-  'src/detector/clas_at12g.f',
-  'src/detector/clas12_accept.f',
-  'src/detector/read_par_clas12g.f',
-  'src/detector/smear_fun.f',
-
   # External libraries
   'src/external/pythia6428.f',
 ]

@@ -4,8 +4,8 @@ program monte_carlo_simulation
         px_part, py_part, pz_part, E_part, m_part
     use fermi_motion_module, only: iZ, iA
     use quenching_module, only: QW_nb, QW_qhat, alphas, iqw, scor, ncor, sfthrd
-    use config_module, only: nevent, nkin, iTg, iFM, iColl, EColl, E0, user_seed, &
-        iIso, iNS, iAccept, iLund, iQuenching, iSim, nucleon, qhat, ehat, &
+    use config_module, only: nevent, nkin, iTg, iFM, E0, user_seed, &
+        iIso, iNS, iLund, iQuenching, iSim, nucleon, qhat, ehat, &
         iDens, iqg, iEg, iPtF, SupFac, FMlimit, rFM
     use misc_module, only: vz
     use pythia_commons, only: MSTJ, XSEC
@@ -29,13 +29,11 @@ program monte_carlo_simulation
     iTg = -1
     nkin = 0
     e0 = 0.0
-    iColl = 0
-    eColl = 0.0
     iFM = 5
 
     ! Parse command line arguments
     num_args = command_argument_count()
-    call parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iColl, eColl, iFM, user_seed)
+    call parse_command_line(num_args, nevent, lund_file, iTg, nkin, e0, iFM, user_seed)
     call get_symbol_name(iTg, target_symbol)
 
     write (*, *) 'Monte Carlo Simulation Parameters:'
@@ -45,12 +43,6 @@ program monte_carlo_simulation
     write (*, *) '  Nkin value:       ', nkin
     write (*, *) '  Electron energy:  ', e0, ' GeV'
     write (*, *) '  Fermi motion:     ', iFM
-    if (iColl == 1) then
-        write (*, *) '  Collider mode:    Enabled'
-        write (*, *) '  Collider energy:  ', eColl, ' GeV'
-    else
-        write (*, *) '  Collider mode:    Disabled'
-    end if
     if (user_seed >= 0) then
         write (*, *) '  Random seed:      ', user_seed
     else
@@ -70,8 +62,6 @@ program monte_carlo_simulation
     ! This option is only for 2H and 4He targets
     iNS = 0
 
-    ! Acceptance flags
-    iAccept = 0                      ! CLAS12 Acceptance put 1
     iLund = 1                        ! Lund File
 
     ! Initialize quenching weights
@@ -105,7 +95,6 @@ program monte_carlo_simulation
         call GenNucDens()
     end if
     call init_random()
-    if (iAccept == 1) call init_recoil()
     if (iLund == 1) open (unit=59, file=lund_file)
 
     ! Main Loop
@@ -131,7 +120,6 @@ program monte_carlo_simulation
                 call init_kin()
 
                 ! Going in the nucleon rest frame
-                if (iColl /= 0) call lorentz_fm(2)
                 if (iFM /= 0) call lorentz_fm(1)
 
                 ! Security for low energies
@@ -181,9 +169,6 @@ program monte_carlo_simulation
         end if
 
         if (iNS == 1 .and. (iTg >= 1 .or. iTg <= 4)) call create_spec()
-
-        ! Go back in lab frame (for collider mode)
-        if (iColl /= 0) call lorentz_fm_back(2)
 
         ! Compute physical values for output
         call ComputV()

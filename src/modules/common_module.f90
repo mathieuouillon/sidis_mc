@@ -30,7 +30,6 @@ module kinematics_module
     ! Transformation variables
     real :: ThFM, PhiFM, Kf                   ! Theta, Phi and K Fermi
     real :: BB1, B1x, B1y, B1z                ! Lorentz kinematics
-    real :: BB2, B2x, B2y, B2z                ! Lorentz kinematics
     real :: Thi, Phi                          ! angles for rotation
     real :: Beta, ECoM                        ! For calculation of the CoM energy
 
@@ -67,7 +66,6 @@ module particles_module
     integer :: Nb_part
     integer :: id_part(MAX_PARTICLES)
     integer :: id_mother(MAX_PARTICLES)
-    integer :: acc_part(MAX_PARTICLES)
     integer :: ch_part(MAX_PARTICLES)
 
     real :: p_part(MAX_PARTICLES)
@@ -169,9 +167,7 @@ module config_module
     integer :: iQuenching   ! Quenching flag
     integer :: iSim         ! Simulation flag
     integer :: iNS          ! Nuclear spectator
-    integer :: iAccept      ! Acceptance flag
     integer :: iLund        ! Lund output flag
-    integer :: iAlert       ! ALERT acceptance
     integer :: iIso         ! Isospin flag
 
     ! Event and kinematic parameters
@@ -179,10 +175,6 @@ module config_module
     integer :: nkin         ! Kinematic iterations
     integer :: nucleon      ! Nucleon type (2212=p, 2112=n)
     integer :: specId       ! Spectator ID
-
-    ! Collider parameters
-    integer :: iColl        ! Collider flag
-    real :: EColl           ! Collider energy
 
     ! Quenching parameters
     integer :: iqg          ! Quark/gluon quenching
@@ -201,24 +193,6 @@ module config_module
     integer :: user_seed = -1
 
 end module config_module
-
-!==============================================================================
-! MODULE: acceptance_module
-! Purpose: Recoil particle acceptance tables
-!==============================================================================
-module acceptance_module
-    implicit none
-
-    integer, parameter :: ACC_SIZE_1 = 25
-    integer, parameter :: ACC_SIZE_2 = 25
-
-    real :: pro_acc(ACC_SIZE_1, ACC_SIZE_2)
-    real :: deu_acc(ACC_SIZE_1, ACC_SIZE_2)
-    real :: tri_acc(ACC_SIZE_1, ACC_SIZE_2)
-    real :: he3_acc(ACC_SIZE_1, ACC_SIZE_2)
-    real :: he4_acc(ACC_SIZE_1, ACC_SIZE_2)
-
-end module acceptance_module
 
 !==============================================================================
 ! MODULE: misc_module

@@ -13,7 +13,6 @@ program test_initnucl
     use density_module
     use interaction_module
     use quenching_module
-    use acceptance_module
     use misc_module
     use pythia_commons
     implicit none
