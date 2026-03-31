@@ -44,7 +44,7 @@ fortran_sources = [
   'src/physics/pythiaconfig.f90',
   'src/physics/book.f90',
   'src/physics/transfo.f90',
-  'src/physics/nucdens.f',
+  'src/physics/nucdens.f90',
   'src/physics/density.f90',
   'src/physics/qweight.f90',
   'src/physics/vz_position.f90',

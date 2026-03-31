@@ -36,15 +36,6 @@ module kinematics_module
 end module kinematics_module
 
 !==============================================================================
-! MODULE: file_names_module
-! Purpose: Output file names
-!==============================================================================
-module file_names_module
-    implicit none
-    character(len=60) :: bosout, hbookout
-end module file_names_module
-
-!==============================================================================
 ! MODULE: event_info_module
 ! Purpose: Event kinematic information
 !==============================================================================

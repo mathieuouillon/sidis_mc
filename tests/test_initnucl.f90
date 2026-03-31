@@ -5,16 +5,6 @@
 program test_initnucl
     use fermi_motion_module
     use config_module
-    ! Need to use all modules that InitNucl uses
-    use kinematics_module
-    use file_names_module
-    use event_info_module
-    use particles_module
-    use density_module
-    use interaction_module
-    use quenching_module
-    use misc_module
-    use pythia_commons
     implicit none
 
     integer :: failures, total

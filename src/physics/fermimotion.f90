@@ -676,10 +676,12 @@ function rhosoftSVG(iZ, iA, k)
         end do
         ! ... reads values
         j = 0
-10      j = j + 1
-        read (nin, *) string, ZZ(j), AA(j), a(1, j), a(2, j), a(3, j), &
-            a(4, j), a(5, j), a(6, j), alpha(j), beta(j)
-        if (ZZ(j) /= 0) goto 10
+        do
+            j = j + 1
+            read (nin, *) string, ZZ(j), AA(j), a(1, j), a(2, j), a(3, j), &
+                a(4, j), a(5, j), a(6, j), alpha(j), beta(j)
+            if (ZZ(j) == 0) exit
+        end do
         nnuke = j - 1
         close (nin)
     end if
@@ -939,10 +941,12 @@ function rhoCSsh(iZ, iA, k, idist)
         end do
         ! ... reads n0(k) parameters
         j = 0
-10      j = j + 1
-        read (nin, *) string, ZZ(j), AA(j), a0(j), b0(j), c0(j), d0(j), &
-            e0(j), f0(j)
-        if (ZZ(j) /= 0) goto 10
+        do
+            j = j + 1
+            read (nin, *) string, ZZ(j), AA(j), a0(j), b0(j), c0(j), d0(j), &
+                e0(j), f0(j)
+            if (ZZ(j) == 0) exit
+        end do
         nnuke = j - 1
         ! ... skips text
         do i = 1, 4
@@ -950,9 +954,11 @@ function rhoCSsh(iZ, iA, k, idist)
         end do
         ! ... reads n1(k) parameters
         j = 0
-20      j = j + 1
-        read (nin, *) string, ZZ(j), AA(j), a1(j), b1(j), b2(j), c1(j), d1(j)
-        if (ZZ(j) /= 0) goto 20
+        do
+            j = j + 1
+            read (nin, *) string, ZZ(j), AA(j), a1(j), b1(j), b2(j), c1(j), d1(j)
+            if (ZZ(j) == 0) exit
+        end do
         nnuke = j - 1
         close (nin)
     end if
@@ -1059,15 +1065,15 @@ subroutine ilocatetab(xx, n, x, j)
     !
     jl = 0
     ju = n + 1
-10  if (ju - jl > 1) then
+    do
+        if (ju - jl <= 1) exit
         jm = (ju + jl)/2
         if ((xx(n) >= xx(1)) .eqv. (x >= xx(jm))) then
             jl = jm
         else
             ju = jm
         end if
-        goto 10
-    end if
+    end do
 
     if (x == xx(1)) then
         j = 1

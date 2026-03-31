@@ -690,7 +690,7 @@
           rrin = rrrr
           xxin = xxxx
 !*
-          do 666, nr = 1, 34
+          search_r: do nr = 1, 34
               if (rrin .lt. rrr(nr)) then
                   rrhigh = rrr(nr)
               else
@@ -698,10 +698,9 @@
                   rrlow = rrr(nr)
                   nrlow = nr
                   nrhigh = nr - 1
-                  goto 665
+                  exit search_r
               end if
-666       end do
-665       continue
+          end do search_r
 !*
           rfraclow = (rrhigh - rrin)/(rrhigh - rrlow)
           rfrachigh = (rrin - rrlow)/(rrhigh - rrlow)
@@ -725,7 +724,6 @@
           end if
 
           if (xxxx .ge. xx(260)) stop
-          if (xxxx .ge. xx(260)) go to 245
 
           nxlow = int(xxin/0.01) + 1
           nxhigh = nxlow + 1
@@ -741,8 +739,6 @@
           end if
 
           continuous = rfraclow*clow + rfrachigh*chigh
-
-245       continue
 
           if (ipart .ne. 0) then
               discrete = rfraclow*daq(nrlow) + rfrachigh*daq(nrhigh)
@@ -817,10 +813,9 @@
 113                       continue
                           close (21)
 !*
-                          goto 888
+                          return
 90                        PRINT *, 'input - output error'
 91                        PRINT *, 'input - output error #2'
-888                       continue
 
                       end
 
@@ -881,7 +876,7 @@
                           rrin = rrrr
                           xxin = xxxx
 !*
-                          do 666, nr = 1, 34
+                          search_r: do nr = 1, 34
                               if (rrin .lt. rrr(nr)) then
                                   rrhigh = rrr(nr)
                               else
@@ -889,10 +884,9 @@
                                   rrlow = rrr(nr)
                                   nrlow = nr
                                   nrhigh = nr - 1
-                                  goto 665
+                                  exit search_r
                               end if
-666                       end do
-665                       continue
+                          end do search_r
 !*
                           rfraclow = (rrhigh - rrin)/(rrhigh - rrlow)
                           rfrachigh = (rrin - rrlow)/(rrhigh - rrlow)
@@ -915,24 +909,22 @@
                               rfrachigh = 0
                           end if
 
-                          if (xxxx .ge. xx(260)) go to 245
-
-                          nxlow = int(xxin/0.038) + 1
-                          nxhigh = nxlow + 1
-                          xfraclow = (xx(nxhigh) - xxin)/0.038
-                          xfrachigh = (xxin - xx(nxlow))/0.038
+                          if (xxxx .lt. xx(260)) then
+                              nxlow = int(xxin/0.038) + 1
+                              nxhigh = nxlow + 1
+                              xfraclow = (xx(nxhigh) - xxin)/0.038
+                              xfrachigh = (xxin - xx(nxlow))/0.038
 !*
-                          if (ipart .eq. 1) then
-                              clow = xfraclow*caq(nrlow, nxlow) + xfrachigh*caq(nrlow, nxhigh)
-                              chigh = xfraclow*caq(nrhigh, nxlow) + xfrachigh*caq(nrhigh, nxhigh)
-                          else
-                              clow = xfraclow*cag(nrlow, nxlow) + xfrachigh*cag(nrlow, nxhigh)
-                              chigh = xfraclow*cag(nrhigh, nxlow) + xfrachigh*cag(nrhigh, nxhigh)
+                              if (ipart .eq. 1) then
+                                  clow = xfraclow*caq(nrlow, nxlow) + xfrachigh*caq(nrlow, nxhigh)
+                                  chigh = xfraclow*caq(nrhigh, nxlow) + xfrachigh*caq(nrhigh, nxhigh)
+                              else
+                                  clow = xfraclow*cag(nrlow, nxlow) + xfrachigh*cag(nrlow, nxhigh)
+                                  chigh = xfraclow*cag(nrhigh, nxlow) + xfrachigh*cag(nrhigh, nxhigh)
+                              end if
+
+                              continuous = rfraclow*clow + rfrachigh*chigh
                           end if
-
-                          continuous = rfraclow*clow + rfrachigh*chigh
-
-245                       continue
 
                           if (ipart .eq. 1) then
                               discrete = rfraclow*daq(nrlow) + rfrachigh*daq(nrhigh)
@@ -1010,10 +1002,9 @@
 113                                       continue
                                           close (21)
 !*
-                                          goto 888
+                                          return
 90                                        PRINT *, 'input - output error'
 91                                        PRINT *, 'input - output error #2'
-888                                       continue
 
                                       end
 
