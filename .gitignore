@@ -24,3 +24,4 @@ __pycache__/
 # Test artifacts
 tests/golden/*.lund
 tests/statistical/ref/*.npz
+1k_Cu.txt

@@ -29,15 +29,11 @@ pawlib_dep = meson.get_compiler('cpp').find_library('pawlib', dirs : cernlib_lib
 packlib_dep = meson.get_compiler('cpp').find_library('packlib', dirs : cernlib_libdir, required : true)
 kernlib_dep = meson.get_compiler('cpp').find_library('kernlib', dirs : cernlib_libdir, required : true)
 
-# Source files
+# Fortran physics sources (no main program)
 fortran_sources = [
-  # Main program
-  'src/simulation.f90',
-
   # Modules
   'src/modules/common_module.f90',
   'src/modules/simulation_helpers.f90',
-  'src/modules/cli.f90',
 
   # Physics
   'src/physics/fermimotion.f90',
@@ -49,8 +45,16 @@ fortran_sources = [
   'src/physics/qweight.f90',
   'src/physics/vz_position.f90',
 
+  # ISO_C_BINDING interface
+  'src/bindings/c_interface.f90',
+
   # External libraries
   'src/external/pythia6428.f',
+]
+
+# C++ main program
+cpp_sources = [
+  'src/main.cpp',
 ]
 
 # All dependencies
@@ -63,9 +67,13 @@ all_deps = [
   kernlib_dep
 ]
 
-# Create executable
+# Include directories
+inc_dirs = include_directories('src')
+
+# Create executable (C++ main + Fortran physics)
 sim_exe = executable('simulation',
-          sources : [fortran_sources],
+          sources : [fortran_sources, cpp_sources],
+          include_directories : inc_dirs,
           dependencies : all_deps,
           fortran_args : fortran_args,
           cpp_args : cpp_args,

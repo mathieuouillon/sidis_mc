@@ -190,9 +190,11 @@ subroutine GenRWtable()
         error stop 'Unsupported iZ/iA combination'
     end select
 
-    ! Skip header lines until we find the marker
-    do while (str(2:2) /= '*' .or. str(3:3) /= '*')
+    ! Skip header lines until we find the ** marker
+    str = ''
+    do
         read (file_unit, *) str
+        if (str(2:2) == '*' .and. str(3:3) == '*') exit
     end do
 
     i = 0
