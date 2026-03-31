@@ -25,7 +25,7 @@
           Pjy = Piy
           Pjz = Piz
 
-      end
+      end subroutine TL
 
 !c------------------------------------------------------------------------------
 !c Subroutine for rotation around y
@@ -51,7 +51,7 @@
           Pny = Piy
           Pnz = Piz
 
-      end
+      end subroutine InitRotY
 
 !c------------------------------------------------------------------------------
 !c Subroutine for rotation around z
@@ -77,7 +77,7 @@
           Pny = Piy
           Pnz = Piz
 
-      end
+      end subroutine InitRotZ
 !c------------------------------------------------------------------------------
 !c Subroutine for rotation around y
 !c------------------------------------------------------------------------------
@@ -101,7 +101,7 @@
 
           end do
 
-      end
+      end subroutine FinalRotY
 
 !c------------------------------------------------------------------------------
 !c Subroutine for rotation around z
@@ -126,4 +126,4 @@
 
           end do
 
-      end
+      end subroutine FinalRotZ

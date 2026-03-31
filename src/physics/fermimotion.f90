@@ -111,6 +111,7 @@ subroutine GenRWtable()
 
 
     integer :: io_err
+    integer :: file_unit
     real :: a, b, c, d, e
     real :: sum_n, sum_p
     integer :: i, j
@@ -125,73 +126,73 @@ subroutine GenRWtable()
     select case (iA)
     case (2)
         if (iZ == 1) then
-            open (unit=8, file='datafiles/fmrw/h2.momentum', status='old', iostat=io_err)
+            open (newunit=file_unit,file='datafiles/fmrw/h2.momentum', status='old', iostat=io_err)
             if (io_err /= 0) then
                 write(*,*) 'ERROR: Cannot open datafiles/fmrw/h2.momentum'
-                stop 1
+                error stop 'Cannot open datafiles/fmrw/h2.momentum'
             end if
         else
             write(*,*) 'ERROR: Unsupported iZ/iA combination'
-            stop 1
+            error stop 'Unsupported iZ/iA combination'
         end if
     case (3)
         if (iZ == 1) then
-            open (unit=8, file='datafiles/fmrw/h3.momentum', status='old', iostat=io_err)
+            open (newunit=file_unit,file='datafiles/fmrw/h3.momentum', status='old', iostat=io_err)
             if (io_err /= 0) then
                 write(*,*) 'ERROR: Cannot open datafiles/fmrw/h3.momentum'
-                stop 1
+                error stop 'Cannot open datafiles/fmrw/h3.momentum'
             end if
         else if (iZ == 2) then
-            open (unit=8, file='datafiles/fmrw/he3.momentum', status='old', iostat=io_err)
+            open (newunit=file_unit,file='datafiles/fmrw/he3.momentum', status='old', iostat=io_err)
             if (io_err /= 0) then
                 write(*,*) 'ERROR: Cannot open datafiles/fmrw/he3.momentum'
-                stop 1
+                error stop 'Cannot open datafiles/fmrw/he3.momentum'
             end if
         else
             write(*,*) 'ERROR: Unsupported iZ/iA combination'
-            stop 1
+            error stop 'Unsupported iZ/iA combination'
         end if
     case (4)
         if (iZ == 2) then
-            open (unit=8, file='datafiles/fmrw/he4.momentum', status='old', iostat=io_err)
+            open (newunit=file_unit,file='datafiles/fmrw/he4.momentum', status='old', iostat=io_err)
             if (io_err /= 0) then
                 write(*,*) 'ERROR: Cannot open datafiles/fmrw/he4.momentum'
-                stop 1
+                error stop 'Cannot open datafiles/fmrw/he4.momentum'
             end if
         else
             write(*,*) 'ERROR: Unsupported iZ/iA combination'
-            stop 1
+            error stop 'Unsupported iZ/iA combination'
         end if
     case (6)
         if (iZ == 3) then
-            open (unit=8, file='datafiles/fmrw/lad.momentum', status='old', iostat=io_err)
+            open (newunit=file_unit,file='datafiles/fmrw/lad.momentum', status='old', iostat=io_err)
             if (io_err /= 0) then
                 write(*,*) 'ERROR: Cannot open datafiles/fmrw/lad.momentum'
-                stop 1
+                error stop 'Cannot open datafiles/fmrw/lad.momentum'
             end if
         else
             write(*,*) 'ERROR: Unsupported iZ/iA combination'
-            stop 1
+            error stop 'Unsupported iZ/iA combination'
         end if
     case (7)
         if (iZ == 3) then
-            open (unit=8, file='datafiles/fmrw/lat.momentum', status='old', iostat=io_err)
+            open (newunit=file_unit,file='datafiles/fmrw/lat.momentum', status='old', iostat=io_err)
             if (io_err /= 0) then
                 write(*,*) 'ERROR: Cannot open datafiles/fmrw/lat.momentum'
-                stop 1
+                error stop 'Cannot open datafiles/fmrw/lat.momentum'
             end if
         else
             write(*,*) 'ERROR: Unsupported iZ/iA combination'
-            stop 1
+            error stop 'Unsupported iZ/iA combination'
         end if
     case default
         write(*,*) 'ERROR: Unsupported iZ/iA combination'
-        stop 1
+        error stop 'Unsupported iZ/iA combination'
     end select
 
     ! Skip header lines until we find the marker
     do while (str(2:2) /= '*' .or. str(3:3) /= '*')
-        read (8, *) str
+        read (file_unit, *) str
     end do
 
     i = 0
@@ -201,7 +202,7 @@ subroutine GenRWtable()
     if (iZ == 1 .and. iA == 2) then
         do while (a < FMlimit/HBAR_C)
             i = i + 1
-            read (8, *) a, b, c, d
+            read (file_unit, *) a, b, c, d
             FM_n(i) = d
             FM_p(i) = d
             sum_n = sum_n + d
@@ -211,7 +212,7 @@ subroutine GenRWtable()
              .or. (iZ == 3 .and. iA == 7)) then
         do while (a < FMlimit/HBAR_C)
             i = i + 1
-            read (8, *) a, b, c, d, e
+            read (file_unit, *) a, b, c, d, e
             FM_n(i) = d
             FM_p(i) = b
             sum_n = sum_n + d
@@ -220,7 +221,7 @@ subroutine GenRWtable()
     else if (iZ == 3 .and. iA == 6) then
         do while (a < FMlimit/HBAR_C)
             i = i + 1
-            read (8, *) a, b, c
+            read (file_unit, *) a, b, c
             FM_n(i) = b
             FM_p(i) = b
             sum_n = sum_n + b
@@ -229,7 +230,7 @@ subroutine GenRWtable()
     else if (iZ == 2 .and. iA == 4) then
         do while (a < FMlimit/HBAR_C)
             i = i + 1
-            read (8, *) a, b, c, d, e
+            read (file_unit, *) a, b, c, d, e
             FM_n(i) = b*(a + 0.05)**2
             FM_p(i) = b*(a + 0.05)**2
             sum_n = sum_n + FM_n(i)
@@ -238,8 +239,8 @@ subroutine GenRWtable()
         end do
     else
         write (*, *) 'ERROR'
-        close (8)
-        stop
+        close (file_unit)
+        error stop 'Unsupported iZ/iA combination in GenRWtable'
     end if
 
     step_size_FM = FMlimit/real(i)
@@ -254,7 +255,7 @@ subroutine GenRWtable()
         FM_p(j) = FM_p(j - 1) + FM_p(j)
     end do
 
-    close (8)
+    close (file_unit)
 
 end subroutine GenRWtable
 
@@ -338,12 +339,12 @@ subroutine FMParam
 
         if (Kf > FMlimit) then
             write (*, *) 'warning ', i, step_size_FM
-            stop
+            error stop 'Fermi momentum Kf exceeds FMlimit'
         end if
 
     else
         write (*, *) 'this iFM is not implemented'
-        stop
+        error stop 'Unsupported iFM value'
     end if
 
 end subroutine FMParam
@@ -684,7 +685,7 @@ function rhosoftSVG(iZ, iA, k)
         print *, 'ERROR (rhosoftSVG): called with A<7: ', iA
         print *, ' -- Try using Ciofi-Simula parametrization instead'
         print *
-        stop
+        error stop 'rhosoftSVG called with A<7'
     end if
 
     ! *** INITIALIZATION
@@ -695,7 +696,7 @@ function rhosoftSVG(iZ, iA, k)
               status='old', iostat=io_err)
         if (io_err /= 0) then
             write(*,*) 'ERROR: Cannot open datafiles/fmacc/fermimotion2.SVG.tbl'
-            stop 1
+            error stop 'Cannot open datafiles/fmacc/fermimotion2.SVG.tbl'
         end if
         ! ... skips headers
         do i = 1, 7
@@ -964,7 +965,7 @@ function rhoCSsh(iZ, iA, k, idist)
               status='old', iostat=io_err)
         if (io_err /= 0) then
             write(*,*) 'ERROR: Cannot open datafiles/fmacc/fermimotion2.CS.tbl'
-            stop 1
+            error stop 'Cannot open datafiles/fmacc/fermimotion2.CS.tbl'
         end if
         ! ... skips headers
         do i = 1, 9
@@ -1012,14 +1013,14 @@ function rhoCSsh(iZ, iA, k, idist)
                 print *
                 print *, 'ERROR (rhosoftCS): Z,A outside parameter table', iZ, iA
                 print *
-                stop
+                error stop 'rhosoftCS: Z,A outside parameter table'
             end if
         else
             ! ... otherwise stops
             print *
             print *, 'ERROR (rhosoftCS): Z,A outside parameter table', iZ, iA
             print *
-            stop
+            error stop 'rhosoftCS: Z,A outside parameter table'
         end if
     end if
 
@@ -1154,6 +1155,6 @@ integer function NextUnit()
             return
         end if
     end do
-    stop ' There is no available I/O unit. '
+    error stop 'There is no available I/O unit.'
 
 end function NextUnit

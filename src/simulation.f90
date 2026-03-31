@@ -19,6 +19,7 @@ program monte_carlo_simulation
     integer(kind=8) :: i, l              ! Loop counters
     character(len=100) :: lund_file      ! Lund output file name
     integer :: io_err
+    integer :: lund_unit
 
     ! Command line argument variables
     integer :: num_args
@@ -97,7 +98,7 @@ program monte_carlo_simulation
     end if
     call init_random()
     if (iLund == 1) then
-        open (unit=59, file=lund_file, iostat=io_err)
+        open (newunit=lund_unit, file=lund_file, iostat=io_err)
         if (io_err /= 0) then
             write(*,*) 'ERROR: Cannot open output file: ', trim(lund_file)
             stop 1
@@ -184,9 +185,9 @@ program monte_carlo_simulation
         call calculate_vz_position(iTg, vz)
 
         if (iLund == 1) then
-            write (59, '(I12,I12,I12,I12,I12,I12,F12.7,I17,I12,F12.8)') Nb_part, iA, iZ, 0, 0, 11, E0, nucleon, 1, 1.0
+            write (lund_unit, '(I12,I12,I12,I12,I12,I12,F12.7,I17,I12,F12.8)') Nb_part, iA, iZ, 0, 0, 11, E0, nucleon, 1, 1.0
             do l = 1, Nb_part
-                write (59, '(I12,I12,I12,I12,I12,I12,E16.8,E16.8,E16.8,E16.8,E16.8,I15,I12,F12.8)') l, &
+                write (lund_unit, '(I12,I12,I12,I12,I12,I12,E16.8,E16.8,E16.8,E16.8,E16.8,I15,I12,F12.8)') l, &
                     ch_part(l), 1, id_part(l), id_mother(l), 0, &
                     px_part(l), py_part(l), pz_part(l), E_part(l), m_part(l), 0, 0, vz
             end do
@@ -197,7 +198,7 @@ program monte_carlo_simulation
     end do
 
     ! Close the file
-    if (iLund == 1) close (59)
+    if (iLund == 1) close (lund_unit)
 
     write (*, *) 'X sec 99 = ', XSEC(99, 1)
     write (*, *) 'q hat = ', QW_qhat/QW_nb

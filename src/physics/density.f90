@@ -28,7 +28,7 @@
           y_inter = pos_radius*sin(pos_theta)*sin(pos_phi)
           z_inter = pos_radius*cos(pos_theta)
 
-      end
+      end subroutine InterPos
 
 !ccccc Generate the table of density in function of r
       subroutine GenNucDens
@@ -64,4 +64,4 @@
               r = r + step_size_dens
           end do
 
-      end
+      end subroutine GenNucDens

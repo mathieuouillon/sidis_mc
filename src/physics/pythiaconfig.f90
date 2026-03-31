@@ -45,7 +45,7 @@
 ! c     PARJ(23) = 0.01
 ! c     PARJ(24) = 2.0
 
-      end
+      end subroutine PythiaConfigAll
 
       subroutine PythiaConfigDIS
           use pythia_commons, only: MSTP, PARP, PARJ, CKIN
@@ -77,7 +77,7 @@
 !c W limit
           CKIN(77) = 2.
           CKIN(78) = -1.
-      end
+      end subroutine PythiaConfigDIS
 
 !c------------------------------------------------------------------------------
 !c Initialize the config values of LEPTO
@@ -156,7 +156,7 @@
 !c remaining energy below witch the fragmentation is stopped D = 0.8
           PARJ(33) = 0.47
 
-      end
+      end subroutine PythiaConfigOWN
 
 !c------------------------------------------------------------------------------
 !c Initialize the config values of LEPTO
@@ -320,7 +320,7 @@
           CKIN(77) = 1.90
           CKIN(78) = -1.
 
-      end
+      end subroutine PythiaConfigHayk
 
 !c------------------------------------------------------------------------------
 !c Initialize the config values of LEPTO
@@ -416,7 +416,7 @@
 
 !c      PARP(165) = .33d0  ! reduce the min. mass of time-like parton
 
-      end
+      end subroutine PythiaConfigBrahim
 
 !c------------------------------------------------------------------------------
 !c Initialize the config values of LEPTO
@@ -696,5 +696,5 @@
           CKIN(77) = 2.0
           CKIN(78) = -1.
 
-      end
+      end subroutine PythiaConfigHERMES
 

@@ -163,7 +163,7 @@
               ip = ip + 1
           end do
 
-      end
+      end subroutine ApplyQW
 
       subroutine QWComput(ipx, ipy, ipz, E, id)
           use interaction_module, only: x_inter, y_inter, z_inter
@@ -303,7 +303,7 @@
           end if
           if (isnan(QW_th)) QW_th = 3.14159/2
 
-      end
+      end subroutine QWComput
 
 ! ************************************************************************
 ! *                          QWEIGHT                                     *
@@ -484,7 +484,7 @@
 
           if ((scor .eq. 1) .and. (ncor .eq. 1)) then
               print *, 'ERROR (qweight): finite size & finite nrg'//' corrections not yet implemented'
-              stop
+              error stop 'finite size & finite nrg corrections not yet implemented'
           end if
 
 !*    *** ARLEO's asymptotic medium size
@@ -494,7 +494,7 @@
 !*       ... with rescaling factor kk for alphas=/=1/2
               if (alphas .le. 0d0) then
                   print *, 'ERROR (qweight): alphas < 0'
-                  stop
+                  error stop 'alphas < 0'
               else
                   kk = 1d0/(2d0*alphas)
               end if
@@ -544,7 +544,7 @@
           end if
 
 100       return
-      end
+      end subroutine qweight
 !***************************************************************************
 !*     ARLEO's quenching weights                                           *
 !***************************************************************************
@@ -559,7 +559,7 @@
           dbarg = 4.D0/9.D0*dbarq(4.D0/9.D0*wl, e)
 
           return
-      end
+      end function dbarg
 
 !c ---------------------------------------------------------------------
       function dbarq(wl, e)
@@ -578,7 +578,7 @@
           end if
 
           return
-      end
+      end function dbarq
 
 !c ---------------------------------------------------------------------
       function xmu(e)
@@ -601,7 +601,7 @@
           end if
 
           return
-      end
+      end function xmu
 
 !c ---------------------------------------------------------------------
       function xsigma(e)
@@ -624,7 +624,7 @@
           end if
 
           return
-      end
+      end function xsigma
 
 !***************************************************************************
 !*     SALGADO-WIEDEMANN quenching weights                                 *
@@ -746,12 +746,13 @@
               discrete = rfraclow*dag(nrlow) + rfrachigh*dag(nrhigh)
           end if
 !
-      END
+      END SUBROUTINE swqmult
 
       subroutine initmult(alphas)
 
           double precision alphas
           integer :: io_err
+          integer :: unit_cont, unit_disc
 
           REAL*8 xxq(400), daq(34), caq(34, 261), rrr(34)
           COMMON/dataqua/xxq, daq, caq, rrr
@@ -761,23 +762,23 @@
 !*
 
           if (nint(alphas*3d0) .eq. 1) then
-              OPEN (UNIT=20, FILE='datafiles/qweight/cont03.all', STATUS='OLD', IOSTAT=io_err)
+              OPEN (NEWUNIT=unit_cont, FILE='datafiles/qweight/cont03.all', STATUS='OLD', IOSTAT=io_err)
               if (io_err /= 0) then
                   write(*,*) 'ERROR: Cannot open datafiles/qweight/cont03.all'
-                  stop 1
+                  error stop 'Cannot open datafiles/qweight/cont03.all'
               end if
           else if (nint(alphas*2d0) .eq. 1) then
-              OPEN (UNIT=20, FILE='datafiles/qweight/cont05.all', STATUS='OLD', IOSTAT=io_err)
+              OPEN (NEWUNIT=unit_cont, FILE='datafiles/qweight/cont05.all', STATUS='OLD', IOSTAT=io_err)
               if (io_err /= 0) then
                   write(*,*) 'ERROR: Cannot open datafiles/qweight/cont05.all'
-                  stop 1
+                  error stop 'Cannot open datafiles/qweight/cont05.all'
               end if
           else
               print *, 'Error (initmult): alphas =/= 1/3 or 1/2'
-              stop
+              error stop 'initmult: alphas =/= 1/3 or 1/2'
           end if
           do 110 nn = 1, 261
-              read (20, *) xxq(nn), caq(1, nn), caq(2, nn), caq(3, nn), &
+              read (unit_cont, *) xxq(nn), caq(1, nn), caq(2, nn), caq(3, nn), &
                   caq(4, nn), caq(5, nn), caq(6, nn), caq(7, nn), caq(8, nn), &
                   caq(9, nn), caq(10, nn), caq(11, nn), caq(12, nn), &
                   caq(13, nn), &
@@ -791,7 +792,7 @@
                   caq(33, nn), caq(34, nn)
 110           continue
               do 111 nn = 1, 261
-                  read (20, *) xxg(nn), cag(1, nn), cag(2, nn), cag(3, nn), &
+                  read (unit_cont, *) xxg(nn), cag(1, nn), cag(2, nn), cag(3, nn), &
                       cag(4, nn), cag(5, nn), cag(6, nn), cag(7, nn), cag(8, nn), &
                       cag(9, nn), cag(10, nn), cag(11, nn), cag(12, nn), &
                       cag(13, nn), &
@@ -804,35 +805,35 @@
                       cag(29, nn), cag(30, nn), cag(31, nn), cag(32, nn), &
                       cag(33, nn), cag(34, nn)
 111               continue
-                  close (20)
+                  close (unit_cont)
 !*
                   if (nint(alphas*3d0) .eq. 1) then
-                      OPEN (UNIT=21, FILE='datafiles/qweight/disc03.all', STATUS='OLD', IOSTAT=io_err)
+                      OPEN (NEWUNIT=unit_disc, FILE='datafiles/qweight/disc03.all', STATUS='OLD', IOSTAT=io_err)
                       if (io_err /= 0) then
                           write(*,*) 'ERROR: Cannot open datafiles/qweight/disc03.all'
-                          stop 1
+                          error stop 'Cannot open datafiles/qweight/disc03.all'
                       end if
                   else if (nint(alphas*2d0) .eq. 1) then
-                      OPEN (UNIT=21, FILE='datafiles/qweight/disc05.all', STATUS='OLD', IOSTAT=io_err)
+                      OPEN (NEWUNIT=unit_disc, FILE='datafiles/qweight/disc05.all', STATUS='OLD', IOSTAT=io_err)
                       if (io_err /= 0) then
                           write(*,*) 'ERROR: Cannot open datafiles/qweight/disc05.all'
-                          stop 1
+                          error stop 'Cannot open datafiles/qweight/disc05.all'
                       end if
                   else
                       print *, 'Error (initmult): alphas =/= 1/3 or 1/2'
-                      stop
+                      error stop 'initmult: alphas =/= 1/3 or 1/2'
                   end if
                   do 112 nn = 1, 34
-                      read (21, *) rrr(nn), daq(nn)
+                      read (unit_disc, *) rrr(nn), daq(nn)
 112                   continue
                       do 113 nn = 1, 34
-                          read (21, *) rrrg(nn), dag(nn)
+                          read (unit_disc, *) rrrg(nn), dag(nn)
 113                       continue
-                          close (21)
+                          close (unit_disc)
 !*
                           return
 
-                      end
+                      end subroutine initmult
 
 !C***************************************************************************
 !C       Quenching Weights for Single Hard Scattering
@@ -947,12 +948,13 @@
                               discrete = rfraclow*dag(nrlow) + rfrachigh*dag(nrhigh)
                           end if
 !*
-                      END
+                      END SUBROUTINE swqlin
 
                       subroutine initlin(alphas)
 
                           double precision alphas
                           integer :: io_err
+                          integer :: unit_cont, unit_disc
 
                           REAL*8 xxq(400), daq(34), caq(34, 261), rrr(34)
                           COMMON/dataqualin/xxq, daq, caq, rrr
@@ -961,21 +963,21 @@
                           COMMON/dataglulin/xxg, dag, cag, rrrg
 !*
                           if (nint(alphas*3d0) .eq. 1) then
-                              OPEN (UNIT=20, FILE='datafiles/qweight/contlin03.all', STATUS='OLD', IOSTAT=io_err)
+                              OPEN (NEWUNIT=unit_cont, FILE='datafiles/qweight/contlin03.all', STATUS='OLD', IOSTAT=io_err)
                               if (io_err /= 0) then
                                   write(*,*) 'ERROR: Cannot open datafiles/qweight/contlin03.all'
-                                  stop 1
+                                  error stop 'Cannot open datafiles/qweight/contlin03.all'
                               end if
                           else if (nint(alphas*2d0) .eq. 1) then
 !*         OPEN(UNIT=20,FILE='contlin05.all',STATUS='OLD',ERR=90)
                               print *, 'Error (initlin): alphas=0.5 not yet implemented'
-                              stop
+                              error stop 'initlin: alphas=0.5 not yet implemented'
                           else
                               print *, 'Error (initlin): alphas =/= 1/3 or 1/2'
-                              stop
+                              error stop 'initlin: alphas =/= 1/3 or 1/2'
                           end if
                           do 110 nn = 1, 261
-                              read (20, *) xxq(nn), caq(1, nn), caq(2, nn), caq(3, nn), &
+                              read (unit_cont, *) xxq(nn), caq(1, nn), caq(2, nn), caq(3, nn), &
                                   caq(4, nn), caq(5, nn), caq(6, nn), caq(7, nn), caq(8, nn), &
                                   caq(9, nn), caq(10, nn), caq(11, nn), caq(12, nn), &
                                   caq(13, nn), &
@@ -989,7 +991,7 @@
                                   caq(33, nn), caq(34, nn)
 110                           continue
                               do 111 nn = 1, 261
-                                  read (20, *) xxg(nn), cag(1, nn), cag(2, nn), cag(3, nn), &
+                                  read (unit_cont, *) xxg(nn), cag(1, nn), cag(2, nn), cag(3, nn), &
                                       cag(4, nn), cag(5, nn), cag(6, nn), cag(7, nn), cag(8, nn), &
                                       cag(9, nn), cag(10, nn), cag(11, nn), cag(12, nn), &
                                       cag(13, nn), &
@@ -1002,31 +1004,31 @@
                                       cag(29, nn), cag(30, nn), cag(31, nn), cag(32, nn), &
                                       cag(33, nn), cag(34, nn)
 111                               continue
-                                  close (20)
+                                  close (unit_cont)
 !*
                                   if (nint(alphas*3d0) .eq. 1) then
-                                      OPEN (UNIT=21, FILE='datafiles/qweight/disclin03.all', STATUS='OLD', IOSTAT=io_err)
+                                      OPEN (NEWUNIT=unit_disc, FILE='datafiles/qweight/disclin03.all', STATUS='OLD', IOSTAT=io_err)
                                       if (io_err /= 0) then
                                           write(*,*) 'ERROR: Cannot open datafiles/qweight/disclin03.all'
-                                          stop 1
+                                          error stop 'Cannot open datafiles/qweight/disclin03.all'
                                       end if
                                   else if (nint(alphas*2d0) .eq. 1) then
 !         OPEN(UNIT=21,FILE='disclin05.all',STATUS='OLD',ERR=91)
                                       print *, 'Error (initlin): alphas=0.5 not yet implemented'
-                                      stop
+                                      error stop 'initlin: alphas=0.5 not yet implemented'
                                   else
                                       print *, 'Error (initlin): alphas =/= 1/3 or 1/2'
-                                      stop
+                                      error stop 'initlin: alphas =/= 1/3 or 1/2'
                                   end if
                                   do 112 nn = 1, 34
-                                      read (21, *) rrr(nn), daq(nn)
+                                      read (unit_disc, *) rrr(nn), daq(nn)
 112                                   continue
                                       do 113 nn = 1, 34
-                                          read (21, *) rrrg(nn), dag(nn)
+                                          read (unit_disc, *) rrrg(nn), dag(nn)
 113                                       continue
-                                          close (21)
+                                          close (unit_disc)
 !*
                                           return
 
-                                      end
+                                      end subroutine initlin
 
