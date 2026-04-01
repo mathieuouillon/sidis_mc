@@ -154,31 +154,32 @@ public:
     }
 
     void run(LundWriter& writer) {
-        int i = 0;   // counter since last PYTHIA re-init
+        int nkin_counter = nkin_;
 
         for (int ievent = 0; ievent < cfg_.nevent; ievent++) {
             farm_set_ievent(ievent);
 
-            // Re-initialize kinematics when needed
-            if (needs_reinit(ievent, i)) {
-                i = 0;
-                setup_kinematics(ievent);
-                init_pythia(ievent);
+            // Re-initialize kinematics + PYTHIA when needed
+            int reinit = 0;
+            farm_needs_reinit(ievent, nkin_counter, cfg_.nevent, &reinit);
+            if (reinit) {
+                nkin_counter = 0;
+                farm_setup_kinematics(ievent, cfg_.nevent);
             }
 
             // Progress
             if (ievent % 10000 == 0)
                 printf(" %d events processed\n", ievent);
 
-            // Generate and process one event
-            generate_event();
+            // Generate and process one complete physics event
+            farm_generate_event();
 
-            // Write output
+            // Vertex z position + write LUND output
             float vz;
             farm_calc_vz(cfg_.target, &vz);
             writer.write_event();
 
-            i++;
+            nkin_counter++;
         }
     }
 
@@ -191,98 +192,6 @@ public:
         int qw_nb;
         farm_get_qw_stats(&qw_qhat, &qw_nb);
         if (qw_nb > 0) printf(" q hat =    %E\n", qw_qhat / qw_nb);
-    }
-
-private:
-    bool needs_reinit(int ievent, int i) const {
-        return ievent == 0
-            || i == nkin_
-            || ievent == static_cast<int>(cfg_.nevent * iZ_ / iA_)
-            || (ievent % 500000) == 0;
-    }
-
-    void setup_kinematics(int ievent) {
-        // Retry until beam energy is sufficient (PPe >= 4 GeV)
-        while (true) {
-            // Set nucleon type based on Z/A fraction
-            bool is_proton = (ievent < (cfg_.nevent * iZ_ / iA_));
-            farm_set_nucleon(is_proton ? 2212 : 2112);
-
-            // Fermi motion sampling
-            if (rFM_ != 0.0f && cfg_.iFM != 0)
-                farm_fm_param();
-
-            // Initialize electron-nucleon kinematics
-            farm_init_kin();
-
-            // Boost to nucleon rest frame
-            if (cfg_.iFM != 0)
-                farm_lorentz_fm(1);
-
-            // Check beam energy threshold
-            int dummy_ev, dummy_iZ, dummy_iA, dummy_nuc;
-            float PPe, dummy_rFM;
-            farm_get_state(&dummy_ev, &PPe, &dummy_rFM, &dummy_iZ, &dummy_iA, &dummy_nuc);
-            if (PPe >= 4.0f) break;
-        }
-    }
-
-    void init_pythia(int ievent) {
-        farm_pythia_config_dis();
-
-        if (cfg_.iQuenching != 0)
-            farm_set_mstj1(0);  // stop fragmentation for quenching
-
-        // Get beam energy after Lorentz boost
-        int dummy_ev, dummy_iZ, dummy_iA, dummy_nuc;
-        float PPe, dummy_rFM;
-        farm_get_state(&dummy_ev, &PPe, &dummy_rFM, &dummy_iZ, &dummy_iA, &dummy_nuc);
-        double beam_energy = static_cast<double>(PPe);
-
-        bool use_proton = (cfg_.iIso == 0)
-            ? (ievent < (cfg_.nevent * iZ_ / iA_))
-            : (ievent < (cfg_.nevent / 2));
-
-        if (cfg_.iSim == 0) return;
-
-        if (use_proton) {
-            farm_pyinit_proton(beam_energy);
-        } else {
-            double xsec;
-            farm_get_xsec99(&xsec);
-            printf(" X sec 99 =    %.16E\n", xsec);
-            farm_pyinit_neutron(beam_energy);
-        }
-    }
-
-    void generate_event() {
-        farm_init_kin2book();
-
-        // PYTHIA event generation
-        if (cfg_.iSim != 0) farm_pyevnt();
-
-        // Inverse Lorentz boost back to lab frame
-        if (cfg_.iFM != 0) farm_lorentz_fm_back(1);
-
-        // Nuclear energy loss (quenching weights)
-        if (cfg_.iQuenching != 0 && cfg_.target > 1) {
-            farm_inter_pos();
-            farm_apply_qw();
-        }
-
-        // Fragmentation
-        if (cfg_.iQuenching != 0) {
-            farm_set_mstj1(1);
-            if (cfg_.iSim != 0) farm_pyexec();
-            farm_set_mstj1(0);
-        }
-
-        // Nuclear spectators
-        if (cfg_.iNS == 1 && (cfg_.target >= 1 || cfg_.target <= 4))
-            farm_create_spec();
-
-        // Compute output variables (DIS kinematics, hadron variables)
-        farm_compute_v();
     }
 };
 

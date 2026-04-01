@@ -269,6 +269,116 @@ contains
     end subroutine farm_initialize
 
     ! =========================================================================
+    ! High-level event loop wrappers
+    ! =========================================================================
+
+    !> Setup kinematics: Fermi motion sampling, Lorentz boost, PYTHIA init.
+    !> Retries until beam energy >= 4 GeV. Handles proton/neutron selection.
+    subroutine farm_setup_kinematics(c_ievent, c_nevent) &
+            bind(C, name="farm_setup_kinematics")
+        use kinematics_module, only: PPe, Kf, ThFM, PhiFM
+        use fermi_motion_module, only: iZ, iA
+        use config_module, only: rFM, iFM, iQuenching, iSim, iIso, nucleon, nevent
+        use pythia_commons, only: MSTJ, XSEC
+        integer(c_int), value, intent(in) :: c_ievent, c_nevent
+
+        real(kind=8) :: beam_energy
+
+        ! Restart kinematics loop until PPe >= 4
+        do
+            ! Set nucleon type based on Z/A fraction
+            if (c_ievent < (c_nevent * iZ / iA)) then
+                nucleon = 2212
+            else
+                nucleon = 2112
+            end if
+
+            ! Fermi motion sampling
+            if (rFM /= 0 .and. iFM /= 0) call FMParam()
+
+            ! Initialize electron-nucleon kinematics
+            call init_kin()
+
+            ! Lorentz boost to nucleon rest frame
+            if (iFM /= 0) call lorentz_fm(1)
+
+            ! Exit if beam energy is sufficient
+            if (PPe >= 4.0) exit
+        end do
+
+        ! Configure PYTHIA
+        call PythiaConfigDIS()
+
+        ! Stop fragmentation for quenching
+        if (iQuenching /= 0) MSTJ(1) = 0
+
+        ! PYTHIA initialization
+        beam_energy = PPe
+        if ((iIso == 0 .and. c_ievent < (c_nevent * iZ / iA)) .or. &
+            (iIso == 1 .and. c_ievent < (c_nevent / 2))) then
+            if (iSim /= 0) call pyinit('FIXT', 'gamma/e-', 'p+', beam_energy)
+        else
+            if (iSim /= 0) then
+                write (*, *) 'X sec 99 = ', XSEC(99, 1)
+                call pyinit('FIXT', 'gamma/e-', 'n0', beam_energy)
+            end if
+        end if
+    end subroutine farm_setup_kinematics
+
+    !> Generate and process one complete physics event:
+    !> PYTHIA generation, Lorentz boost back, quenching, fragmentation,
+    !> spectators, and output variable computation.
+    subroutine farm_generate_event() bind(C, name="farm_generate_event")
+        use config_module, only: iFM, iQuenching, iSim, iNS, iTg
+        use pythia_commons, only: MSTJ
+        implicit none
+
+        ! Initialize kinematic variables for bookkeeping
+        call InitKin2Book()
+
+        ! PYTHIA event generation
+        if (iSim /= 0) call pyevnt()
+
+        ! Inverse Lorentz boost back to lab frame
+        if (iFM /= 0) call lorentz_fm_back(1)
+
+        ! Nuclear energy loss (quenching weights)
+        if (iQuenching /= 0 .and. iTg > 1) then
+            call InterPos()
+            call ApplyQW()
+        end if
+
+        ! Fragmentation
+        if (iQuenching /= 0) then
+            MSTJ(1) = 1
+            if (iSim /= 0) call pyexec()
+            MSTJ(1) = 0
+        end if
+
+        ! Nuclear spectators
+        if (iNS == 1 .and. (iTg >= 1 .or. iTg <= 4)) call create_spec()
+
+        ! Compute output variables (DIS kinematics, hadron variables)
+        call ComputV()
+    end subroutine farm_generate_event
+
+    !> Check if PYTHIA needs re-initialization for this event.
+    subroutine farm_needs_reinit(c_ievent, c_nkin_counter, c_nevent, c_result) &
+            bind(C, name="farm_needs_reinit")
+        use fermi_motion_module, only: iZ, iA
+        integer(c_int), value, intent(in) :: c_ievent, c_nkin_counter, c_nevent
+        integer(c_int), intent(out) :: c_result
+
+        if (c_ievent == 0 .or. c_nkin_counter == 0 .or. &
+            c_ievent == (c_nevent * iZ / iA) .or. &
+            mod(c_ievent, 500000) == 0) then
+            c_result = 1
+        else
+            c_result = 0
+        end if
+    end subroutine farm_needs_reinit
+
+    ! =========================================================================
     ! Timing (CERNLIB)
     ! =========================================================================
 
