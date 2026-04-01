@@ -12,9 +12,11 @@ test('unit_lorentz_boost', test_tl_exe)
 
 # ── Unit test: Nuclear initialization (InitNucl) ──────────────────────────
 test_initnucl_exe = executable('test_initnucl',
-    sources: ['test_initnucl.f90', '../src/physics/fermimotion.f90', common_mod_src],
+    sources: ['test_initnucl.f90', '../src/physics/fermimotion.f90', common_mod_src,
+              '../src/rng_bridge.cpp'],
     dependencies: all_deps,
     fortran_args: fortran_args,
+    cpp_args: cpp_args,
     install: false)
 test('unit_init_nuclear', test_initnucl_exe,
     workdir: meson.project_source_root())
