@@ -1,8 +1,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#include <vector>
+#include <random>
 #include "include/farm_interface.h"
+#include "include/physics.h"
 
 // ============================================================================
 // Configuration
@@ -130,9 +131,13 @@ class Simulation {
     int iZ_ = 0, iA_ = 0;
     float rFM_ = 0.0f;
     int nkin_ = 0;
+    std::mt19937 rng_;
+    std::uniform_real_distribution<float> uniform_{0.0f, 1.0f};
 
 public:
-    explicit Simulation(const SimConfig& cfg) : cfg_(cfg), nkin_(cfg.nkin) {}
+    explicit Simulation(const SimConfig& cfg)
+        : cfg_(cfg), nkin_(cfg.nkin),
+          rng_(cfg.seed >= 0 ? static_cast<unsigned>(cfg.seed) : std::random_device{}()) {}
 
     void initialize() {
         // Push configuration to Fortran modules
@@ -160,8 +165,10 @@ public:
             farm_set_ievent(ievent);
 
             // Re-initialize kinematics + PYTHIA when needed
-            int reinit = 0;
-            farm_needs_reinit(ievent, nkin_counter, cfg_.nevent, &reinit);
+            bool reinit = (ievent == 0)
+                || (nkin_counter == nkin_)
+                || (ievent == cfg_.nevent * iZ_ / iA_)
+                || (ievent % 500000 == 0);
             if (reinit) {
                 nkin_counter = 0;
                 farm_setup_kinematics(ievent, cfg_.nevent);
@@ -174,9 +181,9 @@ public:
             // Generate and process one complete physics event
             farm_generate_event();
 
-            // Vertex z position + write LUND output
-            float vz;
-            farm_calc_vz(cfg_.target, &vz);
+            // Vertex z position (C++) + write LUND output (Fortran I/O)
+            float vz = farm::vertex_z(cfg_.target, uniform_(rng_), uniform_(rng_));
+            farm_set_vz(vz);
             writer.write_event();
 
             nkin_counter++;

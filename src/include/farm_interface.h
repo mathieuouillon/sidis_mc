@@ -19,6 +19,7 @@ void farm_set_nucleon(int nucleon);
 void farm_set_nkin(int nkin);
 void farm_set_ievent(int ievent);
 void farm_set_mstj1(int val);
+void farm_set_vz(float vz);
 
 // --- State access -----------------------------------------------------------
 void farm_get_state(int* ievent, float* PPe, float* rFM,

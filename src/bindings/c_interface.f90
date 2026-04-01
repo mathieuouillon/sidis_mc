@@ -245,6 +245,12 @@ contains
         c_vz = vz
     end subroutine farm_calc_vz
 
+    subroutine farm_set_vz(c_vz) bind(C, name="farm_set_vz")
+        use misc_module, only: vz
+        real(c_float), value, intent(in) :: c_vz
+        vz = c_vz
+    end subroutine farm_set_vz
+
     ! =========================================================================
     ! Combined initialization (avoids C/Fortran I/O interleaving issues)
     ! =========================================================================
