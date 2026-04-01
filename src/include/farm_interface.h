@@ -20,6 +20,8 @@ void farm_set_nkin(int nkin);
 void farm_set_ievent(int ievent);
 void farm_set_mstj1(int val);
 void farm_set_vz(float vz);
+void farm_set_nuclear_params(int iZ, int iA, float rFM);
+void farm_init_physics(void);
 
 // --- State access -----------------------------------------------------------
 void farm_get_state(int* ievent, float* PPe, float* rFM,

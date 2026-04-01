@@ -245,6 +245,26 @@ contains
         c_vz = vz
     end subroutine farm_calc_vz
 
+    subroutine farm_set_nuclear_params(c_iZ, c_iA, c_rFM) bind(C, name="farm_set_nuclear_params")
+        use fermi_motion_module, only: iZ, iA
+        use config_module, only: rFM
+        integer(c_int), value, intent(in) :: c_iZ, c_iA
+        real(c_float), value, intent(in) :: c_rFM
+        iZ = c_iZ
+        iA = c_iA
+        rFM = c_rFM
+    end subroutine farm_set_nuclear_params
+
+    !> Initialize FM tables, density, and RNG (call after nuclear params are set)
+    subroutine farm_init_physics() bind(C, name="farm_init_physics")
+        use config_module, only: rFM
+        if (rFM /= 0) then
+            call InitFM()
+            call GenNucDens()
+        end if
+        call init_random()
+    end subroutine farm_init_physics
+
     subroutine farm_set_vz(c_vz) bind(C, name="farm_set_vz")
         use misc_module, only: vz
         real(c_float), value, intent(in) :: c_vz

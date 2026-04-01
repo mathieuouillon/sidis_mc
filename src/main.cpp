@@ -153,9 +153,16 @@ public:
             farm_set_nkin(nkin_);
         }
 
-        // Initialize nuclear physics, Fermi motion tables, density, and RNG
+        // Nuclear parameters lookup (C++)
+        auto nuc = farm::get_nuclear_params(cfg_.target);
+        iZ_ = nuc.Z;
+        iA_ = nuc.A;
+        rFM_ = nuc.rFM;
+
+        // Push to Fortran modules and initialize FM tables, density, RNG
         farm_set_ievent(0);
-        farm_initialize(&rFM_, &iZ_, &iA_);
+        farm_set_nuclear_params(iZ_, iA_, rFM_);
+        farm_init_physics();
     }
 
     void run(LundWriter& writer) {
