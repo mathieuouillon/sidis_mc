@@ -268,7 +268,7 @@ subroutine FMParam
     use kinematics_module, only: ThFM, PhiFM, Kf
     use fermi_motion_module, only: FM_table, FM_n, FM_p, FM_i, step_size_FM, FMintact
     use config_module, only: iFM, rFM, FMlimit, nucleon, iTg
-    use misc_module, only: pi, ranf
+    use misc_module, only: pi, farm_random
     implicit none
 
     real, parameter :: a = 2.0
@@ -283,13 +283,13 @@ subroutine FMParam
     FMintact = 1
 
     ! Generate Theta and Phi of the particle's fermi momentum
-    ThFM = acos(2.0*ranf(0) - 1.0)
-    PhiFM = 2.0*pi*ranf(0)
+    ThFM = acos(2.0*farm_random() - 1.0)
+    PhiFM = 2.0*pi*farm_random()
 
     ! Selector for the FM
     if (iFM == 4) then
         ! Generation of FM in a Fermi sphere
-        Kf = rFM*(ranf(0))**(1.0/3.0)
+        Kf = rFM*(farm_random())**(1.0/3.0)
 
     else if (iFM == 1) then
         ! Thresholds
@@ -301,7 +301,7 @@ subroutine FMParam
         ! Remove events with Pf > 4 GeV/c or negative values
         do while (Ps > FMlimit .or. Ps < 0.0)
             ! Generation of random number
-            Kf = ranf(0)
+            Kf = farm_random()
             ! Apply the threshold and produce the tail
             if (Kf <= Thr) then
                 Kf = (3.0*C*Kf/4.0/pi/Thr)**(1.0/3.0)
@@ -314,17 +314,17 @@ subroutine FMParam
 
         ! Fermi Momentum from Accardi routines
     else if (iFM == 2 .or. iFM == 3) then
-        Rd = ranf(0)
+        Rd = farm_random()
         i = 1
         do while (FM_table(i) < Rd)
             i = i + 1
         end do
 
-        Kf = real(i - 1)*step_size_FM + ranf(0)*step_size_FM
+        Kf = real(i - 1)*step_size_FM + farm_random()*step_size_FM
 
         ! Fermi Momentum from R. Wiringa
     else if (iFM == 5) then
-        Rd = ranf(0)
+        Rd = farm_random()
         i = 1
         if (nucleon == 2112) then
             do while (FM_n(i) < Rd)
@@ -336,7 +336,7 @@ subroutine FMParam
             end do
         end if
 
-        Kf = real(i - 1)*step_size_FM + ranf(0)*step_size_FM
+        Kf = real(i - 1)*step_size_FM + farm_random()*step_size_FM
         if (iTg /= 1) FMintact = FM_i(i)
 
         if (Kf > FMlimit) then

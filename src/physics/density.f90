@@ -3,16 +3,16 @@
           use density_module, only: quantity_table, step_size_dens, init_dens
           use interaction_module, only: pos_radius, pos_theta, pos_phi, &
               x_inter, y_inter, z_inter
-          use misc_module, only: ranf, pi
+          use misc_module, only: farm_random, pi
           implicit none
 
           real r
           integer i
 
 !ccccc Randomize the radius and angles
-          pos_radius = ranf(0)*quantity_table(2000)
-          pos_theta = acos(2*ranf(0) - 1)
-          pos_phi = 2*pi*ranf(0)
+          pos_radius = farm_random()*quantity_table(2000)
+          pos_theta = acos(2*farm_random() - 1)
+          pos_phi = 2*pi*farm_random()
 
           r = init_dens
           i = 1.
@@ -21,7 +21,7 @@
               r = r + step_size_dens
               i = i + 1
           end do
-          pos_radius = r + (ranf(0) - 0.5)*step_size_dens
+          pos_radius = r + (farm_random() - 0.5)*step_size_dens
 
 !cccc Calculate position on cartesian axis
           x_inter = pos_radius*sin(pos_theta)*cos(pos_phi)

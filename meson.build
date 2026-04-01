@@ -55,6 +55,7 @@ fortran_sources = [
 # C++ main program
 cpp_sources = [
   'src/main.cpp',
+  'src/rng_bridge.cpp',
 ]
 
 # All dependencies

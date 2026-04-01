@@ -15,7 +15,7 @@ end module qweight_data_module
       subroutine ApplyQW()
           use quenching_module, only: QW_nb, QW_w, QW_L, QW_qhat, QW_th, alphas
           use config_module, only: iqg, iEg, iPtF, qhat, SupFac
-          use misc_module, only: ranf
+          use misc_module, only: farm_random
           use pythia_commons, only: N, K, P
           implicit none
 
@@ -68,7 +68,7 @@ end module qweight_data_module
                       end if
 !c         Implement ELoss and Pt
                       if (P(ip, 4) - QW_w .lt. cutoff) then
-                          th = ranf(0)*2*3.14159265 - 3.14159265
+                          th = farm_random()*2*3.14159265 - 3.14159265
                           ipl = cos(th)*cutoff
                           ipt = sin(th)*cutoff
                       else if (P(ip, 4) - QW_w .ge. cutoff) then
@@ -84,7 +84,7 @@ end module qweight_data_module
                       end if
 
 !c         Generate normalized transverse vector
-                      ph = 4*asin(1.)*ranf(0)
+                      ph = 4*asin(1.)*farm_random()
                       iptx = (ipiz - ipiy)*cos(ph) - (ipix*ipiy + ipix*ipiz)*sin(ph)
                       ipty = ipix*cos(ph) + (ipix**2 + ipiz**2 - ipiy*ipiz)*sin(ph)
                       iptz = -ipix*cos(ph) + (ipix**2 + ipiy**2 - ipiy*ipiz)*sin(ph)
@@ -184,7 +184,7 @@ end module qweight_data_module
           use density_module, only: density_table, step_size_dens
           use quenching_module, only: QW_w, QW_L, QW_wc, QW_R, QW_chi, QW_th, irw, sfthrd
           use config_module, only: qhat, ehat
-          use misc_module, only: ranf
+          use misc_module, only: farm_random
           implicit none
 
 
@@ -276,7 +276,7 @@ end module qweight_data_module
 
 !ccccc Pick randomely a quenching in the table
           if (disc .lt. 1.) then
-              randnum = ranf(0)
+              randnum = farm_random()
               if (randnum .gt. disc) then
                   total = disc
                   i = 1
@@ -305,7 +305,7 @@ end module qweight_data_module
               do i = 1, nb_step
                   cont(i) = cont(i)/total
               end do
-              randnum = ranf(0)
+              randnum = farm_random()
               total = 0.
               i = 1
               do while (randnum .gt. total)

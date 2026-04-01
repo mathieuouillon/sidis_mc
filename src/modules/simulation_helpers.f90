@@ -13,12 +13,12 @@ contains
 subroutine init_random()
     use config_module, only: user_seed
     use pythia_commons, only: MRPY, RRPY
+    use misc_module, only: farm_random
     implicit none
 
     integer :: i                          ! Loop counter
     real :: test                          ! Dummy variable
-    real :: ranf                          ! Random number generator from CERNLIB
-    integer :: initrm1, initrm2          ! To initialize ranf
+    integer :: initrm1, initrm2          ! To initialize random
     real(kind=8) :: PYR
     integer :: today(3), now(3)
     integer :: iseed                      ! Effective seed value
@@ -26,7 +26,7 @@ subroutine init_random()
     if (user_seed >= 0) then
         ! Deterministic seeding for reproducibility
         iseed = user_seed
-        call ranset(iseed)
+        call farm_seed_rng(iseed)
 
         MRPY(2) = 0
         MRPY(3) = mod(iseed, 85635)
@@ -34,12 +34,12 @@ subroutine init_random()
         MRPY(5) = mod(iseed, 56)
 
         do i = 1, 100
-            RRPY(i) = ranf(0)
+            RRPY(i) = farm_random()
         end do
 
         ! Fixed warm-up count for reproducibility
         do i = 1, 1000
-            test = ranf(0)
+            test = farm_random()
             test = PYR(0)
         end do
 
@@ -53,7 +53,7 @@ subroutine init_random()
         test = real(now(1)*now(2))/real(now(3))
 
         call datime(initrm1, initrm2)
-        call ranset(initrm1*initrm2*int(test))
+        call farm_seed_rng(initrm1*initrm2*int(test))
 
         MRPY(2) = 0
         MRPY(3) = mod(initrm1, 85635)
@@ -61,11 +61,11 @@ subroutine init_random()
         MRPY(5) = mod(initrm2, 56)
 
         do i = 1, 100
-            RRPY(i) = ranf(0)
+            RRPY(i) = farm_random()
         end do
 
         do i = 1, initrm2*int(test)
-            test = ranf(0)
+            test = farm_random()
             test = PYR(0)
         end do
     end if

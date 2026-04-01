@@ -197,9 +197,8 @@ module misc_module
     real :: vz              ! Vertex z position
 
     interface
-        real function ranf(dummy)
-            integer, intent(in) :: dummy
-        end function ranf
+        real function farm_random()
+        end function farm_random
     end interface
 end module misc_module
 
