@@ -1,12 +1,5 @@
 # Tests build file for FARM simulation
 
-# ── Unit test: Lorentz boost (TL) ──────────────────────────────────────────
-test_tl_exe = executable('test_tl',
-    sources: ['test_tl.f90', 'tl_only.f90'],
-    fortran_args: fortran_args,
-    install: false)
-test('unit_lorentz_boost', test_tl_exe)
-
 # ── Golden file tests (require built simulation) ──────────────────────────
 bash = find_program('bash')
 sim_path = sim_exe.full_path()

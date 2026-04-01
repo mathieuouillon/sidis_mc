@@ -1,27 +1,24 @@
-pythia-6.4.22.elke.f
-sc-root.C
-script0
-*.o
-*.swp
-*.mod
-default.root
-lund.txt
-simulation
-
-# Build directories
+# Build
 build/
 builddir/
+*.o
+*.mod
 
-# Archived dead code
-archive/
+# Editor
+*.swp
+
+# Output
+*.pdf
+*.lund
+*.root
+simulation
 
 # Python
 __pycache__/
 
-# Output files
-*.pdf
-
 # Test artifacts
 tests/golden/*.lund
 tests/statistical/ref/*.npz
-1k_Cu.txt
+
+# Legacy
+archive/
