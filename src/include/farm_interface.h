@@ -22,6 +22,9 @@ void farm_set_mstj1(int val);
 void farm_set_vz(float vz);
 void farm_set_nuclear_params(int iZ, int iA, float rFM);
 void farm_init_physics(void);
+void farm_get_boost_params(float* BB1, float* B1x, float* B1y, float* B1z, float* Thi, float* Phi);
+void farm_get_fm_state(float* nuc_the, float* nuc_phi, float* nuc_mom, float* FMintact, int* nucleon);
+void farm_apply_quenching(void);
 
 // --- State access -----------------------------------------------------------
 void farm_get_state(int* ievent, float* PPe, float* rFM,

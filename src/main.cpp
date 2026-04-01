@@ -2,9 +2,11 @@
 #include <cstdlib>
 #include <string>
 #include <random>
+#include <chrono>
 #include "include/farm_interface.h"
 #include "include/physics.h"
 #include "include/pythia6.h"
+#include "include/event_processor.h"
 
 // ============================================================================
 // Configuration
@@ -98,26 +100,33 @@ static SimConfig parse_args(int argc, char* argv[]) {
 }
 
 // ============================================================================
-// LUND output writer (delegates to Fortran for format compatibility)
+// LUND output writer (C++)
 // ============================================================================
 
 class LundWriter {
-    int unit_ = -1;
-    bool open_ = false;
+    FILE* file_ = nullptr;
 public:
     bool open(const std::string& filename) {
-        int err = 0;
-        farm_open_lund(filename.c_str(), static_cast<int>(filename.size()), &unit_, &err);
-        open_ = (err == 0);
-        return open_;
+        file_ = fopen(filename.c_str(), "w");
+        return file_ != nullptr;
     }
 
-    void write_event() {
-        if (open_) farm_write_event(unit_);
+    void write_event(const farm::EventData& evt, int iA, int iZ, float E0,
+                      int nucleon, float vz) {
+        if (!file_) return;
+        int nb = static_cast<int>(evt.particles.size());
+        fprintf(file_, "%12d%12d%12d%12d%12d%12d%12.7f%17d%12d%12.8f\n",
+                nb, iA, iZ, 0, 0, 11, E0, nucleon, 1, 1.0f);
+        for (int l = 0; l < nb; l++) {
+            const auto& p = evt.particles[l];
+            fprintf(file_, "%12d%12d%12d%12d%12d%12d%16.8E%16.8E%16.8E%16.8E%16.8E%15d%12d%12.8f\n",
+                    l + 1, p.charge, 1, p.id, p.mother_id, 0,
+                    p.px, p.py, p.pz, p.E, p.m, 0, 0, vz);
+        }
     }
 
     void close() {
-        if (open_) { farm_close_lund(unit_); open_ = false; }
+        if (file_) { fclose(file_); file_ = nullptr; }
     }
 
     ~LundWriter() { close(); }
@@ -184,17 +193,18 @@ public:
                 init_event_kinematics(ievent);
             }
 
-            // Progress
             if (ievent % 10000 == 0)
                 printf(" %d events processed\n", ievent);
 
-            // Generate event
-            process_event();
+            // Generate and process event
+            auto evt = process_event();
 
-            // Vertex z position (C++) + write LUND output (Fortran I/O)
+            // Write LUND output (C++)
             float vz = farm::vertex_z(cfg_.target, uniform_(rng_), uniform_(rng_));
-            farm_set_vz(vz);
-            writer.write_event();
+            float d1, d2, d3, d4;
+            int nucleon_val;
+            farm_get_fm_state(&d1, &d2, &d3, &d4, &nucleon_val);
+            writer.write_event(evt, iA_, iZ_, cfg_.e0, nucleon_val, vz);
 
             nkin_counter++;
         }
@@ -232,15 +242,19 @@ private:
         }
     }
 
-    void process_event() {
-        // 1. Initialize kinematic variables
-        farm_init_kin2book();
-
-        // 2. PYTHIA event generation (C++)
+    farm::EventData process_event() {
+        // 1. PYTHIA event generation (C++)
         pythia_.generate_event();
 
-        // 3. Boost back to lab frame + quenching (Fortran)
-        farm_post_generation();
+        // 2. Inverse Lorentz boost back to lab frame (C++)
+        if (cfg_.iFM != 0) {
+            float BB1, B1x, B1y, B1z, Thi, Phi;
+            farm_get_boost_params(&BB1, &B1x, &B1y, &B1z, &Thi, &Phi);
+            farm::boost_all_back(pythia_, BB1, B1x, B1y, B1z, Thi, Phi);
+        }
+
+        // 3. Quenching (stays Fortran — complex physics)
+        farm_apply_quenching();
 
         // 4. Fragmentation (C++ PYTHIA control)
         if (cfg_.iQuenching != 0) {
@@ -249,8 +263,18 @@ private:
             pythia_.disable_fragmentation();
         }
 
-        // 5. Spectators + compute output variables (Fortran)
-        farm_post_fragmentation();
+        // 5. Spectators (C++)
+        if (cfg_.iNS == 1 && (cfg_.target >= 1 || cfg_.target <= 4)) {
+            float nuc_the, nuc_phi, nuc_mom, FMintact;
+            int nucleon;
+            farm_get_fm_state(&nuc_the, &nuc_phi, &nuc_mom, &FMintact, &nucleon);
+            farm::add_spectator(pythia_, cfg_.target, nucleon,
+                                nuc_the, nuc_phi, nuc_mom, FMintact,
+                                uniform_(rng_));
+        }
+
+        // 6. Compute DIS variables + extract particles (C++)
+        return farm::compute_event(pythia_);
     }
 };
 
@@ -277,8 +301,7 @@ int main(int argc, char* argv[]) {
     printf("\n");
     fflush(stdout);
 
-    double t1, t2;
-    farm_timex(&t1);
+    auto t1 = std::chrono::steady_clock::now();
 
     // Initialize simulation
     Simulation sim(cfg);
@@ -297,8 +320,9 @@ int main(int argc, char* argv[]) {
 
     // Statistics
     sim.print_stats();
-    farm_timex(&t2);
-    printf(" %d events in    %.16E s\n", cfg.nevent, t2 - t1);
+    auto t2 = std::chrono::steady_clock::now();
+    double elapsed = std::chrono::duration<double>(t2 - t1).count();
+    printf(" %d events in %.2f s\n", cfg.nevent, elapsed);
 
     return 0;
 }

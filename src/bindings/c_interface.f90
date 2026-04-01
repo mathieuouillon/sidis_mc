@@ -245,6 +245,35 @@ contains
         c_vz = vz
     end subroutine farm_calc_vz
 
+    subroutine farm_get_boost_params(c_BB1, c_B1x, c_B1y, c_B1z, c_Thi, c_Phi) &
+            bind(C, name="farm_get_boost_params")
+        use kinematics_module, only: BB1, B1x, B1y, B1z, Thi, Phi
+        real(c_float), intent(out) :: c_BB1, c_B1x, c_B1y, c_B1z, c_Thi, c_Phi
+        c_BB1 = BB1; c_B1x = B1x; c_B1y = B1y; c_B1z = B1z
+        c_Thi = Thi; c_Phi = Phi
+    end subroutine farm_get_boost_params
+
+    subroutine farm_get_fm_state(c_nuc_the, c_nuc_phi, c_nuc_mom, c_FMintact, c_nucleon) &
+            bind(C, name="farm_get_fm_state")
+        use kinematics_module, only: nuc_the, nuc_phi, nuc_mom
+        use fermi_motion_module, only: FMintact
+        use config_module, only: nucleon
+        real(c_float), intent(out) :: c_nuc_the, c_nuc_phi, c_nuc_mom, c_FMintact
+        integer(c_int), intent(out) :: c_nucleon
+        c_nuc_the = nuc_the; c_nuc_phi = nuc_phi; c_nuc_mom = nuc_mom
+        c_FMintact = FMintact; c_nucleon = nucleon
+    end subroutine farm_get_fm_state
+
+    !> Apply quenching weights only (extracted from farm_post_generation)
+    subroutine farm_apply_quenching() bind(C, name="farm_apply_quenching")
+        use config_module, only: iQuenching, iTg
+        implicit none
+        if (iQuenching /= 0 .and. iTg > 1) then
+            call InterPos()
+            call ApplyQW()
+        end if
+    end subroutine farm_apply_quenching
+
     subroutine farm_set_nuclear_params(c_iZ, c_iA, c_rFM) bind(C, name="farm_set_nuclear_params")
         use fermi_motion_module, only: iZ, iA
         use config_module, only: rFM
