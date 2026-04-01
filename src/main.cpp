@@ -4,6 +4,7 @@
 #include <random>
 #include "include/farm_interface.h"
 #include "include/physics.h"
+#include "include/pythia6.h"
 
 // ============================================================================
 // Configuration
@@ -128,6 +129,7 @@ public:
 
 class Simulation {
     SimConfig cfg_;
+    Pythia6 pythia_;
     int iZ_ = 0, iA_ = 0;
     float rFM_ = 0.0f;
     int nkin_ = 0;
@@ -176,17 +178,18 @@ public:
                 || (nkin_counter == nkin_)
                 || (ievent == cfg_.nevent * iZ_ / iA_)
                 || (ievent % 500000 == 0);
+
             if (reinit) {
                 nkin_counter = 0;
-                farm_setup_kinematics(ievent, cfg_.nevent);
+                init_event_kinematics(ievent);
             }
 
             // Progress
             if (ievent % 10000 == 0)
                 printf(" %d events processed\n", ievent);
 
-            // Generate and process one complete physics event
-            farm_generate_event();
+            // Generate event
+            process_event();
 
             // Vertex z position (C++) + write LUND output (Fortran I/O)
             float vz = farm::vertex_z(cfg_.target, uniform_(rng_), uniform_(rng_));
@@ -198,14 +201,56 @@ public:
     }
 
     void print_stats() const {
-        double xsec;
-        farm_get_xsec99(&xsec);
-        printf(" X sec 99 =    %.16E\n", xsec);
+        printf(" X sec 99 =    %.16E\n", pythia_.xsec(99));
 
         float qw_qhat;
         int qw_nb;
         farm_get_qw_stats(&qw_qhat, &qw_nb);
         if (qw_nb > 0) printf(" q hat =    %E\n", qw_qhat / qw_nb);
+    }
+
+private:
+    void init_event_kinematics(int ievent) {
+        // Fermi motion + Lorentz boost (Fortran), returns beam energy
+        double beam_energy;
+        farm_setup_kinematics(ievent, cfg_.nevent, &beam_energy);
+
+        // PYTHIA configuration + initialization (C++)
+        pythia_.configure_dis();
+        if (cfg_.iQuenching != 0)
+            pythia_.disable_fragmentation();
+
+        bool use_proton = (cfg_.iIso == 0)
+            ? (ievent < cfg_.nevent * iZ_ / iA_)
+            : (ievent < cfg_.nevent / 2);
+
+        if (use_proton) {
+            pythia_.init_proton(beam_energy);
+        } else {
+            printf(" X sec 99 =    %.16E\n", pythia_.xsec(99));
+            pythia_.init_neutron(beam_energy);
+        }
+    }
+
+    void process_event() {
+        // 1. Initialize kinematic variables
+        farm_init_kin2book();
+
+        // 2. PYTHIA event generation (C++)
+        pythia_.generate_event();
+
+        // 3. Boost back to lab frame + quenching (Fortran)
+        farm_post_generation();
+
+        // 4. Fragmentation (C++ PYTHIA control)
+        if (cfg_.iQuenching != 0) {
+            pythia_.enable_fragmentation();
+            pythia_.fragment();
+            pythia_.disable_fragmentation();
+        }
+
+        // 5. Spectators + compute output variables (Fortran)
+        farm_post_fragmentation();
     }
 };
 

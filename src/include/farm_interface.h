@@ -59,9 +59,9 @@ void farm_pyevnt(void);
 void farm_pyexec(void);
 
 // --- High-level event loop --------------------------------------------------
-void farm_setup_kinematics(int ievent, int nevent);
-void farm_generate_event(void);
-void farm_needs_reinit(int ievent, int nkin_counter, int nevent, int* result);
+void farm_setup_kinematics(int ievent, int nevent, double* beam_energy);
+void farm_post_generation(void);
+void farm_post_fragmentation(void);
 
 // --- I/O --------------------------------------------------------------------
 void farm_open_lund(const char* filename, int len, int* unit, int* err);
