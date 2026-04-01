@@ -29,33 +29,14 @@ pawlib_dep = meson.get_compiler('cpp').find_library('pawlib', dirs : cernlib_lib
 packlib_dep = meson.get_compiler('cpp').find_library('packlib', dirs : cernlib_libdir, required : true)
 kernlib_dep = meson.get_compiler('cpp').find_library('kernlib', dirs : cernlib_libdir, required : true)
 
-# Fortran physics sources (no main program)
+# Fortran: only PYTHIA 6.4.28 remains
 fortran_sources = [
-  # Modules
-  'src/modules/common_module.f90',
-  'src/modules/simulation_helpers.f90',
-
-  # Physics
-  'src/physics/fermimotion.f90',
-  'src/physics/pythiaconfig.f90',
-  'src/physics/book.f90',
-  'src/physics/transfo.f90',
-  'src/physics/nucdens.f90',
-  'src/physics/density.f90',
-  'src/physics/qweight.f90',
-  'src/physics/vz_position.f90',
-
-  # ISO_C_BINDING interface
-  'src/bindings/c_interface.f90',
-
-  # External libraries
   'src/external/pythia6428.f',
 ]
 
 # C++ main program
 cpp_sources = [
   'src/main.cpp',
-  'src/rng_bridge.cpp',
 ]
 
 # All dependencies

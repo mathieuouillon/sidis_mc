@@ -240,7 +240,6 @@ inline BoostParams apply_initial_boost(Kinematics& k) {
 inline BoostParams setup_kinematics(int ievent, int nevent, int iZ, int iA,
                                      int iFM, float rFM, float FMlimit, float E0,
                                      const FermiMotionState& fm,
-                                     Pythia6& pythia,
                                      int& nucleon_out, float& beam_energy_out,
                                      float& nuc_the_out, float& nuc_phi_out,
                                      float& nuc_mom_out, float& FMintact_out,

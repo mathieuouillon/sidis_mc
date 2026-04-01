@@ -3,10 +3,13 @@
 #include <string>
 #include <random>
 #include <chrono>
-#include "include/farm_interface.h"
 #include "include/physics.h"
 #include "include/pythia6.h"
 #include "include/event_processor.h"
+#include "include/fermi_motion.h"
+#include "include/accardi_fm.h"
+#include "include/nuclear_density.h"
+#include "include/quenching.h"
 
 // ============================================================================
 // Configuration
@@ -142,6 +145,14 @@ class Simulation {
     int iZ_ = 0, iA_ = 0;
     float rFM_ = 0.0f;
     int nkin_ = 0;
+    int nucleon_ = 2212;
+    float nuc_the_ = 0, nuc_phi_ = 0, nuc_mom_ = 0, FMintact_ = 1.0f;
+    farm::BoostParams boost_{};
+    farm::FermiMotionState fm_state_{};
+    farm::FMTableState fm_table_state_{};
+    farm::AccardiFMState accardi_state_{};
+    farm::DensityTable density_;
+    farm::QuenchingEngine quenching_;
     std::mt19937 rng_;
     std::uniform_real_distribution<float> uniform_{0.0f, 1.0f};
 
@@ -151,37 +162,58 @@ public:
           rng_(cfg.seed >= 0 ? static_cast<unsigned>(cfg.seed) : std::random_device{}()) {}
 
     void initialize() {
-        // Push configuration to Fortran modules
-        farm_set_config(cfg_.nevent, cfg_.target, cfg_.iFM, cfg_.e0, cfg_.nkin, cfg_.seed);
-        farm_set_physics_params(cfg_.FMlimit, cfg_.iIso, cfg_.iNS, 1 /*iLund*/,
-                                cfg_.iQuenching, cfg_.iSim, cfg_.iqw,
-                                cfg_.qhat, cfg_.ehat, cfg_.iDens,
-                                cfg_.iqg, cfg_.iEg, cfg_.iPtF);
-
         // Skip frequent PYTHIA re-init for targets without Fermi motion
-        if (cfg_.target == 0 || cfg_.iFM == 0) {
+        if (cfg_.target == 0 || cfg_.iFM == 0)
             nkin_ = cfg_.nevent + 1;
-            farm_set_nkin(nkin_);
-        }
 
-        // Nuclear parameters lookup (C++)
+        // Nuclear parameters (C++)
         auto nuc = farm::get_nuclear_params(cfg_.target);
         iZ_ = nuc.Z;
         iA_ = nuc.A;
         rFM_ = nuc.rFM;
 
-        // Push to Fortran modules and initialize FM tables, density, RNG
-        farm_set_ievent(0);
-        farm_set_nuclear_params(iZ_, iA_, rFM_);
-        farm_init_physics();
+        // Seed PYTHIA RNG
+        if (cfg_.seed >= 0)
+            pythia_.seed(cfg_.seed);
+
+        // Load Fermi motion tables (C++)
+        if (rFM_ != 0.0f) {
+            if (cfg_.iFM == 5) {
+                farm::gen_rw_table(fm_state_, iZ_, iA_, cfg_.FMlimit);
+            } else if (cfg_.iFM == 2 || cfg_.iFM == 3) {
+                int irho = cfg_.iFM - 1;
+                farm::GenFMtable(irho, iZ_, iA_, cfg_.iFM, cfg_.target,
+                                  cfg_.FMlimit, fm_table_state_, accardi_state_);
+                // Copy Accardi table into FermiMotionState for sample_fermi_motion
+                fm_state_.step_size = fm_table_state_.step_size;
+                std::copy(fm_table_state_.FM_table,
+                          fm_table_state_.FM_table + fm_table_state_.FMnb,
+                          fm_state_.FM_table);
+            }
+        }
+
+        // Generate nuclear density table (C++)
+        if (rFM_ != 0.0f)
+            density_.generate(iZ_, iA_, cfg_.iDens);
+
+        // Configure quenching engine
+        quenching_.iqw = cfg_.iqw;
+        quenching_.iqg = cfg_.iqg;
+        quenching_.iEg = cfg_.iEg;
+        quenching_.iPtF = cfg_.iPtF;
+        quenching_.qhat = cfg_.qhat;
+        quenching_.ehat = cfg_.ehat;
+        quenching_.alphas = 1.0 / 3.0;
+        quenching_.scor = 1;
+        quenching_.ncor = 0;
+        quenching_.sfthrd = 1;
+        quenching_.SupFac = cfg_.qhat / (cfg_.qhat + cfg_.ehat);
     }
 
     void run(LundWriter& writer) {
         int nkin_counter = nkin_;
 
         for (int ievent = 0; ievent < cfg_.nevent; ievent++) {
-            farm_set_ievent(ievent);
-
             // Re-initialize kinematics + PYTHIA when needed
             bool reinit = (ievent == 0)
                 || (nkin_counter == nkin_)
@@ -201,10 +233,7 @@ public:
 
             // Write LUND output (C++)
             float vz = farm::vertex_z(cfg_.target, uniform_(rng_), uniform_(rng_));
-            float d1, d2, d3, d4;
-            int nucleon_val;
-            farm_get_fm_state(&d1, &d2, &d3, &d4, &nucleon_val);
-            writer.write_event(evt, iA_, iZ_, cfg_.e0, nucleon_val, vz);
+            writer.write_event(evt, iA_, iZ_, cfg_.e0, nucleon_, vz);
 
             nkin_counter++;
         }
@@ -213,17 +242,21 @@ public:
     void print_stats() const {
         printf(" X sec 99 =    %.16E\n", pythia_.xsec(99));
 
-        float qw_qhat;
-        int qw_nb;
-        farm_get_qw_stats(&qw_qhat, &qw_nb);
-        if (qw_nb > 0) printf(" q hat =    %E\n", qw_qhat / qw_nb);
+        if (quenching_.QW_nb > 0)
+            printf(" q hat =    %E\n", quenching_.QW_qhat / quenching_.QW_nb);
     }
 
 private:
     void init_event_kinematics(int ievent) {
-        // Fermi motion + Lorentz boost (Fortran), returns beam energy
-        double beam_energy;
-        farm_setup_kinematics(ievent, cfg_.nevent, &beam_energy);
+        // Fermi motion + Lorentz boost (C++)
+        float beam_energy;
+        boost_ = farm::setup_kinematics(
+            ievent, cfg_.nevent, iZ_, iA_,
+            cfg_.iFM, rFM_, cfg_.FMlimit, cfg_.e0,
+            fm_state_,
+            nucleon_, beam_energy,
+            nuc_the_, nuc_phi_, nuc_mom_, FMintact_,
+            rng_);
 
         // PYTHIA configuration + initialization (C++)
         pythia_.configure_dis();
@@ -235,10 +268,10 @@ private:
             : (ievent < cfg_.nevent / 2);
 
         if (use_proton) {
-            pythia_.init_proton(beam_energy);
+            pythia_.init_proton(static_cast<double>(beam_energy));
         } else {
             printf(" X sec 99 =    %.16E\n", pythia_.xsec(99));
-            pythia_.init_neutron(beam_energy);
+            pythia_.init_neutron(static_cast<double>(beam_energy));
         }
     }
 
@@ -247,14 +280,17 @@ private:
         pythia_.generate_event();
 
         // 2. Inverse Lorentz boost back to lab frame (C++)
-        if (cfg_.iFM != 0) {
-            float BB1, B1x, B1y, B1z, Thi, Phi;
-            farm_get_boost_params(&BB1, &B1x, &B1y, &B1z, &Thi, &Phi);
-            farm::boost_all_back(pythia_, BB1, B1x, B1y, B1z, Thi, Phi);
-        }
+        if (cfg_.iFM != 0)
+            farm::boost_all_back(pythia_, boost_.BB1, boost_.B1x, boost_.B1y,
+                                  boost_.B1z, boost_.Thi, boost_.Phi);
 
-        // 3. Quenching (stays Fortran — complex physics)
-        farm_apply_quenching();
+        // 3. Quenching (C++)
+        if (cfg_.iQuenching != 0 && cfg_.target > 1) {
+            farm::InteractionPosition ip;
+            ip.sample(density_, rng_);
+            quenching_.apply(pythia_, ip.x, ip.y, ip.z,
+                              density_.density_table, density_.step_size, 2000);
+        }
 
         // 4. Fragmentation (C++ PYTHIA control)
         if (cfg_.iQuenching != 0) {
@@ -264,14 +300,10 @@ private:
         }
 
         // 5. Spectators (C++)
-        if (cfg_.iNS == 1 && (cfg_.target >= 1 || cfg_.target <= 4)) {
-            float nuc_the, nuc_phi, nuc_mom, FMintact;
-            int nucleon;
-            farm_get_fm_state(&nuc_the, &nuc_phi, &nuc_mom, &FMintact, &nucleon);
-            farm::add_spectator(pythia_, cfg_.target, nucleon,
-                                nuc_the, nuc_phi, nuc_mom, FMintact,
+        if (cfg_.iNS == 1 && (cfg_.target >= 1 || cfg_.target <= 4))
+            farm::add_spectator(pythia_, cfg_.target, nucleon_,
+                                nuc_the_, nuc_phi_, nuc_mom_, FMintact_,
                                 uniform_(rng_));
-        }
 
         // 6. Compute DIS variables + extract particles (C++)
         return farm::compute_event(pythia_);
