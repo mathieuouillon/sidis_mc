@@ -4,8 +4,10 @@ builddir/
 *.o
 *.mod
 
-# Editor
+# Editor / IDE
 *.swp
+.vscode/
+.cache/
 
 # Output
 *.pdf
