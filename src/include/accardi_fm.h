@@ -17,11 +17,17 @@
 //   [3] R.B. Wiringa et al., Phys.Rev.C62(2001)014001
 // ============================================================================
 
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
+#include <span>
+#include <stdexcept>
 #include <sstream>
+#include "physics.h"
 #include <string>
 
 namespace farm {
@@ -36,7 +42,8 @@ namespace farm {
 // The returned j is 0-based (j=0 means xx[0] matched, etc.)
 // To match Fortran semantics exactly, we keep 1-based logic internally
 // and convert at the boundaries.
-inline void ilocatetab(const int* xx, int n, int x, int& j) {
+inline void ilocatetab(std::span<const int> xx, int x, int& j) {
+    int n = static_cast<int>(xx.size());
     // Fortran-style 1-based binary search
     int jl = 0;
     int ju = n + 1;
@@ -69,21 +76,19 @@ struct SVGSoftState {
     int nnuke = 0;
     int Zold = 0, Aold = 0;
     int n = 0; // current nucleus index (1-based)
-    int ZZ[NMAX] = {};
-    int AA[NMAX] = {};
-    double a[6][NMAX] = {};   // a[j][nuke], j=0..5, nuke=0..nnuke-1
-    double alpha[NMAX] = {};
-    double beta[NMAX] = {};
+    std::array<int, NMAX> ZZ{};
+    std::array<int, NMAX> AA{};
+    std::array<std::array<double, NMAX>, 6> a{};   // a[j][nuke], j=0..5, nuke=0..nnuke-1
+    std::array<double, NMAX> alpha{};
+    std::array<double, NMAX> beta{};
 };
 
 inline double rhosoftSVG(int iZ, int iA, double k, SVGSoftState& state) {
-    constexpr double pi = 3.1415926535898;
+    constexpr double pi = farm::constants::pi;
 
     if (iA < 7) {
-        fprintf(stderr,
-                "ERROR (rhosoftSVG): called with A<7: %d\n"
-                " -- Try using Ciofi-Simula parametrization instead\n", iA);
-        exit(1);
+        throw std::runtime_error("ERROR (rhosoftSVG): called with A<7: " + std::to_string(iA)
+                                 + " -- Try using Ciofi-Simula parametrization instead");
     }
 
     // Lazy initialization: read table file on first call
@@ -92,8 +97,7 @@ inline double rhosoftSVG(int iZ, int iA, double k, SVGSoftState& state) {
 
         std::ifstream fin("datafiles/fmacc/fermimotion2.SVG.tbl");
         if (!fin.is_open()) {
-            fprintf(stderr, "ERROR: Cannot open datafiles/fmacc/fermimotion2.SVG.tbl\n");
-            exit(1);
+            throw std::runtime_error("ERROR: Cannot open datafiles/fmacc/fermimotion2.SVG.tbl");
         }
 
         // Skip header lines until column header containing "alpha"
@@ -133,7 +137,7 @@ inline double rhosoftSVG(int iZ, int iA, double k, SVGSoftState& state) {
         state.Zold = iZ;
         state.Aold = iA;
         int j;
-        ilocatetab(state.ZZ, state.nnuke, iZ, j);
+        ilocatetab(std::span{state.ZZ.data(), static_cast<size_t>(state.nnuke)}, iZ, j);
         if (j == 0) {
             state.n = 1;
         } else if (state.ZZ[j - 1] == iZ && state.AA[j - 1] == iA) {
@@ -173,18 +177,17 @@ struct SVGHardState {
 inline double rhohardSVG(int iZ, int iA, double k,
                           double& height, double& slope, double& norm,
                           SVGHardState& state) {
-    constexpr double pi = 3.1415926535898;
+    constexpr double pi = farm::constants::pi;
     constexpr double fourpi = 4.0 * pi;
 
     if (!state.first_warned) {
         state.first_warned = true;
         if (iA < 8) {
-            fprintf(stderr,
-                    "**************************************************\n"
-                    "WARNING (rhohardSVG): called with 2<A<8: A=%d\n"
-                    " -- parametrization of hard tail's height\n"
-                    "    should be used with caution\n"
-                    "**************************************************\n", iA);
+            std::cerr << "**************************************************\n"
+                  << "WARNING (rhohardSVG): called with 2<A<8: A=" << iA << "\n"
+                  << " -- parametrization of hard tail's height\n"
+                  << "    should be used with caution\n"
+                  << "**************************************************\n";
         }
     }
 
@@ -245,18 +248,18 @@ struct CSState {
     int nnuke = 0;
     int Zold = 0, Aold = 0;
     int n = 0; // current nucleus index (1-based)
-    int ZZ[NMAX] = {};
-    int AA[NMAX] = {};
+    std::array<int, NMAX> ZZ{};
+    std::array<int, NMAX> AA{};
     // n0(k) parameters
-    double a0[NMAX] = {}, b0[NMAX] = {}, c0[NMAX] = {};
-    double d0[NMAX] = {}, e0[NMAX] = {}, f0[NMAX] = {};
+    std::array<double, NMAX> a0{}, b0{}, c0{};
+    std::array<double, NMAX> d0{}, e0{}, f0{};
     // n1(k) parameters
-    double a1[NMAX] = {}, b1[NMAX] = {}, b2[NMAX] = {};
-    double c1[NMAX] = {}, d1[NMAX] = {};
+    std::array<double, NMAX> a1{}, b1{}, b2{};
+    std::array<double, NMAX> c1{}, d1{};
 };
 
 inline double rhoCSsh(int iZ, int iA, double k, int idist, CSState& state) {
-    constexpr double pi = 3.1415926535898;
+    constexpr double pi = farm::constants::pi;
     constexpr double fourpi = 4.0 * pi;
     constexpr double pith = pi * 5.5683279968317;
     constexpr double normCS = 1.0 / (4.0 * pi);
@@ -267,8 +270,7 @@ inline double rhoCSsh(int iZ, int iA, double k, int idist, CSState& state) {
 
         std::ifstream fin("datafiles/fmacc/fermimotion2.CS.tbl");
         if (!fin.is_open()) {
-            fprintf(stderr, "ERROR: Cannot open datafiles/fmacc/fermimotion2.CS.tbl\n");
-            exit(1);
+            throw std::runtime_error("ERROR: Cannot open datafiles/fmacc/fermimotion2.CS.tbl");
         }
 
         // Skip header lines until we find the column header "Z   A"
@@ -334,7 +336,7 @@ inline double rhoCSsh(int iZ, int iA, double k, int idist, CSState& state) {
         state.Zold = iZ;
         state.Aold = iA;
         int j;
-        ilocatetab(state.ZZ, state.nnuke, iZ, j);
+        ilocatetab(std::span{state.ZZ.data(), static_cast<size_t>(state.nnuke)}, iZ, j);
         // j is 1-based; find matching (Z,A) at j-1, j, or j+1 (Fortran-style)
         state.n = 0;
         for (int delta = 0; delta <= 1 && state.n == 0; delta++) {
@@ -347,8 +349,8 @@ inline double rhoCSsh(int iZ, int iA, double k, int idist, CSState& state) {
             }
         }
         if (state.n == 0) {
-            fprintf(stderr, "ERROR (rhoCSsh): Z,A outside parameter table: %d %d\n", iZ, iA);
-            exit(1);
+            throw std::runtime_error("ERROR (rhoCSsh): Z,A outside parameter table: "
+                                     + std::to_string(iZ) + " " + std::to_string(iA));
         }
     }
 
@@ -425,7 +427,7 @@ struct AccardiFMState {
 //   irho    = model: 1=SVG, 2=CS
 inline double rhofermi(int iZ, int iA, double k, int irho,
                         AccardiFMState& state) {
-    constexpr double FmGeV = 0.1973269602;
+    constexpr double FmGeV = farm::constants::hbar_c;
     constexpr double Fm3GeV3 = FmGeV * FmGeV * FmGeV;
 
     double kk = k / FmGeV; // convert GeV to fm^-1
@@ -446,7 +448,7 @@ struct FMTableState {
     static constexpr int TABLE_SIZE = 1000;
     int FMnb = 0;
     float step_size = 0.0f;
-    float FM_table[TABLE_SIZE] = {};
+    std::array<float, TABLE_SIZE> FM_table{};
 };
 
 // irho: 1=SVG, 2=CS
@@ -457,7 +459,7 @@ struct FMTableState {
 inline void GenFMtable(int irho, int iZ, int iA, int iFM, int iTg,
                         float FMlimit, FMTableState& table,
                         AccardiFMState& fm_state) {
-    constexpr double pi_val = 3.1415926;
+    constexpr double pi_val = farm::constants::pi;
 
     int itz = iZ;
     int ita = iA;
@@ -486,9 +488,10 @@ inline void GenFMtable(int irho, int iZ, int iA, int iFM, int iTg,
     }
 
     // Normalize to 1
-    for (int i = 0; i < table.FMnb; i++) {
-        table.FM_table[i] = static_cast<float>(table.FM_table[i] / ptot);
-    }
+    float ptot_f = static_cast<float>(ptot);
+    std::transform(table.FM_table.begin(), table.FM_table.begin() + table.FMnb,
+                   table.FM_table.begin(),
+                   [ptot_f](float v) { return v / ptot_f; });
 }
 
 } // namespace farm

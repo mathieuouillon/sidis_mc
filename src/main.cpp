@@ -1,8 +1,13 @@
+#include <array>
 #include <cstdio>
 #include <cstdlib>
-#include <string>
-#include <random>
 #include <chrono>
+#include <format>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <random>
 #include "include/physics.h"
 #include "include/pythia6.h"
 #include "include/event_processor.h"
@@ -41,12 +46,12 @@ struct SimConfig {
     int    iEg         = 0;       // energy conservation gluon
     int    iPtF        = 3;       // pT broadening model
 
-    static const char* target_name(int iTg) {
-        static const char* names[] = {
-            "p", "2H", "3H", "He3", "He4", "Li6", "Li7", "C",
-            "Al", "Fe", "Sn", "Pb", "Ne", "Kr", "Xe", "Cu"
-        };
-        return (iTg >= 0 && iTg <= 15) ? names[iTg] : "Unknown";
+    static constexpr std::array<std::string_view, 16> TARGET_NAMES{
+        "p", "2H", "3H", "He3", "He4", "Li6", "Li7", "C",
+        "Al", "Fe", "Sn", "Pb", "Ne", "Kr", "Xe", "Cu"
+    };
+    static constexpr std::string_view target_name(int iTg) {
+        return (iTg >= 0 && iTg < 16) ? TARGET_NAMES[iTg] : "Unknown";
     }
 };
 
@@ -58,46 +63,45 @@ static SimConfig parse_args(int argc, char* argv[]) {
     SimConfig cfg;
 
     if (argc < 2) {
-        printf("Usage: simulation --nevent <N> --output <file> --target <0-15> --nkin <N> --e0 <GeV>\n");
-        printf("Optional: --iFM <0-5> --seed <N> --help\n");
-        exit(1);
+        throw std::invalid_argument(
+            "Usage: simulation --nevent <N> --output <file> --target <0-15> --nkin <N> --e0 <GeV>\n"
+            "Optional: --iFM <0-5> --seed <N> --help");
     }
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         if ((arg == "--nevent" || arg == "-n") && i + 1 < argc)
-            cfg.nevent = atoi(argv[++i]);
+            cfg.nevent = std::stoi(argv[++i]);
         else if ((arg == "--output" || arg == "-o") && i + 1 < argc)
             cfg.output = argv[++i];
         else if ((arg == "--target" || arg == "-t") && i + 1 < argc)
-            cfg.target = atoi(argv[++i]);
+            cfg.target = std::stoi(argv[++i]);
         else if (arg == "--nkin" && i + 1 < argc)
-            cfg.nkin = atoi(argv[++i]);
+            cfg.nkin = std::stoi(argv[++i]);
         else if (arg == "--e0" && i + 1 < argc)
-            cfg.e0 = static_cast<float>(atof(argv[++i]));
+            cfg.e0 = std::stof(argv[++i]);
         else if (arg == "--iFM" && i + 1 < argc)
-            cfg.iFM = atoi(argv[++i]);
+            cfg.iFM = std::stoi(argv[++i]);
         else if ((arg == "--seed" || arg == "-s") && i + 1 < argc)
-            cfg.seed = atoi(argv[++i]);
+            cfg.seed = std::stoi(argv[++i]);
         else if (arg == "--help" || arg == "-h") {
-            printf("Usage: simulation [OPTIONS]\n\n");
-            printf("Required: --nevent <N>  --output <file>  --target <0-15>  --nkin <N>  --e0 <GeV>\n");
-            printf("Optional: --iFM <0-5> [default: 5]  --seed <N> [default: time-based]\n\n");
-            printf("Targets: 0=p 1=2H 2=3H 3=He3 4=He4 5=Li6 6=Li7 7=C\n");
-            printf("         8=Al 9=Fe 10=Sn 11=Pb 12=Ne 13=Kr 14=Xe 15=Cu\n\n");
-            printf("FM: 0=none 1=Bodek-Ritchie 2=Accardi-SVG 3=Accardi-CS 4=hard-sphere 5=Wiringa\n");
+            std::cout << "Usage: simulation [OPTIONS]\n\n"
+                      << "Required: --nevent <N>  --output <file>  --target <0-15>  --nkin <N>  --e0 <GeV>\n"
+                      << "Optional: --iFM <0-5> [default: 5]  --seed <N> [default: time-based]\n\n"
+                      << "Targets: 0=p 1=2H 2=3H 3=He3 4=He4 5=Li6 6=Li7 7=C\n"
+                      << "         8=Al 9=Fe 10=Sn 11=Pb 12=Ne 13=Kr 14=Xe 15=Cu\n\n"
+                      << "FM: 0=none 1=Bodek-Ritchie 2=Accardi-SVG 3=Accardi-CS 4=hard-sphere 5=Wiringa\n";
             exit(0);
         } else {
-            fprintf(stderr, "Error: Unknown argument: %s\n", argv[i]);
-            exit(1);
+            throw std::invalid_argument(std::string("Unknown argument: ") + argv[i]);
         }
     }
 
-    if (cfg.nevent <= 0)    { fprintf(stderr, "Error: --nevent required\n"); exit(1); }
-    if (cfg.output.empty()) { fprintf(stderr, "Error: --output required\n"); exit(1); }
-    if (cfg.target < 0 || cfg.target > 15) { fprintf(stderr, "Error: --target 0-15 required\n"); exit(1); }
-    if (cfg.nkin <= 0)      { fprintf(stderr, "Error: --nkin required\n"); exit(1); }
-    if (cfg.e0 <= 0.0f)     { fprintf(stderr, "Error: --e0 required\n"); exit(1); }
+    if (cfg.nevent <= 0)    throw std::invalid_argument("--nevent required");
+    if (cfg.output.empty()) throw std::invalid_argument("--output required");
+    if (cfg.target < 0 || cfg.target > 15) throw std::invalid_argument("--target 0-15 required");
+    if (cfg.nkin <= 0)      throw std::invalid_argument("--nkin required");
+    if (cfg.e0 <= 0.0f)     throw std::invalid_argument("--e0 required");
 
     return cfg;
 }
@@ -107,17 +111,21 @@ static SimConfig parse_args(int argc, char* argv[]) {
 // ============================================================================
 
 class LundWriter {
-    FILE* file_ = nullptr;
+    FILE* file_;  // C FILE* kept for exact fprintf format compatibility with golden files
 public:
-    bool open(const std::string& filename) {
-        file_ = fopen(filename.c_str(), "w");
-        return file_ != nullptr;
+    explicit LundWriter(const std::string& filename)
+        : file_(fopen(filename.c_str(), "w")) {
+        if (!file_)
+            throw std::runtime_error(std::format("Cannot open output file: {}", filename));
     }
+
+    // Non-copyable, non-movable (owns FILE*)
+    LundWriter(const LundWriter&) = delete;
+    LundWriter& operator=(const LundWriter&) = delete;
 
     void write_event(const farm::EventData& evt, int iA, int iZ, float E0,
                       int nucleon, float vz) {
-        if (!file_) return;
-        int nb = static_cast<int>(evt.particles.size());
+        auto nb = static_cast<int>(evt.particles.size());
         fprintf(file_, "%12d%12d%12d%12d%12d%12d%12.7f%17d%12d%12.8f\n",
                 nb, iA, iZ, 0, 0, 11, E0, nucleon, 1, 1.0f);
         for (int l = 0; l < nb; l++) {
@@ -128,11 +136,7 @@ public:
         }
     }
 
-    void close() {
-        if (file_) { fclose(file_); file_ = nullptr; }
-    }
-
-    ~LundWriter() { close(); }
+    ~LundWriter() { if (file_) fclose(file_); }
 };
 
 // ============================================================================
@@ -145,9 +149,7 @@ class Simulation {
     int iZ_ = 0, iA_ = 0;
     float rFM_ = 0.0f;
     int nkin_ = 0;
-    int nucleon_ = 2212;
-    float nuc_the_ = 0, nuc_phi_ = 0, nuc_mom_ = 0, FMintact_ = 1.0f;
-    farm::BoostParams boost_{};
+    farm::KinematicsResult kin_result_{};
     farm::FermiMotionState fm_state_{};
     farm::FMTableState fm_table_state_{};
     farm::AccardiFMState accardi_state_{};
@@ -167,10 +169,10 @@ public:
             nkin_ = cfg_.nevent + 1;
 
         // Nuclear parameters (C++)
-        auto nuc = farm::get_nuclear_params(cfg_.target);
-        iZ_ = nuc.Z;
-        iA_ = nuc.A;
-        rFM_ = nuc.rFM;
+        auto [Z, A, rFM] = farm::get_nuclear_params(cfg_.target);
+        iZ_ = Z;
+        iA_ = A;
+        rFM_ = rFM;
 
         // Seed PYTHIA RNG
         if (cfg_.seed >= 0)
@@ -186,9 +188,9 @@ public:
                                   cfg_.FMlimit, fm_table_state_, accardi_state_);
                 // Copy Accardi table into FermiMotionState for sample_fermi_motion
                 fm_state_.step_size = fm_table_state_.step_size;
-                std::copy(fm_table_state_.FM_table,
-                          fm_table_state_.FM_table + fm_table_state_.FMnb,
-                          fm_state_.FM_table);
+                std::copy(fm_table_state_.FM_table.begin(),
+                          fm_table_state_.FM_table.begin() + fm_table_state_.FMnb,
+                          fm_state_.FM_table.begin());
             }
         }
 
@@ -197,18 +199,14 @@ public:
             density_.generate(iZ_, iA_, cfg_.iDens);
 
         // Configure quenching engine
-        quenching_.iqw = cfg_.iqw;
-        quenching_.iqg = cfg_.iqg;
-        quenching_.iEg = cfg_.iEg;
-        quenching_.iPtF = cfg_.iPtF;
-        quenching_.qhat = cfg_.qhat;
-        quenching_.ehat = cfg_.ehat;
-        quenching_.alphas = 1.0 / 3.0;
-        quenching_.scor = 1;
-        quenching_.ncor = 0;
-        quenching_.sfthrd = 1;
-        quenching_.SupFac = cfg_.qhat / (cfg_.qhat + cfg_.ehat);
+        quenching_ = farm::QuenchingEngine(farm::QuenchingConfig{
+            .iqw = cfg_.iqw, .iqg = cfg_.iqg, .iEg = cfg_.iEg, .iPtF = cfg_.iPtF,
+            .qhat = cfg_.qhat, .ehat = cfg_.ehat
+        });
     }
+
+    static constexpr int PYTHIA_REINIT_INTERVAL = 500000;
+    static constexpr int PROGRESS_REPORT_INTERVAL = 10000;
 
     void run(LundWriter& writer) {
         int nkin_counter = nkin_;
@@ -218,45 +216,41 @@ public:
             bool reinit = (ievent == 0)
                 || (nkin_counter == nkin_)
                 || (ievent == cfg_.nevent * iZ_ / iA_)
-                || (ievent % 500000 == 0);
+                || (ievent % PYTHIA_REINIT_INTERVAL == 0);
 
             if (reinit) {
                 nkin_counter = 0;
                 init_event_kinematics(ievent);
             }
 
-            if (ievent % 10000 == 0)
-                printf(" %d events processed\n", ievent);
+            if (ievent % PROGRESS_REPORT_INTERVAL == 0)
+                std::cout << std::format(" {} events processed\n", ievent);
 
             // Generate and process event
             auto evt = process_event();
 
             // Write LUND output (C++)
             float vz = farm::vertex_z(cfg_.target, uniform_(rng_), uniform_(rng_));
-            writer.write_event(evt, iA_, iZ_, cfg_.e0, nucleon_, vz);
+            writer.write_event(evt, iA_, iZ_, cfg_.e0, kin_result_.nucleon, vz);
 
             nkin_counter++;
         }
     }
 
     void print_stats() const {
-        printf(" X sec 99 =    %.16E\n", pythia_.xsec(99));
+        std::cout << std::format(" X sec 99 =    {:.16E}\n", pythia_.xsec(99));
 
         if (quenching_.QW_nb > 0)
-            printf(" q hat =    %E\n", quenching_.QW_qhat / quenching_.QW_nb);
+            std::cout << std::format(" q hat =    {:E}\n", quenching_.QW_qhat / quenching_.QW_nb);
     }
 
 private:
     void init_event_kinematics(int ievent) {
         // Fermi motion + Lorentz boost (C++)
-        float beam_energy;
-        boost_ = farm::setup_kinematics(
+        kin_result_ = farm::setup_kinematics(
             ievent, cfg_.nevent, iZ_, iA_,
             cfg_.iFM, rFM_, cfg_.FMlimit, cfg_.e0,
-            fm_state_,
-            nucleon_, beam_energy,
-            nuc_the_, nuc_phi_, nuc_mom_, FMintact_,
-            rng_);
+            fm_state_, rng_);
 
         // PYTHIA configuration + initialization (C++)
         pythia_.configure_dis();
@@ -268,10 +262,10 @@ private:
             : (ievent < cfg_.nevent / 2);
 
         if (use_proton) {
-            pythia_.init_proton(static_cast<double>(beam_energy));
+            pythia_.init_proton(static_cast<double>(kin_result_.beam_energy));
         } else {
-            printf(" X sec 99 =    %.16E\n", pythia_.xsec(99));
-            pythia_.init_neutron(static_cast<double>(beam_energy));
+            std::cout << std::format(" X sec 99 =    {:.16E}\n", pythia_.xsec(99));
+            pythia_.init_neutron(static_cast<double>(kin_result_.beam_energy));
         }
     }
 
@@ -280,16 +274,17 @@ private:
         pythia_.generate_event();
 
         // 2. Inverse Lorentz boost back to lab frame (C++)
-        if (cfg_.iFM != 0)
-            farm::boost_all_back(pythia_, boost_.BB1, boost_.B1x, boost_.B1y,
-                                  boost_.B1z, boost_.Thi, boost_.Phi);
+        if (cfg_.iFM != 0) {
+            const auto& bp = kin_result_.boost;
+            farm::boost_all_back(pythia_, bp.BB1, bp.B1x, bp.B1y,
+                                  bp.B1z, bp.Thi, bp.Phi);
+        }
 
         // 3. Quenching (C++)
         if (cfg_.iQuenching != 0 && cfg_.target > 1) {
-            farm::InteractionPosition ip;
-            ip.sample(density_, rng_);
-            quenching_.apply(pythia_, ip.x, ip.y, ip.z,
-                              density_.density_table, density_.step_size, 2000);
+            auto [ix, iy, iz] = farm::sample_interaction_position(density_, rng_);
+            quenching_.apply(pythia_, ix, iy, iz,
+                              density_.density_table, density_.step_size);
         }
 
         // 4. Fragmentation (C++ PYTHIA control)
@@ -300,9 +295,10 @@ private:
         }
 
         // 5. Spectators (C++)
-        if (cfg_.iNS == 1 && (cfg_.target >= 1 || cfg_.target <= 4))
-            farm::add_spectator(pythia_, cfg_.target, nucleon_,
-                                nuc_the_, nuc_phi_, nuc_mom_, FMintact_,
+        if (cfg_.iNS == 1 && cfg_.target >= 1 && cfg_.target <= 4)
+            farm::add_spectator(pythia_, cfg_.target, kin_result_.nucleon,
+                                kin_result_.nuc_theta, kin_result_.nuc_phi,
+                                kin_result_.nuc_momentum, kin_result_.FMintact,
                                 uniform_(rng_));
 
         // 6. Compute DIS variables + extract particles (C++)
@@ -319,19 +315,18 @@ int main(int argc, char* argv[]) {
 
     SimConfig cfg = parse_args(argc, argv);
 
-    printf(" Monte Carlo Simulation Parameters:\n");
-    printf("   Number of events:  %d\n", cfg.nevent);
-    printf("   Lund output file:  %s\n", cfg.output.c_str());
-    printf("   Target type:       %s\n", SimConfig::target_name(cfg.target));
-    printf("   Nkin value:        %d\n", cfg.nkin);
-    printf("   Electron energy:   %.7f GeV\n", cfg.e0);
-    printf("   Fermi motion:      %d\n", cfg.iFM);
+    std::cout << " Monte Carlo Simulation Parameters:\n"
+              << std::format("   Number of events:  {}\n", cfg.nevent)
+              << std::format("   Lund output file:  {}\n", cfg.output)
+              << std::format("   Target type:       {}\n", SimConfig::target_name(cfg.target))
+              << std::format("   Nkin value:        {}\n", cfg.nkin)
+              << std::format("   Electron energy:   {:.7f} GeV\n", cfg.e0)
+              << std::format("   Fermi motion:      {}\n", cfg.iFM);
     if (cfg.seed >= 0)
-        printf("   Random seed:       %d\n", cfg.seed);
+        std::cout << std::format("   Random seed:       {}\n", cfg.seed);
     else
-        printf("   Random seed:       time-based\n");
-    printf("\n");
-    fflush(stdout);
+        std::cout << "   Random seed:       time-based\n";
+    std::cout << "\n" << std::flush;
 
     auto t1 = std::chrono::steady_clock::now();
 
@@ -339,22 +334,17 @@ int main(int argc, char* argv[]) {
     Simulation sim(cfg);
     sim.initialize();
 
-    // Open output
-    LundWriter writer;
-    if (!writer.open(cfg.output)) {
-        fprintf(stderr, "ERROR: Cannot open output file: %s\n", cfg.output.c_str());
-        return 1;
-    }
+    // Open output (RAII — throws on failure, auto-closes on destruction)
+    LundWriter writer(cfg.output);
 
     // Run event loop
     sim.run(writer);
-    writer.close();
 
     // Statistics
     sim.print_stats();
     auto t2 = std::chrono::steady_clock::now();
     double elapsed = std::chrono::duration<double>(t2 - t1).count();
-    printf(" %d events in %.2f s\n", cfg.nevent, elapsed);
+    std::cout << std::format(" {} events in {:.2f} s\n", cfg.nevent, elapsed);
 
     return 0;
 }

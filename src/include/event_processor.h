@@ -37,20 +37,16 @@ struct EventData {
 };
 
 // ============================================================================
-// Event processing: compute DIS variables and extract particles
-// (replaces ComputV in book.f90)
+// Helper functions extracted from compute_event
 // ============================================================================
 
-inline EventData compute_event(Pythia6& py) {
+[[nodiscard]] inline EventData find_virtual_photon(Pythia6& py) {
     EventData evt;
-
-    double eip  = py.get_p(1, 4);   // initial electron energy
-    double nip  = 0.0;               // nucleon initial momentum (fixed target)
-    double nie  = py.get_p(2, 5);    // target nucleon mass
-
+    double eip = py.get_p(1, 4);
+    double nip = 0.0;
+    double nie = py.get_p(2, 5);
     int N = py.n_particles();
 
-    // First pass: find virtual photon and compute DIS variables
     for (int ip = 1; ip <= N; ip++) {
         if (py.pdg_id(ip) == 22 && py.mother(ip) == 1) {
             double p4 = py.get_p(ip, 4);
@@ -59,23 +55,85 @@ inline EventData compute_event(Pythia6& py) {
             double p1 = py.get_p(ip, 1);
             double p5 = py.get_p(ip, 5);
 
-            evt.Nu  = static_cast<float>((p4 * nie + p3 * nip) / py.get_p(2, 5));
-            evt.Q2  = static_cast<float>(p5 * p5);
+            evt.Nu = static_cast<float>((p4 * nie + p3 * nip) / py.get_p(2, 5));
+            evt.Q2 = static_cast<float>(p5 * p5);
             if (evt.Nu != 0.0f) {
                 evt.xBj = evt.Q2 / (2.0f * static_cast<float>(py.get_p(2, 5)) * evt.Nu);
-                evt.y   = evt.Nu * static_cast<float>(py.get_p(2, 5)) / static_cast<float>(eip * (nie + nip));
+                evt.y = evt.Nu * static_cast<float>(py.get_p(2, 5)) / static_cast<float>(eip * (nie + nip));
             }
             evt.W = static_cast<float>(std::sqrt(
                 (nie + p4) * (nie + p4) - (-nip + p3) * (-nip + p3) - p2 * p2 - p1 * p1));
             evt.trk_gs = ip;
         }
     }
+    return evt;
+}
 
-    if (evt.trk_gs == 0) return evt;  // no virtual photon found
+[[nodiscard]] inline int particle_charge(int kid) noexcept {
+    if (kid == 11 || kid == -211 || kid == -321 || kid == -2212)
+        return -1;
+    if (kid == 211 || kid == 321 || kid == 1000010030 || kid == 1000010020 || kid == 2212)
+        return 1;
+    if (kid == 1000020030)
+        return 2;
+    return 0;
+}
 
-    double phi_ele = std::atan2(py.get_p(evt.trk_gs, 2), py.get_p(evt.trk_gs, 1)) * 57.2958 + 210.0;
+[[nodiscard]] inline float compute_phih(double phi_ele, double gp1, double gp2, double gp3,
+                                         double p1, double p2, double p3) noexcept {
+    double A1 = std::sin(phi_ele * constants::deg2rad);
+    double A2 = -std::cos(phi_ele * constants::deg2rad);
+    double AA = A1 * A1 + A2 * A2;
+    double B1 = gp2 * p3 - gp3 * p2;
+    double B2 = gp3 * p1 - gp1 * p3;
+    double B3 = gp1 * p2 - gp2 * p1;
+    double BB = B1 * B1 + B2 * B2 + B3 * B3;
+    if (AA * BB > 0)
+        return static_cast<float>(std::acos((A1 * B1 + A2 * B2) / std::sqrt(AA * BB)) * constants::rad2deg);
+    return 0.0f;
+}
+
+[[nodiscard]] inline float compute_missing_mass(float Nu, double gp1, double gp2, double gp3,
+                                                 double p1, double p2, double p3, double p4) noexcept {
+    return static_cast<float>((Nu - p4) * (Nu - p4)
+        - (gp1 - p1) * (gp1 - p1) - (gp2 - p2) * (gp2 - p2) - (gp3 - p3) * (gp3 - p3));
+}
+
+[[nodiscard]] inline float compute_Xf(float z, float Nu, float Q2, float W, double p5, double dot4,
+                                       double target_mass) noexcept {
+    double NuQ2 = Nu * Nu + Q2;
+    double Whalf = W / 2.0;
+    double denom = std::sqrt(Whalf * Whalf - p5 * p5) * W * std::sqrt(NuQ2);
+    if (std::abs(denom) > 1e-10) {
+        return static_cast<float>(
+            (z * target_mass * Nu * Nu
+             - z * Q2 * Nu
+             - (target_mass + Nu) * (-dot4)) / denom);
+    }
+    return 0.0f;
+}
+
+// ============================================================================
+// Event processing: compute DIS variables and extract particles
+// (replaces ComputV in book.f90)
+// ============================================================================
+
+[[nodiscard]] inline EventData compute_event(Pythia6& py) {
+    double nip = 0.0;
+    double nie = py.get_p(2, 5);
+
+    // First pass: find virtual photon and compute DIS variables
+    EventData evt = find_virtual_photon(py);
+    if (evt.trk_gs == 0) return evt;
+
+    double phi_ele = std::atan2(py.get_p(evt.trk_gs, 2), py.get_p(evt.trk_gs, 1)) * constants::rad2deg + 210.0;
+    double gp1 = py.get_p(evt.trk_gs, 1);
+    double gp2 = py.get_p(evt.trk_gs, 2);
+    double gp3 = py.get_p(evt.trk_gs, 3);
+    double gp4 = py.get_p(evt.trk_gs, 4);
 
     // Second pass: extract final-state particles
+    int N = py.n_particles();
     for (int ip = 1; ip <= N; ip++) {
         int kid = py.pdg_id(ip);
         int kst = py.status(ip);
@@ -92,15 +150,7 @@ inline EventData compute_event(Pythia6& py) {
         if (!select) continue;
 
         Particle part{};
-        // Charge
-        if (kid == 11 || kid == -211 || kid == -321 || kid == -2212)
-            part.charge = -1;
-        else if (kid == 211 || kid == 321 || kid == 1000010030 || kid == 1000010020 || kid == 2212)
-            part.charge = 1;
-        else if (kid == 1000020030)
-            part.charge = 2;
-        else
-            part.charge = 0;
+        part.charge = particle_charge(kid);
 
         double p1 = py.get_p(ip, 1);
         double p2 = py.get_p(ip, 2);
@@ -120,24 +170,12 @@ inline EventData compute_event(Pythia6& py) {
         part.z = static_cast<float>((p4 * nie + p3 * nip) / (evt.Nu * py.get_p(2, 5)));
 
         double pmag = std::sqrt(p1 * p1 + p2 * p2 + p3 * p3);
-        part.theta = (pmag > 0) ? static_cast<float>(57.2957795 * std::acos(p3 / pmag)) : 0.0f;
-        part.phi = static_cast<float>(std::atan2(p2, p1) * 57.2958 + 30.0);
+        part.theta = (pmag > 0) ? static_cast<float>(constants::rad2deg * std::acos(p3 / pmag)) : 0.0f;
+        part.phi = static_cast<float>(std::atan2(p2, p1) * constants::rad2deg + 30.0);
         if (part.phi < 0) part.phi += 360.0f;
 
-        // Phih calculation
-        double A1 = std::sin(phi_ele / 57.2958), A2 = -std::cos(phi_ele / 57.2958), A3 = 0;
-        double AA = A1 * A1 + A2 * A2;
-        double gp1 = py.get_p(evt.trk_gs, 1), gp2 = py.get_p(evt.trk_gs, 2), gp3 = py.get_p(evt.trk_gs, 3);
-        double B1 = gp2 * p3 - gp3 * p2;
-        double B2 = gp3 * p1 - gp1 * p3;
-        double B3 = gp1 * p2 - gp2 * p1;
-        double BB = B1 * B1 + B2 * B2 + B3 * B3;
-        part.phih = (AA * BB > 0) ? static_cast<float>(std::acos((A1 * B1 + A2 * B2 + A3 * B3) / std::sqrt(AA * BB)) * 57.2958) : 0.0f;
-
-        // tt (missing mass squared)
-        double gp4 = py.get_p(evt.trk_gs, 4);
-        part.tt = static_cast<float>((evt.Nu - p4) * (evt.Nu - p4)
-            - (gp1 - p1) * (gp1 - p1) - (gp2 - p2) * (gp2 - p2) - (gp3 - p3) * (gp3 - p3));
+        part.phih = compute_phih(phi_ele, gp1, gp2, gp3, p1, p2, p3);
+        part.tt = compute_missing_mass(evt.Nu, gp1, gp2, gp3, p1, p2, p3, p4);
 
         // Pts
         double zNu = part.z * evt.Nu;
@@ -146,17 +184,10 @@ inline EventData compute_event(Pythia6& py) {
             - (dot4 + zNu * evt.Nu) * (dot4 + zNu * evt.Nu) / (evt.Nu * evt.Nu + evt.Q2));
 
         // Xf
-        double NuQ2 = evt.Nu * evt.Nu + evt.Q2;
-        double Whalf = evt.W / 2.0;
-        double denom = std::sqrt(Whalf * Whalf - p5 * p5) * evt.W * std::sqrt(NuQ2);
-        if (std::abs(denom) > 1e-10) {
-            part.Xf = static_cast<float>(
-                (part.z * py.get_p(2, 5) * evt.Nu * evt.Nu
-                 - part.z * evt.Q2 * evt.Nu
-                 - (py.get_p(2, 5) + evt.Nu) * (-dot4)) / denom);
-        }
+        part.Xf = compute_Xf(part.z, evt.Nu, evt.Q2, evt.W, p5, dot4, py.get_p(2, 5));
 
         // Alpha_s (Nachtmann)
+        double Whalf = evt.W / 2.0;
         double denom2 = std::sqrt(Whalf * Whalf + evt.Q2);
         if (std::abs(denom2) > 1e-10 && std::abs(p5) > 1e-10) {
             part.alpha_s = static_cast<float>(
@@ -173,7 +204,7 @@ inline EventData compute_event(Pythia6& py) {
 // Rotate all PYTHIA particles around Y axis (replaces FinalRotY)
 // ============================================================================
 
-inline void rotate_all_y(Pythia6& py, float theta) {
+inline void rotate_all_y(Pythia6& py, float theta) noexcept {
     float ct = std::cos(theta), st = std::sin(theta);
     for (int ip = 1; ip <= py.n_particles(); ip++) {
         double p1 = py.get_p(ip, 1);
@@ -187,7 +218,7 @@ inline void rotate_all_y(Pythia6& py, float theta) {
 // Rotate all PYTHIA particles around Z axis (replaces FinalRotZ)
 // ============================================================================
 
-inline void rotate_all_z(Pythia6& py, float phi) {
+inline void rotate_all_z(Pythia6& py, float phi) noexcept {
     float cp = std::cos(phi), sp = std::sin(phi);
     for (int ip = 1; ip <= py.n_particles(); ip++) {
         double p2 = py.get_p(ip, 2);
@@ -202,7 +233,7 @@ inline void rotate_all_z(Pythia6& py, float phi) {
 // ============================================================================
 
 inline void boost_all_back(Pythia6& py, float BB1, float B1x, float B1y, float B1z,
-                            float Thi, float Phi) {
+                            float Thi, float Phi) noexcept {
     rotate_all_z(py, -Phi);
     rotate_all_y(py, -Thi);
 

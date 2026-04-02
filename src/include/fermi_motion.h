@@ -1,10 +1,14 @@
 #ifndef FARM_FERMI_MOTION_H
 #define FARM_FERMI_MOTION_H
 
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <numeric>
+#include <stdexcept>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -23,16 +27,16 @@ struct FermiMotionState {
 
     float step_size = 0.0f;
     float FMintact = 1.0f;
-    float FM_table[TABLE_SIZE] = {};
-    float FM_n[TABLE_SIZE] = {};
-    float FM_p[TABLE_SIZE] = {};
-    float FM_i[TABLE_SIZE] = {};
+    std::array<float, TABLE_SIZE> FM_table{};
+    std::array<float, TABLE_SIZE> FM_n{};
+    std::array<float, TABLE_SIZE> FM_p{};
+    std::array<float, TABLE_SIZE> FM_i{};
     int FMnb = 0;
 };
 
 // Read Wiringa momentum table from file
 inline void gen_rw_table(FermiMotionState& fm, int iZ, int iA, float FMlimit) {
-    constexpr float HBAR_C = 0.1973269602f;
+    constexpr float HBAR_C = constants::hbar_c_f;
 
     std::string filename;
     if (iA == 2 && iZ == 1)      filename = "datafiles/fmrw/h2.momentum";
@@ -42,14 +46,12 @@ inline void gen_rw_table(FermiMotionState& fm, int iZ, int iA, float FMlimit) {
     else if (iA == 6 && iZ == 3) filename = "datafiles/fmrw/lad.momentum";
     else if (iA == 7 && iZ == 3) filename = "datafiles/fmrw/lat.momentum";
     else {
-        fprintf(stderr, "ERROR: Unsupported iZ=%d iA=%d for RW table\n", iZ, iA);
-        exit(1);
+        throw std::runtime_error("ERROR: Unsupported iZ=" + std::to_string(iZ) + " iA=" + std::to_string(iA) + " for RW table");
     }
 
     std::ifstream file(filename);
     if (!file.is_open()) {
-        fprintf(stderr, "ERROR: Cannot open %s\n", filename.c_str());
-        exit(1);
+        throw std::runtime_error("ERROR: Cannot open " + filename);
     }
 
     // Skip header until ** marker
@@ -108,16 +110,14 @@ inline void gen_rw_table(FermiMotionState& fm, int iZ, int iA, float FMlimit) {
     fm.step_size = FMlimit / static_cast<float>(i);
 
     // Normalize
-    for (int j = 0; j < i; j++) {
-        fm.FM_n[j] /= sum_n;
-        fm.FM_p[j] /= sum_p;
-    }
+    std::transform(fm.FM_n.begin(), fm.FM_n.begin() + i, fm.FM_n.begin(),
+                   [sum_n](float v) { return v / sum_n; });
+    std::transform(fm.FM_p.begin(), fm.FM_p.begin() + i, fm.FM_p.begin(),
+                   [sum_p](float v) { return v / sum_p; });
 
     // Cumulative
-    for (int j = 1; j < i; j++) {
-        fm.FM_n[j] += fm.FM_n[j - 1];
-        fm.FM_p[j] += fm.FM_p[j - 1];
-    }
+    std::partial_sum(fm.FM_n.begin(), fm.FM_n.begin() + i, fm.FM_n.begin());
+    std::partial_sum(fm.FM_p.begin(), fm.FM_p.begin() + i, fm.FM_p.begin());
 }
 
 // Sample Fermi momentum parameters
@@ -130,7 +130,7 @@ inline FMSample sample_fermi_motion(const FermiMotionState& fm, int iFM, float r
                                      float FMlimit, int nucleon, int iTg,
                                      std::mt19937& rng) {
     std::uniform_real_distribution<float> uniform(0.0f, 1.0f);
-    constexpr float PI = 3.1415926535f;
+    constexpr float PI = constants::pi_f;
 
     FMSample s;
     s.FMintact = 1.0f;
@@ -174,12 +174,10 @@ inline FMSample sample_fermi_motion(const FermiMotionState& fm, int iFM, float r
         if (iTg != 1) s.FMintact = fm.FM_i[i];
 
         if (s.Kf > FMlimit) {
-            fprintf(stderr, "WARNING: Kf=%f > FMlimit=%f\n", s.Kf, FMlimit);
-            exit(1);
+            throw std::runtime_error("WARNING: Kf=" + std::to_string(s.Kf) + " > FMlimit=" + std::to_string(FMlimit));
         }
     } else {
-        fprintf(stderr, "ERROR: Unsupported iFM=%d\n", iFM);
-        exit(1);
+        throw std::runtime_error("ERROR: Unsupported iFM=" + std::to_string(iFM));
     }
 
     return s;
@@ -237,48 +235,49 @@ inline BoostParams apply_initial_boost(Kinematics& k) {
 // (replaces farm_setup_kinematics)
 // ============================================================================
 
-inline BoostParams setup_kinematics(int ievent, int nevent, int iZ, int iA,
-                                     int iFM, float rFM, float FMlimit, float E0,
-                                     const FermiMotionState& fm,
-                                     int& nucleon_out, float& beam_energy_out,
-                                     float& nuc_the_out, float& nuc_phi_out,
-                                     float& nuc_mom_out, float& FMintact_out,
-                                     std::mt19937& rng) {
-    BoostParams bp{};
+struct KinematicsResult {
+    BoostParams boost;
+    int nucleon;
+    float beam_energy;
+    float nuc_theta, nuc_phi, nuc_momentum;
+    float FMintact;
+};
+
+[[nodiscard]] inline KinematicsResult setup_kinematics(
+    int ievent, int nevent, int iZ, int iA,
+    int iFM, float rFM, float FMlimit, float E0,
+    const FermiMotionState& fm, std::mt19937& rng)
+{
+    KinematicsResult result{};
 
     while (true) {
-        // Determine nucleon type
-        nucleon_out = (ievent < nevent * iZ / iA) ? 2212 : 2112;
+        result.nucleon = (ievent < nevent * iZ / iA) ? 2212 : 2112;
 
-        // Fermi motion
         float ThFM = 0, PhiFM = 0, Kf = 0;
-        FMintact_out = 1.0f;
+        result.FMintact = 1.0f;
         if (rFM != 0.0f && iFM != 0) {
-            auto s = sample_fermi_motion(fm, iFM, rFM, FMlimit, nucleon_out, 0, rng);
+            auto s = sample_fermi_motion(fm, iFM, rFM, FMlimit, result.nucleon, 0, rng);
             ThFM = s.ThFM;
             PhiFM = s.PhiFM;
             Kf = s.Kf;
-            FMintact_out = s.FMintact;
+            result.FMintact = s.FMintact;
         }
 
-        // Initialize kinematics
         auto kin = init_kinematics(E0, Kf, ThFM, PhiFM);
 
-        // Store nucleon kinematics for spectators
-        nuc_the_out = ThFM;
-        nuc_phi_out = PhiFM;
-        nuc_mom_out = Kf;
+        result.nuc_theta = ThFM;
+        result.nuc_phi = PhiFM;
+        result.nuc_momentum = Kf;
 
-        // Lorentz boost
         if (iFM != 0) {
-            bp = apply_initial_boost(kin);
+            result.boost = apply_initial_boost(kin);
         }
 
-        beam_energy_out = kin.PPe;
+        result.beam_energy = kin.PPe;
         if (kin.PPe >= 4.0f) break;
     }
 
-    return bp;
+    return result;
 }
 
 } // namespace farm

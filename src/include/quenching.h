@@ -9,42 +9,30 @@
 // ============================================================================
 
 #include "pythia6.h"
+#include "physics.h"
+#include <array>
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <span>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 
 namespace farm {
 
+struct QuenchingConfig {
+    int iqw   = 1;       // Quenching weight model: 1 = SW, 2 = Arleo
+    int iqg   = 0;       // include gluon quenching (1 = yes)
+    int iEg   = 0;       // add energy-conservation gluon (1 = yes)
+    int iPtF  = 0;       // pT broadening model (0..3)
+    double qhat  = 0.0;  // transport coefficient (GeV^2/fm)
+    double ehat  = 0.0;  // drag coefficient
+};
+
 class QuenchingEngine {
 public:
-    // --- Configuration (mirrors quenching_module + config_module) -----------
-
-    // Quenching weight model: 1 = Salgado-Wiedemann, 2 = Arleo
-    int iqw   = 1;
-    // Finite-size corrections flag (0 = no, 1 = yes)
-    int scor  = 0;
-    // Finite-energy corrections flag (0 = no, 1 = yes)
-    int ncor  = 0;
-    // 1 = multiple soft scatterings, 2 = single hard scattering
-    int sfthrd = 1;
-
-    // Strong coupling at soft scales
-    double alphas = 1.0 / 3.0;
-
-    // Config flags
-    int iqg  = 0;   // include gluon quenching (1 = yes)
-    int iEg  = 0;   // add energy-conservation gluon (1 = yes)
-    int iPtF = 0;   // pT broadening model (0..3)
-
-    // Transport coefficients
-    double qhat   = 0.0;
-    double ehat   = 0.0;
-    double SupFac = 1.0;
-
     // --- Observables (output, mirrors QW_* variables) ----------------------
 
     int    QW_nb   = 0;
@@ -56,9 +44,20 @@ public:
     double QW_th   = 0.0;
     double QW_qhat = 0.0;
 
-    // --- Constructor -------------------------------------------------------
+    // --- Constructors ------------------------------------------------------
 
     QuenchingEngine() = default;
+
+    explicit QuenchingEngine(const QuenchingConfig& cfg)
+        : iqw_(cfg.iqw), iqg_(cfg.iqg), iEg_(cfg.iEg), iPtF_(cfg.iPtF),
+          qhat_(cfg.qhat), ehat_(cfg.ehat)
+    {
+        alphas_ = 1.0 / 3.0;
+        scor_ = 1;
+        ncor_ = 0;
+        sfthrd_ = 1;
+        SupFac_ = (qhat_ + ehat_ > 0.0) ? qhat_ / (qhat_ + ehat_) : 1.0;
+    }
 
     // -----------------------------------------------------------------------
     // apply(): main entry point -- loops over PYTHIA particles, applies
@@ -72,7 +71,7 @@ public:
     // -----------------------------------------------------------------------
     void apply(Pythia6& py,
                double x_inter, double y_inter, double z_inter,
-               const double* density_table, double step_size_dens, int /*n_density*/)
+               std::span<const double> density_table, double step_size_dens)
     {
         const double cutoff = 0.4;
 
@@ -83,7 +82,7 @@ public:
             double E = py.get_p(ip, 4);
 
             bool is_quark = (std::abs(kid) < 4);
-            bool is_gluon = (kid == 21 && iqg == 1);
+            bool is_gluon = (kid == 21 && iqg_ == 1);
 
             if ((is_quark || is_gluon) && kst < 9 && E > cutoff) {
 
@@ -109,15 +108,15 @@ public:
                     double ipt = 0.0;
 
                     // Determine transverse momentum of final parton
-                    if (iPtF == 0) {
+                    if (iPtF_ == 0) {
                         ipt = 0.0;
-                    } else if (iPtF == 1) {
-                        ipt = qhat * QW_L;
-                    } else if (iPtF == 2) {
-                        ipt = 4.0 * QW_w / 3.0 / alphas / QW_L * SupFac * SupFac;
-                    } else if (iPtF == 3) {
-                        ipt = (QW_w * std::sin(QW_th) * SupFac)
-                            * (QW_w * std::sin(QW_th) * SupFac);
+                    } else if (iPtF_ == 1) {
+                        ipt = qhat_ * QW_L;
+                    } else if (iPtF_ == 2) {
+                        ipt = 4.0 * QW_w / 3.0 / alphas_ / QW_L * SupFac_ * SupFac_;
+                    } else if (iPtF_ == 3) {
+                        ipt = (QW_w * std::sin(QW_th) * SupFac_)
+                            * (QW_w * std::sin(QW_th) * SupFac_);
                     }
 
                     double ipl = 0.0;
@@ -125,7 +124,7 @@ public:
 
                     // Implement energy loss and pT
                     if (E - QW_w < cutoff) {
-                        double th = py.random() * 2.0 * 3.14159265 - 3.14159265;
+                        double th = py.random() * 2.0 * farm::constants::pi - farm::constants::pi;
                         ipl = std::cos(th) * cutoff;
                         ipt = std::sin(th) * cutoff;
                     } else {
@@ -141,7 +140,7 @@ public:
                     }
 
                     // Generate normalised transverse vector
-                    double ph = 4.0 * std::asin(1.0) * py.random();
+                    double ph = 2.0 * farm::constants::pi * py.random();
                     double iptx = (ipiz - ipiy) * std::cos(ph)
                                 - (ipix * ipiy + ipix * ipiz) * std::sin(ph);
                     double ipty = ipix * std::cos(ph)
@@ -180,7 +179,7 @@ public:
                     py.set_p(ip, 4, std::sqrt(mass * mass + ipx * ipx + ipy * ipy + ipz * ipz));
 
                     // Add gluon if requested
-                    if (iEg == 1) {
+                    if (iEg_ == 1) {
                         double ipg = tot - py.get_p(ip, 4);
                         double ptg, plg;
                         if (ipt < ipg) {
@@ -239,27 +238,40 @@ public:
     }
 
 private:
+    // --- Configuration (set via constructor) --------------------------------
+    int iqw_   = 1;
+    int scor_  = 0;
+    int ncor_  = 0;
+    int sfthrd_ = 1;
+    double alphas_ = 1.0 / 3.0;
+    int iqg_  = 0;
+    int iEg_  = 0;
+    int iPtF_ = 0;
+    double qhat_   = 0.0;
+    double ehat_   = 0.0;
+    double SupFac_ = 1.0;
+
     // --- Lookup tables for SW quenching weights ----------------------------
 
     // Multiple soft scattering tables
-    double mult_xx[400]  = {};
-    double mult_daq[34]  = {};
-    double mult_caq[34][261] = {};
-    double mult_rrr[34]  = {};
-    double mult_xxg[400] = {};
-    double mult_dag[34]  = {};
-    double mult_cag[34][261] = {};
-    double mult_rrrg[34] = {};
+    std::array<double, 400> mult_xx{};
+    std::array<double, 34>  mult_daq{};
+    std::array<std::array<double, 261>, 34> mult_caq{};
+    std::array<double, 34>  mult_rrr{};
+    std::array<double, 400> mult_xxg{};
+    std::array<double, 34>  mult_dag{};
+    std::array<std::array<double, 261>, 34> mult_cag{};
+    std::array<double, 34>  mult_rrrg{};
 
     // Single hard scattering tables
-    double lin_xx[400]   = {};
-    double lin_daq[34]   = {};
-    double lin_caq[34][261] = {};
-    double lin_rrr[34]   = {};
-    double lin_xxg[400]  = {};
-    double lin_dag[34]   = {};
-    double lin_cag[34][261] = {};
-    double lin_rrrg[34]  = {};
+    std::array<double, 400> lin_xx{};
+    std::array<double, 34>  lin_daq{};
+    std::array<std::array<double, 261>, 34> lin_caq{};
+    std::array<double, 34>  lin_rrr{};
+    std::array<double, 400> lin_xxg{};
+    std::array<double, 34>  lin_dag{};
+    std::array<std::array<double, 261>, 34> lin_cag{};
+    std::array<double, 34>  lin_rrrg{};
 
     // Initialization flags
     bool mult_initialized = false;
@@ -274,7 +286,7 @@ private:
     // -----------------------------------------------------------------------
     void qw_comput(double ipx, double ipy, double ipz, double E, int id,
                    double x_inter, double y_inter, double z_inter,
-                   const double* density_table, double step_size_dens,
+                   std::span<const double> density_table, double step_size_dens,
                    Pythia6& py)
     {
         QW_w  = 0.0;
@@ -284,7 +296,7 @@ private:
         QW_th = 0.0;
 
         double d = 0.0;
-        double qhateff = qhat + ehat;
+        double qhateff = qhat_ + ehat_;
 
         // Determine parton type: 0 = gluon, 1 = quark
         int ipart;
@@ -329,17 +341,17 @@ private:
         QW_R  = 2.0 * density_table[0] * QW_wc * QW_wc / QW_R / qhateff;
 
         // Convert units: fm -> GeV^-1, GeV^2*fm -> GeV, GeV^2*fm^2 -> dimensionless
-        QW_wc = QW_wc / 0.1973269;
-        QW_R  = QW_R / (0.1973269 * 0.1973269);
+        QW_wc = QW_wc / farm::constants::hbar_c;
+        QW_R  = QW_R / (farm::constants::hbar_c * farm::constants::hbar_c);
 
         // Calculate energy loss probability
         double step_QW;
-        if (sfthrd == 1) step_QW = 2.5 / nb_step;
-        if (sfthrd == 2) step_QW = 9.8 / nb_step;
+        if (sfthrd_ == 1) step_QW = 2.5 / nb_step;
+        if (sfthrd_ == 2) step_QW = 9.8 / nb_step;
 
         double yy = E / QW_wc;
 
-        double cont[1000];
+        std::array<double, 1000> cont{};
         double disc = 0.0;
         double total = 0.0;
 
@@ -396,7 +408,7 @@ private:
             QW_th  = std::asin(QW_chi);
         }
 
-        if (std::isnan(QW_th)) QW_th = 3.14159 / 2.0;
+        if (std::isnan(QW_th)) QW_th = farm::constants::pi / 2.0;
     }
 
     // -----------------------------------------------------------------------
@@ -406,18 +418,18 @@ private:
     void qweight_calc(int ipart, double rrrr, double xx, double yy,
                       double& cont, double& disc)
     {
-        if (scor == 1 && ncor == 1) {
+        if (scor_ == 1 && ncor_ == 1) {
             throw std::runtime_error(
                 "qweight: finite size & finite energy corrections not yet implemented");
         }
 
         // Arleo asymptotic medium size
-        if (iqw == 2) {
+        if (iqw_ == 2) {
             disc = 0.0;
-            if (alphas <= 0.0) {
+            if (alphas_ <= 0.0) {
                 throw std::runtime_error("qweight: alphas < 0");
             }
-            double kk = 1.0 / (2.0 * alphas);
+            double kk = 1.0 / (2.0 * alphas_);
             if (ipart == 0) {
                 cont = kk * dbarg(kk * xx, yy);
             } else {
@@ -425,24 +437,24 @@ private:
             }
 
         // Salgado-Wiedemann quenching weights
-        } else if (iqw == 1) {
+        } else if (iqw_ == 1) {
             // Initialise tables on first call
-            if (sfthrd == 1 && !mult_initialized) {
-                initmult(alphas);
+            if (sfthrd_ == 1 && !mult_initialized) {
+                initmult(alphas_);
                 mult_initialized = true;
             }
-            if (sfthrd == 2 && !lin_initialized) {
-                initlin(alphas);
+            if (sfthrd_ == 2 && !lin_initialized) {
+                initlin(alphas_);
                 lin_initialized = true;
             }
 
             // If no size corrections, use very large R
-            double rrin = (scor == 0) ? 1.0e8 : rrrr;
+            double rrin = (scor_ == 0) ? 1.0e8 : rrrr;
 
             static constexpr double xxmultmax = 2.59;
             static constexpr double xxlinmax  = 9.87;
 
-            if (sfthrd == 1) {
+            if (sfthrd_ == 1) {
                 if (xx <= xxmultmax) {
                     swqmult(ipart, rrin, xx, cont, disc);
                 } else {
@@ -464,12 +476,12 @@ private:
     // Arleo quenching weight functions
     // -----------------------------------------------------------------------
 
-    double dbarg(double wl, double e) const {
+    [[nodiscard]] double dbarg(double wl, double e) const noexcept {
         return (4.0 / 9.0) * dbarq((4.0 / 9.0) * wl, e);
     }
 
-    double dbarq(double wl, double e) const {
-        static constexpr double pi = 3.1415926;
+    [[nodiscard]] double dbarq(double wl, double e) const noexcept {
+        static constexpr double pi = farm::constants::pi;
         if (wl == 0.0) {
             return 0.0;
         }
@@ -480,16 +492,16 @@ private:
                / (std::sqrt(2.0 * pi) * sig * wl);
     }
 
-    double xmu(double e) const {
-        if (ncor == 0) {
+    [[nodiscard]] double xmu(double e) const noexcept {
+        if (ncor_ == 0) {
             return -1.5;
         } else {
             return -1.5 + 0.81 * (std::exp(-0.2 / e) - 1.0);
         }
     }
 
-    double xsigma(double e) const {
-        if (ncor == 0) {
+    [[nodiscard]] double xsigma(double e) const noexcept {
+        if (ncor_ == 0) {
             return 0.72;
         } else {
             return 0.72 + 0.33 * (std::exp(-0.2 / e) - 1.0);
