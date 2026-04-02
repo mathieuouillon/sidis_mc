@@ -5,10 +5,14 @@
 // Original Fortran by Alberto Accardi and Daniel Gruenewald
 
 #include <cmath>
+#include <concepts>
 #include <functional>
 #include <random>
 #include <algorithm>
+#include <span>
+#include "physics.h"
 #include <array>
+#include <iostream>
 #include <stdexcept>
 #include <cstdio>
 
@@ -26,8 +30,8 @@ struct WoodsSaxonParams {
 // =====================================================================
 // Adaptive Gaussian Quadrature (DGAUSS11)
 // =====================================================================
-template <typename F>
-inline double dgauss11(F func, double A, double B, double EPS) {
+template <std::invocable<double> F>
+[[nodiscard]] inline double dgauss11(F func, double A, double B, double EPS) {
     static constexpr double W[12] = {
         0.1012285362903762590e0,
         0.2223810344533744710e0,
@@ -94,8 +98,7 @@ inline double dgauss11(F func, double A, double B, double EPS) {
             BB = C1;
             if (1.0 + std::abs(CONST_ * C2) == 1.0) {
                 // Accuracy not achievable
-                std::fprintf(stderr,
-                    "    FUNCTION DGAUSS11 ... TOO HIGH ACCURACY REQUIRED\n");
+                std::cerr << "    FUNCTION DGAUSS11 ... TOO HIGH ACCURACY REQUIRED\n";
                 return 0.0;
             }
         }
@@ -107,7 +110,8 @@ inline double dgauss11(F func, double A, double B, double EPS) {
 // =====================================================================
 // Given an array xx[0..n-1] (monotonic) and a value x, returns j such
 // that x is between xx[j] and xx[j+1].  Uses 0-based indexing.
-inline int locatetable(const double* xx, int n, double x) {
+[[nodiscard]] inline int locatetable(std::span<const double> xx, double x) noexcept {
+    int n = static_cast<int>(xx.size());
     int jl = -1;
     int ju = n;
     while (ju - jl > 1) {
@@ -131,10 +135,10 @@ inline int locatetable(const double* xx, int n, double x) {
 // Reid soft-core deuteron wave function [fm^-3]
 // REF: R.V.Reid, Ann.Phys.(NY)50(68)411-448
 // =====================================================================
-inline double reidsc(double r) {
-    static constexpr double fourpi = 2.0 * 6.2831530718;
+[[nodiscard]] inline double reidsc(double r) noexcept {
+    [[maybe_unused]] static constexpr double fourpi = 4.0 * farm::constants::pi;
     static constexpr double mu = 0.7;
-    static constexpr double mu2 = mu * mu;
+    [[maybe_unused]] static constexpr double mu2 = mu * mu;
     static constexpr double AS2 = 0.7749985;
     static constexpr double ADS2 = 6.7081e-4;
     static constexpr double alpha = 0.33088;
@@ -198,7 +202,7 @@ inline double reidsc(double r) {
         double term = 1.0 + ADS2 * (1.0 + (3.0 / alphax) + (3.0 / (alphax * alphax)));
         result = AS2 * std::exp(-twoalpha * xval) * (term * term);
     } else {
-        int j = locatetable(xx, N, xval);
+        int j = locatetable(std::span{xx, static_cast<size_t>(N)}, xval);
         double h = xx[j + 1] - xx[j];
         double p = (xval - xx[j]) / h;
         double A1 = u[j];
@@ -224,7 +228,7 @@ inline double reidsc(double r) {
 // =====================================================================
 // Deuteron density (based on Reid soft-core potential)
 // =====================================================================
-inline double DeuteronDensity(double r) {
+[[nodiscard]] inline double DeuteronDensity(double r) noexcept {
     static constexpr double twopi = 6.2831530718;
     return reidsc(2.0 * r) / (twopi * r * r);
 }
@@ -238,8 +242,8 @@ inline double r2DD(double r) {
 // Woods-Saxon 3D distribution (unnormalized, with 4*pi*r^2 Jacobian)
 // Requires external WoodsSaxonParams for RR, a0, c0 state.
 // =====================================================================
-inline double WoodsSaxon3d(double r, const WoodsSaxonParams& ws) {
-    static constexpr double pi = 3.141592653;
+[[nodiscard]] inline double WoodsSaxon3d(double r, const WoodsSaxonParams& ws) noexcept {
+    static constexpr double pi = farm::constants::pi;
     double val = 4.0 * pi * r * r
         * (1.0 + ws.c0 * (r * r / (ws.RR * ws.RR)))
         / (1.0 + std::exp((r - ws.RR) / ws.a0));
@@ -370,36 +374,23 @@ inline WSParamEntry get_ws_params(int Z) {
 // NuclearDensity class
 // Implements the nucdens() function with persistent per-irho state.
 // =====================================================================
+struct DensityResult {
+    double density;
+    double RAeq;   // hard-sphere equivalent radius
+    double RAws;   // Woods-Saxon radius parameter
+};
+
 class NuclearDensity {
 public:
     static constexpr int MAX_IRHO = 10;
 
-    NuclearDensity() {
-        for (int i = 0; i < MAX_IRHO; ++i) {
-            firsttime_[i] = true;
-            Asave_[i] = 0;
-            Zsave_[i] = 0;
-            NWS_[i] = 0.0;
-            RA_[i] = 0.0;
-            RAequiv_[i] = 0.0;
-            aa_[i] = 0.0;
-            cc_[i] = 0.0;
-        }
-    }
+    NuclearDensity() = default;
 
-    // Main density function.
-    // r     = distance from nuclear center (fm)
-    // Z     = atomic number
-    // A     = atomic mass
-    // idist = 0: Hard Sphere, 1: Woods-Saxon
-    // irho  = density index (1-based, as in Fortran; mapped to 0-based internally)
-    // Returns: nuclear density normalized to 1
-    // Also updates RAeq, RAws output state.
-    double operator()(double r, int Z, int A, int idist, int irho) {
+    [[nodiscard]] DensityResult operator()(double r, int Z, int A, int idist, int irho) {
         return compute(r, Z, A, idist, irho);
     }
 
-    double compute(double r, int Z, int A, int idist, int irho) {
+    [[nodiscard]] DensityResult compute(double r, int Z, int A, int idist, int irho) {
         static constexpr double onethird = 0.333333333333333;
         static constexpr double srft = 1.29099;
         static constexpr double threefourthoverpi = 0.2387336394417;
@@ -414,7 +405,7 @@ public:
         Asave_[idx] = A;
         Zsave_[idx] = Z;
 
-        double result;
+        DensityResult res{0.0, 0.0, 0.0};
 
         if (Z == 1 && A == 2) {
             // REID's SOFT-CORE (Deuterium)
@@ -423,18 +414,16 @@ public:
                     dgauss11([](double rr) { return r2DD(rr); }, 0.0, 20.0, 1e-5));
                 firsttime_[idx] = false;
             }
-            result = DeuteronDensity(r);
-            RAeq = RAequiv_[idx];
-            RAws = 1.4111;
+            res.density = DeuteronDensity(r);
+            res.RAeq = RAequiv_[idx];
+            res.RAws = 1.4111;
 
         } else if (idist == 0) {
             // HARD SPHERE
-            RAeq = 1.12 * std::pow(static_cast<double>(A), onethird);
-            RAws = RAeq;
-            if (r <= RAeq) {
-                result = threefourthoverpi / (RAeq * RAeq * RAeq);
-            } else {
-                result = 0.0;
+            res.RAeq = 1.12 * std::pow(static_cast<double>(A), onethird);
+            res.RAws = res.RAeq;
+            if (r <= res.RAeq) {
+                res.density = threefourthoverpi / (res.RAeq * res.RAeq * res.RAeq);
             }
 
         } else if (idist == 1) {
@@ -442,7 +431,6 @@ public:
             if (firsttime_[idx]) {
                 WoodsSaxonParams ws_local;
                 if (Z == 0 || Z > 92) {
-                    // Bialas parametrization [4]
                     double Athird = std::pow(static_cast<double>(A), onethird);
                     ws_local.RR = (0.978 + 0.0206 * Athird) * Athird;
                     ws_local.a0 = 0.523;
@@ -450,7 +438,6 @@ public:
                 } else {
                     WSParamEntry entry = get_ws_params(Z);
                     if (entry.R < 0.1) {
-                        // No experimental data; use Bialas parametrization
                         double Athird = std::pow(static_cast<double>(A), onethird);
                         ws_local.RR = (0.978 + 0.0206 * Athird) * Athird;
                         ws_local.a0 = 0.523;
@@ -477,41 +464,34 @@ public:
                 firsttime_[idx] = false;
             }
 
-            RAeq = RAequiv_[idx];
-            RAws = RA_[idx];
+            res.RAeq = RAequiv_[idx];
+            res.RAws = RA_[idx];
 
             if (r - RA_[idx] < 700.0) {
-                result = NWS_[idx]
+                res.density = NWS_[idx]
                     * (1.0 + cc_[idx] * (r * r / (RA_[idx] * RA_[idx])))
                     / (1.0 + std::exp((r - RA_[idx]) / aa_[idx]));
-            } else {
-                result = 0.0;
             }
-            if (result < 0.0) result = 0.0;
+            if (res.density < 0.0) res.density = 0.0;
 
         } else {
-            std::fprintf(stderr,
-                "ERROR (nucdens): called out of range: idist,Z,A= %d %d %d\n",
-                idist, Z, A);
+            std::cerr << "ERROR (nucdens): called out of range: idist,Z,A= "
+                      << idist << " " << Z << " " << A << "\n";
             std::abort();
         }
 
-        return result;
+        return res;
     }
 
-    // Public output state (set after each call, mirrors Fortran common block)
-    double RAeq = 0.0;   // hard-sphere equivalent radius
-    double RAws = 0.0;   // Woods-Saxon radius parameter
-
 private:
-    bool firsttime_[MAX_IRHO];
-    int Asave_[MAX_IRHO];
-    int Zsave_[MAX_IRHO];
-    double NWS_[MAX_IRHO];
-    double RA_[MAX_IRHO];
-    double RAequiv_[MAX_IRHO];
-    double aa_[MAX_IRHO];
-    double cc_[MAX_IRHO];
+    std::array<bool, MAX_IRHO> firsttime_{true, true, true, true, true, true, true, true, true, true};
+    std::array<int, MAX_IRHO> Asave_{};
+    std::array<int, MAX_IRHO> Zsave_{};
+    std::array<double, MAX_IRHO> NWS_{};
+    std::array<double, MAX_IRHO> RA_{};
+    std::array<double, MAX_IRHO> RAequiv_{};
+    std::array<double, MAX_IRHO> aa_{};
+    std::array<double, MAX_IRHO> cc_{};
     WoodsSaxonParams ws_;  // current Woods-Saxon params for integration lambdas
 };
 
@@ -522,27 +502,15 @@ private:
 struct DensityTable {
     static constexpr int TABLE_SIZE = 2000;
 
-    double density_table[TABLE_SIZE];
-    double quantity_table[TABLE_SIZE];
+    std::array<double, TABLE_SIZE> density_table;
+    std::array<double, TABLE_SIZE> quantity_table;
     double step_size;
     double init_dens;
 
-    DensityTable() : step_size(0.0), init_dens(0.0) {
-        for (int i = 0; i < TABLE_SIZE; ++i) {
-            density_table[i] = 0.0;
-            quantity_table[i] = 0.0;
-        }
-    }
+    DensityTable() = default;
 
-    // Generate the density table for a given nucleus.
-    // iZ    = atomic number
-    // iA    = atomic mass
-    // iDens = distribution type (0=HS, 1=WS)
     void generate(int iZ, int iA, int iDens) {
-        static constexpr double pi = 3.141592653;
-
         NuclearDensity nucdens;
-        int idist = iDens;
         int irho = 1;
         step_size = 0.01;
         init_dens = 0.005;
@@ -550,8 +518,9 @@ struct DensityTable {
         double integral = 0.0;
 
         for (int i = 0; i < TABLE_SIZE; ++i) {
-            density_table[i] = nucdens.compute(r, iZ, iA, idist, irho);
-            integral += 4.0 * pi * density_table[i] * r * r * step_size;
+            auto res = nucdens.compute(r, iZ, iA, iDens, irho);
+            density_table[i] = res.density;
+            integral += 4.0 * constants::pi * density_table[i] * r * r * step_size;
             quantity_table[i] = integral;
             r += step_size;
         }
@@ -559,48 +528,32 @@ struct DensityTable {
 };
 
 // =====================================================================
-// InteractionPosition: replaces InterPos subroutine
-// Samples a random interaction position from a density table.
-// =====================================================================
-struct InteractionPosition {
-    double pos_radius;
-    double pos_theta;
-    double pos_phi;
-    double x;
-    double y;
-    double z;
+// Sample a random interaction position in a nucleus from the density table.
+// Returns Cartesian coordinates {x, y, z}.
+struct InteractionPos { double x, y, z; };
 
-    InteractionPosition()
-        : pos_radius(0.0), pos_theta(0.0), pos_phi(0.0),
-          x(0.0), y(0.0), z(0.0) {}
+inline InteractionPos sample_interaction_position(const DensityTable& table, std::mt19937& rng) {
+    std::uniform_real_distribution<double> uniform(0.0, 1.0);
 
-    // Sample an interaction position from the density table using the
-    // provided random number generator.
-    // rng must provide operator() returning a double in [0,1).
-    template <typename RNG>
-    void sample(const DensityTable& table, RNG& rng) {
-        static constexpr double pi = 3.141592653;
+    double pos_radius = uniform(rng) * table.quantity_table[DensityTable::TABLE_SIZE - 1];
+    double pos_theta  = std::acos(2.0 * uniform(rng) - 1.0);
+    double pos_phi    = 2.0 * constants::pi * uniform(rng);
 
-        // Random position in cumulative distribution
-        pos_radius = rng() * table.quantity_table[DensityTable::TABLE_SIZE - 1];
-        pos_theta = std::acos(2.0 * rng() - 1.0);
-        pos_phi = 2.0 * pi * rng();
-
-        // Find radius bin by walking the cumulative table
-        double r = table.init_dens;
-        int i = 0;
-        while (i < DensityTable::TABLE_SIZE && pos_radius >= table.quantity_table[i]) {
-            r += table.step_size;
-            ++i;
-        }
-        pos_radius = r + (rng() - 0.5) * table.step_size;
-
-        // Convert to Cartesian coordinates
-        x = pos_radius * std::sin(pos_theta) * std::cos(pos_phi);
-        y = pos_radius * std::sin(pos_theta) * std::sin(pos_phi);
-        z = pos_radius * std::cos(pos_theta);
+    // Find radius bin by walking the cumulative table
+    double r = table.init_dens;
+    int i = 0;
+    while (i < DensityTable::TABLE_SIZE && pos_radius >= table.quantity_table[i]) {
+        r += table.step_size;
+        ++i;
     }
-};
+    pos_radius = r + (uniform(rng) - 0.5) * table.step_size;
+
+    return {
+        pos_radius * std::sin(pos_theta) * std::cos(pos_phi),
+        pos_radius * std::sin(pos_theta) * std::sin(pos_phi),
+        pos_radius * std::cos(pos_theta)
+    };
+}
 
 } // namespace farm
 

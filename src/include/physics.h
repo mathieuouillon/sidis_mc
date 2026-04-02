@@ -2,9 +2,26 @@
 #define FARM_PHYSICS_H
 
 #include <cmath>
+#include <numbers>
+#include <string_view>
 
 // ============================================================================
-// Pure C++ physics functions (migrated from Fortran)
+// Physical and mathematical constants
+// ============================================================================
+
+namespace farm::constants {
+    inline constexpr double pi       = std::numbers::pi;
+    inline constexpr float  pi_f     = std::numbers::pi_v<float>;
+    inline constexpr double rad2deg  = 180.0 / std::numbers::pi;
+    inline constexpr double deg2rad  = std::numbers::pi / 180.0;
+    inline constexpr double hbar_c   = 0.1973269602;       // GeV*fm
+    inline constexpr float  hbar_c_f = 0.1973269602f;
+    inline constexpr float  electron_mass = 0.000511f;      // GeV
+    inline constexpr float  nucleon_mass  = 0.938f;         // GeV
+}
+
+// ============================================================================
+// Pure C++ physics functions
 // ============================================================================
 
 namespace farm {
@@ -15,7 +32,7 @@ namespace farm {
 // The 4-vector is modified in place.
 // NOTE: BB must be > 0 (division by BB^2).
 inline void lorentz_boost(float& E, float& P, float& Px, float& Py, float& Pz,
-                           float BB, float Bx, float By, float Bz) {
+                           float BB, float Bx, float By, float Bz) noexcept {
     float GG = 1.0f / std::sqrt(1.0f - BB * BB);
 
     float Ei = GG * (E - Bx * Px - By * Py - Bz * Pz);
@@ -46,7 +63,7 @@ struct NuclearParams {
     float rFM;     // Fermi momentum parameter (GeV)
 };
 
-inline NuclearParams get_nuclear_params(int target) {
+[[nodiscard]] constexpr NuclearParams get_nuclear_params(int target) {
     switch (target) {
         case 0:  return {1,  1,   0.0f};     // proton
         case 1:  return {1,  2,   0.07f};    // deuterium
@@ -72,7 +89,7 @@ inline NuclearParams get_nuclear_params(int target) {
 // Generates random vertex z position for the given target type.
 // Uses the provided random number (0-1) for position within target.
 // For Carbon (dual target), uses random_choice (0-1) to select foil.
-inline float vertex_z(int target_type, float random_pos, float random_choice) {
+[[nodiscard]] constexpr float vertex_z(int target_type, float random_pos, float random_choice) noexcept {
     float target_pos, target_length;
 
     switch (target_type) {
@@ -104,9 +121,9 @@ struct Kinematics {
     float EEn, PPn, Pnx, Pny, Pnz;  // nucleon 4-momentum
 };
 
-inline Kinematics init_kinematics(float E0, float Kf, float ThFM, float PhiFM) {
-    constexpr float electron_mass = 0.000511f;
-    constexpr float nucleon_mass  = 0.938f;
+[[nodiscard]] inline Kinematics init_kinematics(float E0, float Kf, float ThFM, float PhiFM) noexcept {
+    constexpr float electron_mass = constants::electron_mass;
+    constexpr float nucleon_mass  = constants::nucleon_mass;
 
     Kinematics k;
     k.PPe = E0;
